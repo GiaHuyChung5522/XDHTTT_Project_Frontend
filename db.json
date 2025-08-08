@@ -1,0 +1,32 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "iPhone 14",
+      "price": 999,
+      "description": "Smartphone cao cấp từ Apple",
+      "image": "https://example.com/iphone14.jpg",
+      "category": "Electronics",
+      "stock": 50
+    },
+    {
+      "id": 2,
+      "name": "Samsung Galaxy S23",
+      "price": 899,
+      "description": "Smartphone mạnh mẽ từ Samsung",
+      "image": "https://example.com/galaxys23.jpg",
+      "category": "Electronics",
+      "stock": 30
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "user1",
+      "email": "user1@example.com",
+      "password": "hashed_password",
+      "cart": []
+    }
+  ],
+  "orders": []
+}
