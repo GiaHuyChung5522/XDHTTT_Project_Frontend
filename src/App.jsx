@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 
 import Home from './pages/Home';
-import ProductList from './pages/ProductList';
+import ProductShowcase from './pages/ProductShowcase';
 import Cart from './pages/Cart';
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
           path="/products"
           element={
             <MainLayout>
-              <ProductList />
+              <ProductShowcase />
             </MainLayout>
           }
         />

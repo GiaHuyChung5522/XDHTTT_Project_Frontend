@@ -1,0 +1,107 @@
+/* Block chính của NewsPanel */
+.home__news-panel {
+  flex: 0 0 270px; /* Chiều rộng cố định 270px */
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+  max-height: 480px; 
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 15px;
+  overflow: hidden; 
+}
+
+/* Tiêu đề của NewsPanel */
+.news-panel__title {
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  color: #1d4ed8; /* blue-700 */
+  margin-bottom: 0.75rem; /* 12px */
+  flex-shrink: 0; /* Ngăn tiêu đề bị co lại */
+}
+
+/* Danh sách tin tức, phần này sẽ có thanh cuộn */
+.news-panel__list-wrapper {
+  overflow-y: auto; /* Thêm thanh cuộn khi nội dung vượt quá */
+  flex-grow: 1; /* Cho phép co giãn để lấp đầy không gian */
+  padding-right: 5px; /* Thêm khoảng trống nhỏ cho thanh cuộn */
+  margin-right: -5px; /* Bù lại khoảng trống */
+}
+
+.news-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* space-y-3 */
+}
+
+/* Mỗi mục tin tức trong danh sách */
+.news-panel__item {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.5rem; /* 8px */
+  border-radius: 0.75rem; /* rounded-xl */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #f9fafb; /* bg-gray-50 */
+}
+
+.news-panel__item:hover {
+  background-color: #ffffff; /* hover:bg-white */
+}
+
+/* Modifier cho mục tin tức đang active */
+.news-panel__item--active {
+  background-color: #ffffff; /* bg-white */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
+  border: 1px solid #bfdbfe; /* border-blue-200 */
+}
+
+.news-panel__item--active:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+}
+
+/* Hình ảnh của mục tin tức */
+.news-panel__image {
+  width: 4rem; /* 64px */
+  height: 3.5rem; /* 56px */
+  object-fit: cover;
+  border-radius: 0.25rem; /* rounded */
+  margin-right: 0.5rem; /* 8px */
+}
+
+/* Phần thông tin bên phải hình ảnh */
+.news-panel__info {
+  flex: 1;
+}
+
+/* Tiêu đề của bài viết */
+.news-panel__item-title {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: #1f2937; /* text-gray-800 */
+  line-height: 1.25;
+  margin-bottom: 0.25rem; /* 4px */
+}
+
+/* Thông tin meta (ngày, lượt xem) */
+.news-panel__meta {
+  font-size: 0.75rem; /* 12px */
+  color: #6b7280; /* text-gray-500 */
+}
+
+/* Phần footer của NewsPanel */
+.news-panel__footer {
+  margin-top: 1rem; /* 16px */
+  font-size: 0.875rem; /* 14px */
+  flex-shrink: 0; /* Ngăn footer bị co lại */
+}
+
+.news-panel__footer a {
+  color: #3b82f6; /* text-blue-500 */
+  text-decoration: none;
+}
+
+.news-panel__footer a:hover {
+  text-decoration: underline;
+}

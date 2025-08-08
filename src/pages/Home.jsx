@@ -1,11 +1,54 @@
-// Trang Home cơ bản
-function Home() {
+import React from "react";
+
+// Import các file CSS cần thiết
+import "../assets/base.css"; // CSS cơ sở cho grid và layout chung
+import "../assets/Home.css"; // CSS dành riêng cho trang Home
+import "../assets/Sidebar.css";
+import "../assets/Banner.css";
+import "../assets/NewsPanel.css";
+import "../assets/ProductShowcase.css";
+
+
+// Import các components con sẽ được sử dụng trong trang Home
+import Sidebar from "../components/Sidebar";
+import MainBanner from "../components/MainBanner";
+import NewsPanel from "../components/NewsPanel";
+import ProductShowcase from "../pages/ProductShowcase";
+
+// Component chính của trang chủ
+const Home = () => {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold">Chào mừng đến với E-Shop</h1>
-      <p className="mt-4">Đây là trang chủ của website bán hàng.</p>
+    // Sử dụng .container để giới hạn chiều rộng và căn giữa nội dung chính
+    // 'home' là Block chính theo BEM
+    <div className="home container">
+      
+      {/* Hàng đầu tiên: chứa Sidebar, Main Banner và News Panel */}
+      
+      <div className="row home__top-content">
+        <aside className="home__sidebar">
+          <Sidebar />
+        </aside>
+        <section className="home__main-banner">
+          <MainBanner />
+        </section>
+        <aside className="home__news-panel">
+          <NewsPanel />
+        </aside>
+      </div>
+
+      {/* Hàng thứ hai: chứa khu vực trưng bày sản phẩm */}
+      <div className="row">
+        
+        {/* Cột này chiếm toàn bộ 12/12 chiều rộng để hiển thị danh sách sản phẩm */}
+        <div className="col-12">
+          {/* 'home__product-showcase' là một Element của 'home' */}
+          <div className="home__product-showcase">
+            <ProductShowcase /> 
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default Home;

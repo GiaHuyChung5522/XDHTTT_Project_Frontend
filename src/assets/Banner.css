@@ -1,0 +1,45 @@
+/* CSS cho MainBanner */
+
+.main-banner {
+  width: 100%;
+  overflow: hidden; /* Ẩn nội dung bị tràn ra ngoài */
+  background-color: #ffffff;
+  padding: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.main-banner__track {
+  display: flex; /* Sắp xếp các mục tin tức trên một hàng */
+  white-space: nowrap; /* Ngăn các mục xuống dòng */
+  /* Áp dụng animation */
+  animation: marquee 30s linear infinite;
+}
+
+.main-banner:hover .main-banner__track {
+  animation-play-state: paused; /* Tạm dừng animation khi hover */
+}
+
+.main-banner__item {
+  display: flex;
+  align-items: center;
+  margin-right: 50px; /* Khoảng cách giữa các mục tin tức */
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.main-banner__item-dot {
+  color: #ef4444; /* Màu đỏ cho dấu chấm */
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+/* Định nghĩa animation chạy chữ */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%); /* Dịch chuyển sang trái 50% (chiều dài của mảng tin tức ban đầu) */
+  }
+}

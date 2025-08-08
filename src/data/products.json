@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "name": "Lenovo IdeaPad 5 Pro 14 GT",
+    "price": "26.190.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14"
+  },
+  {
+    "id": 2,
+    "name": "Gigabyte Gaming A16",
+    "price": "22.990.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB"
+  },
+  {
+    "id": 3,
+    "name": "Lenovo Legion R7000",
+    "price": "22.990.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB"
+  },
+  {
+    "id": 4,
+    "name": "Lenovo IdeaPad 5 Pro 16 GT",
+    "price": "23.900.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+  },
+  {
+    "id": 5,
+    "name": "Lenovo IdeaPad 5 Pro 16 GT",
+    "price": "23.900.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+  },
+  {
+    "id": 6,
+    "name": "Lenovo IdeaPad 5 Pro 16 GT",
+    "price": "23.900.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+  },
+  {
+    "id": 7,
+    "name": "Lenovo Legion Slim 5",
+    "price": "26.890.000",
+    "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+    "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+  }
+]

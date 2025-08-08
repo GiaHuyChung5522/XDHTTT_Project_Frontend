@@ -1,0 +1,8 @@
+/* CSS dành riêng cho trang Home */
+
+.home__top-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Khoảng cách 20px giữa các khối nội dung */
+  margin-top: 15px;
+}

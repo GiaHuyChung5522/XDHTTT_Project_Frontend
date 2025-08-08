@@ -1,0 +1,74 @@
+/* ==========================================================================
+   CSS Reset - Đặt lại các thuộc tính mặc định của trình duyệt
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Đảm bảo padding và border không làm thay đổi kích thước của box */
+}
+
+/* ==========================================================================
+   Body & Typography - Kiểu dáng chung cho toàn trang
+   ========================================================================== */
+
+body {
+  font-family: Arial, sans-serif; /* Font chữ mặc định */
+  line-height: 1.6; /* Chiều cao dòng để dễ đọc */
+  background-color: #f5f5f5; /* Màu nền xám nhạt cho toàn bộ trang */
+  color: #333; /* Màu chữ chính */
+}
+
+/* ==========================================================================
+   Grid System - Hệ thống lưới 12 cột linh hoạt
+   ========================================================================== */
+
+/* Container chính của trang, giới hạn chiều rộng và căn giữa */
+.container {
+  max-width: 1200px;
+  margin-left: auto;  /* Căn giữa container */
+  margin-right: auto; /* Căn giữa container */
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Hàng trong grid, hoạt động như một flex container để chứa các cột */
+.row {
+  display: flex;
+  flex-wrap: wrap; /* Cho phép các cột tự động xuống hàng khi không đủ không gian */
+  margin-left: -10px;  /* Bù trừ cho padding của các cột để căn chỉnh hoàn hảo */
+  margin-right: -10px; /* Bù trừ cho padding của các cột để căn chỉnh hoàn hảo */
+  margin-bottom: 20px; /* Thêm khoảng cách dọc giữa các hàng */
+}
+
+/* Thêm quy tắc để hàng cuối cùng không có khoảng cách dưới */
+.row:last-child {
+  margin-bottom: 0;
+}
+
+/* Định nghĩa chung cho tất cả các cột */
+[class*="col-"] {
+  padding-left: 10px;  /* Tạo khoảng cách an toàn bên trong cột */
+  padding-right: 10px; /* Tạo khoảng cách an toàn bên trong cột */
+  box-sizing: border-box;
+  width: 100%; /* Mặc định trên mobile (dưới 768px), mỗi cột chiếm 100% chiều rộng */
+}
+
+/* Các lớp cột cho màn hình lớn hơn (desktop) */
+/* Sử dụng media query để hệ thống lưới chỉ áp dụng cho màn hình từ 768px trở lên */
+@media (min-width: 768px) {
+  .col-1 { flex: 0 0 8.3333%; max-width: 8.3333%; }     /* 1/12 */
+  .col-2 { flex: 0 0 16.6667%; max-width: 16.6667%; }   /* 2/12 */
+  .col-3 { flex: 0 0 25%; max-width: 25%; }             /* 3/12 */
+  .col-4 { flex: 0 0 33.3333%; max-width: 33.3333%; }   /* 4/12 */
+  .col-5 { flex: 0 0 41.6667%; max-width: 41.6667%; }   /* 5/12 */
+  .col-6 { flex: 0 0 50%; max-width: 50%; }             /* 6/12 */
+  .col-7 { flex: 0 0 58.3333%; max-width: 58.3333%; }   /* 7/12 */
+  .col-8 { flex: 0 0 66.6667%; max-width: 66.6667%; }   /* 8/12 */
+  .col-9 { flex: 0 0 75%; max-width: 75%; }             /* 9/12 */
+  .col-10 { flex: 0 0 83.3333%; max-width: 83.3333%; }  /* 10/12 */
+  .col-11 { flex: 0 0 91.6667%; max-width: 91.6667%; }  /* 11/12 */
+  .col-12 { flex: 0 0 100%; max-width: 100%; }          /* 12/12 */
+}
+
+
