@@ -1,19 +1,15 @@
 import React from "react";
 
 // Import các file CSS cần thiết
-import "../assets/base.css"; // CSS cơ sở cho grid và layout chung
-import "../assets/Home.css"; // CSS dành riêng cho trang Home
-import "../assets/Sidebar.css";
-import "../assets/Banner.css";
-import "../assets/NewsPanel.css";
-import "../assets/ProductShowcase.css";
+import "../../assets/styles/base.css"; // CSS cơ sở cho grid và layout chung
+import "./Home.css"; // CSS dành riêng cho trang Home
 
 
 // Import các components con sẽ được sử dụng trong trang Home
-import Sidebar from "../components/Sidebar";
-import MainBanner from "../components/MainBanner";
-import NewsPanel from "../components/NewsPanel";
-import ProductShowcase from "../pages/ProductShowcase";
+import Sidebar from "../../components/Sidebar";
+import MainBanner from "../../components/MainBanner";
+import NewsPanel from "../../components/NewsSection";
+import ProductShowcase from "./ProductList";
 
 // Component chính của trang chủ
 const Home = () => {

@@ -1,6 +1,8 @@
-/* headerStyles.css */
+/* =======================
+   Layout tổng thể Header
+========================== */
 .header {
-  background-color: white; /* Màu nền trắng */
+  background-color: white;
   color: white;
   padding: 20px;
   text-align: center;
@@ -17,6 +19,9 @@
   align-items: center;
 }
 
+/* =======================
+   Logo + Thông tin
+========================== */
 .header-logo {
   display: flex;
   align-items: center;
@@ -37,22 +42,27 @@
   font-size: 14px;
 }
 
+/* =======================
+   Navigation Menu
+========================== */
 .header-nav {
   grid-column: span 3;
-  margin-left: 30px; /* Thêm khoảng cách bên trái */
+  margin-left: 30px;
 }
 
 .header-nav a {
-  color: inherit;
   color: black;
   text-decoration: none;
-  margin-right: 10px; /* Thêm khoảng cách giữa các phần tử */
+  margin-right: 10px;
 }
 
 .header-nav a:hover {
   color: #2563EB;
 }
 
+/* =======================
+   Thanh tìm kiếm
+========================== */
 .header-search {
   flex: 1;
   margin: 0 16px;
@@ -73,6 +83,9 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
+/* =======================
+   Icon chức năng (yêu thích, giỏ hàng, người dùng)
+========================== */
 .header-icons {
   display: flex;
   align-items: center;
@@ -110,4 +123,65 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* =======================
+   Dropdown Người dùng
+========================== */
+.user-dropdown-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  width: 180px;
+}
+
+/* Hiển thị khi hover */
+.user-dropdown-wrapper:hover .user-dropdown {
+  display: flex;
+}
+
+/* =======================
+   Nút đăng nhập / đăng ký
+========================== */
+.btn-login {
+  background-color: #2563EB;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-login:hover {
+  background-color: #1E40AF;
+}
+
+.btn-register {
+  background-color: white;
+  color: #2563EB;
+  border: 1px solid #2563EB;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-register:hover {
+  background-color: #f0f8ff;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "../assets/ProductShowcase.css"; // Import file CSS mới
-import productsData from "../data/products.json"; // Import trực tiếp file JSON
+import "./ProductList.css"; // CSS dành riêng cho danh sách sản phẩm
+import productsData from "../../data/products.json"; // Import trực tiếp file JSON
 
 const ProductShowcase = () => {
   const [products, setProducts] = useState([]);

@@ -1,4 +1,4 @@
-import "../assets/Banner.css";
+import "../assets/styles/Banner.css";
 const MainBanner = () => {
   return (
     <div className="main-banner bg-blue-100 rounded p-4 h-full">

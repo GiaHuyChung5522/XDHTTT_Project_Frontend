@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 
-import Home from './pages/Home';
-import ProductShowcase from './pages/ProductShowcase';
-import Cart from './pages/Cart';
+import Home from './pages/user/Home';
+import ProductShowcase from './pages/user/ProductList';
+import Cart from './pages/user/Cart';
 
 function App() {
   return (

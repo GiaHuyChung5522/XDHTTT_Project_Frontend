@@ -1,5 +1,5 @@
 import newsList from "../data/news.json";
-import "../assets/NewsPanel.css"; // Import file CSS đã được tách
+import "./NewsSection.css"; // Import file CSS cùng thư mục component
 
 const NewsPanel = () => {
   return (
