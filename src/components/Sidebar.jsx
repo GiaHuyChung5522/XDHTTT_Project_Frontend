@@ -30,7 +30,7 @@ const SidebarMenu = () => {
     <div className="sidebar-menu">
       <h2 className="sidebar-title">DANH MỤC</h2>
       <ul className="sidebar-list">
-        {categories.map((cat, idx) => (
+        {categories.slice(0, 6).map((cat, idx) => (
           <li key={idx} className="sidebar-item">
             <span>🔹</span> {cat.name}
             {cat.submenu && (
@@ -43,6 +43,7 @@ const SidebarMenu = () => {
           </li>
         ))}
       </ul>
+
     </div>
   );
 };

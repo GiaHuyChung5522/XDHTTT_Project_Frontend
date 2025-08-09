@@ -2,31 +2,114 @@
   "products": [
     {
       "id": 1,
-      "name": "iPhone 14",
-      "price": 999,
-      "description": "Smartphone cao cấp từ Apple",
-      "image": "https://example.com/iphone14.jpg",
-      "category": "Electronics",
-      "stock": 50
+      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
+      "price": 26190000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14"
     },
     {
       "id": 2,
-      "name": "Samsung Galaxy S23",
-      "price": 899,
-      "description": "Smartphone mạnh mẽ từ Samsung",
-      "image": "https://example.com/galaxys23.jpg",
-      "category": "Electronics",
-      "stock": 30
-    }
-  ],
-  "users": [
+      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 146",
+      "price": 22990000,
+      "image": "https://trungtran.vn/images/products/2025/resized/legion_r7000_2024 (8).webp",
+      "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB"
+    },
     {
-      "id": 1,
-      "username": "user1",
-      "email": "user1@example.com",
-      "password": "hashed_password",
-      "cart": []
+      "id": 3,
+      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
+      "price": 22990000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB"
+    },
+    {
+      "id": 4,
+      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
+      "price": 23900000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+    },
+    {
+      "id": 5,
+      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14T",
+      "price": 23900000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+    },
+    {
+      "id": 6,
+      "name": "Lenovo IdeaPad 5 Pro 16 GTLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
+      "price": 23900000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
+    },
+    {
+      "id": 7,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },{
+      "id": 8,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },
+    {
+      "id": 9,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },
+    {
+      "id": 10,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },
+    {
+      "id": 11,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },
+    {
+      "id": 12,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
+    },
+    {
+      "id": 13,
+      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
+      "price": 26890000,
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
     }
   ],
-  "orders": []
+  "news": [
+    {
+      "title": "Tạm Ngưng Hỗ Trợ Kỹ Thuật, Bảo Dưỡng Bảo Trì",
+      "date": "05/07/2025",
+      "views": 678,
+      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp",
+      "active": true
+    },
+    {
+      "title": "Đặt Lịch Hẹn Trước Để Được Hỗ Trợ Tốt Hơn",
+      "date": "01/06/2025",
+      "views": 2416,
+      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp"
+    },
+    {
+      "title": "Thông Báo Lịch Làm Việc Dịp Đại Lễ 30/4 - 1/5",
+      "date": "28/04/2025",
+      "views": 1528,
+      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp"
+    }
+  ]
 }

@@ -1,0 +1,20 @@
+.filter-header{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:16px;
+}
+.filter-header__title{
+  font-size:28px; font-weight:800; color:#2b2b2b; margin:0;
+}
+.filter-header__tabs{
+  display:flex; align-items:center; gap:28px; flex-wrap:wrap;
+}
+.filter-tab{
+  display:flex; align-items:center; gap:6px;
+  background:transparent; border:0; padding:0; cursor:pointer;
+  color:#6b7280; font-size:15px;
+}
+.filter-tab:hover{ text-decoration:underline; color:#111827; }
+.filter-tab.is-active{ color:#111827; font-weight:600; }
+.filter-tab--all{ color:#2563eb; font-weight:500; }
+.filter-tab--all:hover{ text-decoration:underline; }
+.filter-tab__icon{ width:20px; height:20px; object-fit:contain; }

@@ -1,45 +1,49 @@
-/* CSS cho MainBanner */
+.main-banner-container {
+  border-radius: 12px 12px 0px 0px;
 
-.main-banner {
+  overflow: hidden;
+  max-height: 344px;
+  background-color: white;
+}
+
+/* Ảnh trong banner */
+.main-banner__image{
   width: 100%;
-  overflow: hidden; /* Ẩn nội dung bị tràn ra ngoài */
-  background-color: #ffffff;
-  padding: 10px 0;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  max-height: 380px; /* Giới hạn trực tiếp ảnh */
+  height: auto; /* Giữ tỉ lệ gốc */
+  object-fit: cover;
+  display: block;
 }
 
-.main-banner__track {
-  display: flex; /* Sắp xếp các mục tin tức trên một hàng */
-  white-space: nowrap; /* Ngăn các mục xuống dòng */
-  /* Áp dụng animation */
-  animation: marquee 30s linear infinite;
+/* Nếu dùng Bootstrap carousel */
+.carousel-item img {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  display: block;
 }
 
-.main-banner:hover .main-banner__track {
-  animation-play-state: paused; /* Tạm dừng animation khi hover */
+/* Nút điều khiển carousel */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-size: 50%;
 }
 
-.main-banner__item {
-  display: flex;
-  align-items: center;
-  margin-right: 50px; /* Khoảng cách giữa các mục tin tức */
-  font-size: 0.9rem;
-  color: #333;
+/* Chấm indicator carousel */
+.carousel-indicators [data-bs-target] {
+  background-color: #007bff;
 }
 
-.main-banner__item-dot {
-  color: #ef4444; /* Màu đỏ cho dấu chấm */
-  margin-right: 10px;
-  font-size: 1.2rem;
-}
+/* Grid dùng chung: gutter 20px, 5 cột ở ≥1200px */
+.cards-grid { display:flex; flex-wrap:wrap; margin:-10px; }
+.cards-grid .card-col { padding:10px; box-sizing:border-box; }
 
-/* Định nghĩa animation chạy chữ */
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%); /* Dịch chuyển sang trái 50% (chiều dài của mảng tin tức ban đầu) */
-  }
-}
+/* 5 cột */
+.cards-grid.--5 .card-col { flex:0 0 20%; max-width:20%; }
+
+/* Responsive: 3-2-1 cột */
+@media (max-width: 1199.98px) { .cards-grid.--5 .card-col { flex-basis:25%; max-width:25%; } } /* 4 cột */
+@media (max-width: 992px)      { .cards-grid.--5 .card-col { flex-basis:33.333%; max-width:33.333%; } } /* 3 cột */
+@media (max-width: 768px)      { .cards-grid.--5 .card-col { flex-basis:50%; max-width:50%; } }        /* 2 cột */
+@media (max-width: 576px)      { .cards-grid.--5 .card-col { flex-basis:100%; max-width:100%; } }      /* 1 cột */
+

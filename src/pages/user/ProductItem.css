@@ -1,0 +1,128 @@
+.product-item {
+    width: 190px;
+    background: white;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.3s ease, border 0.3s ease;
+    border: 1px solid transparent; /* giữ kích thước và ẩn border ban đầu */
+}
+
+.product-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #f5e2a8; /* chỉ hiện màu khi hover */
+}
+
+/* Ảnh sản phẩm */
+.product-item__image {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    background: white;
+    display: block;
+    position: relative;
+}
+
+/* Banner góc trái */
+.product-item__badge {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    background: #ff6f00;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0% 100%);
+}
+
+/* Nội dung */
+.product-item__content {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Tên sản phẩm */
+.product-item__name{
+    margin: 15px 0px 12px;
+    display: block;
+    font-size: 16px;
+    font-family: "Bold", sans-serif; /* font Bold nếu đã import */
+    line-height: 130%;
+    color: #000000;
+    text-align: left;
+
+    /* Giới hạn 3 dòng, dấu "..." */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    /* Chiều cao cố định tương ứng với 3 dòng */
+    height: 62px;
+}
+
+/* Giá */
+.product-item__price {
+    font-size: 18px;
+    font-family: "Bold", sans-serif;
+    line-height: 15.8px;
+    text-align: left;
+    color: #ff5e22;
+    margin-bottom: 0px;
+}
+
+/* Thông tin phụ */
+.product-item__footer {
+    font-size: 12px;
+    color: #777;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+.product-showcase__grid{display:flex;flex-wrap:wrap;margin:-10px}
+.product-card{flex:0 0 20%;max-width:20%;padding:10px;box-sizing:border-box}
+@media (max-width:1199.98px){.product-card{flex-basis:25%;max-width:25%}}
+@media (max-width:992px){.product-card{flex-basis:33.333%;max-width:33.333%}}
+@media (max-width:768px){.product-card{flex-basis:50%;max-width:50%}}
+@media (max-width:576px){.product-card{flex-basis:100%;max-width:100%}}
+.fade-in{opacity:1;transition:opacity .2s}
+.fade-out{opacity:0;transition:opacity .2s}
+/* ==== GRID CHUẨN 5 CỘT ==== */
+.product-showcase__grid{
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* luôn đúng 5 cột */
+  gap: 20px;                                        /* gutter chuẩn */
+}
+
+/* Bỏ các rule flex cũ, giữ card full-width trong ô grid */
+.product-card{
+  padding: 0;              /* nếu bạn đang dùng padding để tạo gutter thì bỏ */
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 1199.98px){
+  .product-showcase__grid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+}
+@media (max-width: 992px){
+  .product-showcase__grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 768px){
+  .product-showcase__grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 576px){
+  .product-showcase__grid{ grid-template-columns: 1fr; }
+}
+
+/* Hiệu ứng fade giữ nguyên */
+.fade-in{ opacity:1; transition:opacity .2s ease; }
+.fade-out{ opacity:0; transition:opacity .2s ease; }
