@@ -1,187 +1,87 @@
-/* =======================
-   Layout tổng thể Header
-========================== */
-.header {
-  background-color: white;
-  color: white;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 80px;
+/* ========== ALIAS TẠM (map class cũ → BEM), giữ để không hư ==========
+   Xóa block này sau khi bạn confirm không còn nơi nào dùng class cũ.
+*/
+.header            { /* = .site-header */ }
+.header-container  { /* = .site-header__container */ }
+.header-logo       { /* = .site-header__logo */ }
+.header-logo-text  { /* = .site-header__logo-text */ }
+.phone-number      { /* = .site-header__phone */ }
+.header-nav        { /* = .site-header__nav */ }
+.header-search     { /* = .site-header__search */ }
+.header-icons      { /* = .site-header__actions */ }
+.user-dropdown     { /* = .site-header__user-menu */ }
+.user-dropdown-wrapper { /* = .site-header__user */ }
+.btn-login         { /* = .btn.btn--primary */ }
+.btn-register      { /* = .btn.btn--outline */ }
+/* ================================================================ */
+
+/* ======== BEM CHÍNH THỨC CHO HEADER ======== */
+.site-header{ background:#fff; ; }
+.site-header__container{ max-width:1200px; margin:0 auto; padding:0 16px; display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:72px; }
+
+/* Logo */
+.site-header__logo{ display:flex; align-items:center; gap:8px; }
+.site-header__logo-link{ display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; }
+.site-header__logo-img{ height:40px; width:auto; }
+.site-header__logo-text{ display:flex; flex-direction:column; }
+.site-header__brand{ color:#143d8a; font-weight:800; line-height:1; }
+.site-header__phone{ color:#143d8a; font-size:12px; }
+
+/* Nav */
+.site-header__nav{ display:flex; align-items:center; gap:16px; margin-left:8px; }
+.site-header__nav-link{ color:#000; text-decoration:none; padding:6px 8px; border-radius:6px; }
+.site-header__nav-link:hover{ color:#2563EB; background:#f3f6ff; }
+.site-header__nav-link.is-active{ color:#2563EB; font-weight:700; }
+
+/* Search */
+.site-header__search{ flex:1 1 auto; margin:0 16px; max-width:600px; }
+.site-header__search-field{ position:relative; }
+.site-header__search-input{
+  width:100%; height:40px; border-radius:9999px; border:1px solid #D1D5DB; padding:0 40px 0 16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05); outline:none; background:#fff;
+}
+.site-header__search-input:focus{ border-color:#3B82F6; box-shadow:0 0 0 3px rgba(59,130,246,.5); }
+.site-header__search-icon{ position:absolute; right:12px; top:50%; transform:translateY(-50%); opacity:.6; }
+
+/* Actions */
+.site-header__actions{ display:flex; align-items:center; gap:16px; font-size:14px; color:#1F2937; }
+.site-header__action-link{ display:flex; align-items:center; gap:6px; color:inherit; text-decoration:none; }
+.site-header__action-link:hover{ color:#2563EB; }
+.site-header__action-icon{ font-size:22px; }
+.site-header__action-label{ display:none; text-transform:uppercase; font-size:12px; color:#1E40AF; }
+@media (min-width:640px){ .site-header__action-label{ display:inline; } }
+
+.site-header__action-btn{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:50%; border:none; background:#fff; color:inherit; cursor:pointer;
+}
+.site-header__action-btn:hover{ background:#f6f7fb; }
+
+.site-header__badge{
+  position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; padding:0 6px;
+  background:#2563EB; color:#fff; border-radius:9999px; display:flex; align-items:center; justify-content:center; font-size:12px; line-height:1;
 }
 
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* User dropdown */
+.site-header__user{ position:relative; display:flex; align-items:center; justify-content:center; width:36px; height:36px; cursor:pointer; }
+.site-header__user-menu{
+  position:absolute; top:120%; right:0; background:#fff; box-shadow:0 4px 8px rgba(0,0,0,.1);
+  border-radius:10px; padding:12px; display:none; flex-direction:column; gap:10px; z-index:1000; width:200px;
+}
+.site-header__user:hover .site-header__user-menu{ display:flex; }
+
+/* Buttons base (dùng chung toàn site – nếu chưa có trong base.css) */
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:0 14px; font-weight:600; border-radius:10px; cursor:pointer; transition:.2s; border:1px solid transparent; }
+.btn--primary{ background:#2563EB; color:#fff; }
+.btn--primary:hover{ background:#1E40AF; }
+.btn--outline{ background:#fff; color:#2563EB; border-color:#2563EB; }
+.btn--outline:hover{ background:#f0f8ff; }
+
+/* Responsive stack */
+@media (max-width:768px){
+  .site-header__container{ flex-wrap:wrap; gap:12px; padding:8px 16px; }
+  .site-header__nav{ order:3; width:100%; justify-content:center; }
+  .site-header__search{ order:2; width:100%; }
+  .site-header__actions{ order:4; width:100%; justify-content:flex-end; }
 }
 
-/* =======================
-   Logo + Thông tin
-========================== */
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  grid-column: span 2;
-}
-
-.header-logo img {
-  height: 40px;
-}
-
-.header-logo-text {
-  color: #1E40AF;
-  font-weight: bold;
-}
-
-.header-logo-text .phone-number {
-  font-size: 14px;
-}
-
-/* =======================
-   Navigation Menu
-========================== */
-.header-nav {
-  grid-column: span 3;
-  margin-left: 30px;
-}
-
-.header-nav a {
-  color: black;
-  text-decoration: none;
-  margin-right: 10px;
-}
-
-.header-nav a:hover {
-  color: #2563EB;
-}
-
-/* =======================
-   Thanh tìm kiếm
-========================== */
-.header-search {
-  flex: 1;
-  margin: 0 16px;
-  max-width: 600px;
-}
-
-.header-search input {
-  width: 100%;
-  border-radius: 9999px;
-  border: 1px solid #D1D5DB;
-  padding: 8px 40px 8px 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  outline: none;
-}
-
-.header-search input:focus {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-}
-
-/* =======================
-   Icon chức năng (yêu thích, giỏ hàng, người dùng)
-========================== */
-.header-icons {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 14px;
-  color: #1F2937;
-}
-
-.header-icons a {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: inherit;
-  text-decoration: none;
-}
-
-.header-icons a:hover {
-  color: #2563EB;
-}
-
-.header-icons .icon {
-  font-size: 24px;
-}
-
-.header-icons .badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: #2563EB;
-  color: white;
-  font-size: 12px;
-  border-radius: 9999px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* =======================
-   Dropdown Người dùng
-========================== */
-.user-dropdown-wrapper {
-  position: relative;
-  cursor: pointer;
-}
-
-.user-dropdown {
-  position: absolute;
-  top: 120%;
-  right: 0;
-  background: white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  padding: 12px;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 1000;
-  width: 180px;
-}
-
-/* Hiển thị khi hover */
-.user-dropdown-wrapper:hover .user-dropdown {
-  display: flex;
-}
-
-/* =======================
-   Nút đăng nhập / đăng ký
-========================== */
-.btn-login {
-  background-color: #2563EB;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-login:hover {
-  background-color: #1E40AF;
-}
-
-.btn-register {
-  background-color: white;
-  color: #2563EB;
-  border: 1px solid #2563EB;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-register:hover {
-  background-color: #f0f8ff;
-}

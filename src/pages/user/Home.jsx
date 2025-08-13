@@ -44,6 +44,10 @@ const Home = () => {
       <div className="home__product-showcase">
         <ProductShowcase />
       </div>
+
+      <div className="home__product-showcase">
+        <ProductShowcase />
+      </div>
     </div>
   );
 };

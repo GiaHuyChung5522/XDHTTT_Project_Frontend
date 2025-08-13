@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useCartStore } from "../../stores/cart";
+import { Link } from "react-router-dom";
 import "./cart.css";
 
 const currency = (n) =>
@@ -7,14 +8,18 @@ const currency = (n) =>
 
 function Cart() {
   const { items, updateQty, removeItem, clearCart, total } = useCartStore();
-
   const subTotal = useMemo(() => total(), [items, total]);
 
   if (!items?.length) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
         <h1 className="text-2xl font-bold mb-2">Giỏ hàng của bạn</h1>
-        <p>Chưa có sản phẩm nào. Hãy tiếp tục mua sắm nhé!</p>
+        <p>
+          Chưa có sản phẩm nào.{" "}
+          <Link to="/" className="text-blue-600 hover:underline">
+            Tiếp tục mua sắm
+          </Link>
+        </p>
       </div>
     );
   }

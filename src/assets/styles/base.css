@@ -1,74 +1,100 @@
-/* ==========================================================================
-   CSS Reset - Đặt lại các thuộc tính mặc định của trình duyệt
-   ========================================================================== */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Đảm bảo padding và border không làm thay đổi kích thước của box */
-}
-
-/* ==========================================================================
-   Body & Typography - Kiểu dáng chung cho toàn trang
-   ========================================================================== */
-
+/* =========================
+   RESET + TYPO
+========================= */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 body {
-  font-family: Arial, sans-serif; /* Font chữ mặc định */
-  line-height: 1.6; /* Chiều cao dòng để dễ đọc */
-  background-color: #f5f5f5; /* Màu nền xám nhạt cho toàn bộ trang */
-  color: #333; /* Màu chữ chính */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f5f5f5;
+  color: #1a1f36;
 }
 
-/* ==========================================================================
-   Grid System - Hệ thống lưới 12 cột linh hoạt
-   ========================================================================== */
+/* =========================
+   VARIABLES
+========================= */
+:root{
+  --color-primary:#143d8a;
+  --color-text:#1a1f36;
+  --color-muted:#6b7280;
+  --color-sep:#e6e8ef;
+  --color-accent:#ff6a00;
 
-/* Container chính của trang, giới hạn chiều rộng và căn giữa */
+  --radius-sm:6px;
+  --radius-md:8px;
+
+  --shadow-inset:0 1px 0 var(--color-sep) inset;
+}
+
+/* =========================
+   GRID 12 CỘT (giữ theo code cũ)
+========================= */
 .container {
   max-width: 1200px;
-  margin-left: auto;  /* Căn giữa container */
-  margin-right: auto; /* Căn giữa container */
+  margin-left: auto;
+  margin-right: auto;
   padding-left: 15px;
   padding-right: 15px;
 }
-
-/* Hàng trong grid, hoạt động như một flex container để chứa các cột */
 .row {
   display: flex;
-  flex-wrap: wrap; /* Cho phép các cột tự động xuống hàng khi không đủ không gian */
-  margin-left: -10px;  /* Bù trừ cho padding của các cột để căn chỉnh hoàn hảo */
-  margin-right: -10px; /* Bù trừ cho padding của các cột để căn chỉnh hoàn hảo */
-  margin-bottom: 20px; /* Thêm khoảng cách dọc giữa các hàng */
+  flex-wrap: wrap;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: 20px;
 }
-
-/* Thêm quy tắc để hàng cuối cùng không có khoảng cách dưới */
-.row:last-child {
-  margin-bottom: 0;
-}
-
-/* Định nghĩa chung cho tất cả các cột */
+.row:last-child { margin-bottom: 0; }
 [class*="col-"] {
-  padding-left: 10px;  /* Tạo khoảng cách an toàn bên trong cột */
-  padding-right: 10px; /* Tạo khoảng cách an toàn bên trong cột */
-  box-sizing: border-box;
-  width: 100%; /* Mặc định trên mobile (dưới 768px), mỗi cột chiếm 100% chiều rộng */
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100%;
 }
-
-/* Các lớp cột cho màn hình lớn hơn (desktop) */
-/* Sử dụng media query để hệ thống lưới chỉ áp dụng cho màn hình từ 768px trở lên */
 @media (min-width: 768px) {
-  .col-1 { flex: 0 0 8.3333%; max-width: 8.3333%; }     /* 1/12 */
-  .col-2 { flex: 0 0 16.6667%; max-width: 16.6667%; }   /* 2/12 */
-  .col-3 { flex: 0 0 25%; max-width: 25%; }             /* 3/12 */
-  .col-4 { flex: 0 0 33.3333%; max-width: 33.3333%; }   /* 4/12 */
-  .col-5 { flex: 0 0 41.6667%; max-width: 41.6667%; }   /* 5/12 */
-  .col-6 { flex: 0 0 50%; max-width: 50%; }             /* 6/12 */
-  .col-7 { flex: 0 0 58.3333%; max-width: 58.3333%; }   /* 7/12 */
-  .col-8 { flex: 0 0 66.6667%; max-width: 66.6667%; }   /* 8/12 */
-  .col-9 { flex: 0 0 75%; max-width: 75%; }             /* 9/12 */
-  .col-10 { flex: 0 0 83.3333%; max-width: 83.3333%; }  /* 10/12 */
-  .col-11 { flex: 0 0 91.6667%; max-width: 91.6667%; }  /* 11/12 */
-  .col-12 { flex: 0 0 100%; max-width: 100%; }          /* 12/12 */
+  .col-1{flex:0 0 8.3333%;max-width:8.3333%}
+  .col-2{flex:0 0 16.6667%;max-width:16.6667%}
+  .col-3{flex:0 0 25%;max-width:25%}
+  .col-4{flex:0 0 33.3333%;max-width:33.3333%}
+  .col-5{flex:0 0 41.6667%;max-width:41.6667%}
+  .col-6{flex:0 0 50%;max-width:50%}
+  .col-7{flex:0 0 58.3333%;max-width:58.3333%}
+  .col-8{flex:0 0 66.6667%;max-width:66.6667%}
+  .col-9{flex:0 0 75%;max-width:75%}
+  .col-10{flex:0 0 83.3333%;max-width:83.3333%}
+  .col-11{flex:0 0 91.6667%;max-width:91.6667%}
+  .col-12{flex:0 0 100%;max-width:100%}
 }
 
+/* =========================
+   HELPERS DÙNG CHUNG
+========================= */
+/* icon 3 gạch */
+.icon-hamburger{
+  width:18px;height:14px;position:relative;display:inline-block;color:#fff;
+}
+.icon-hamburger::before,
+.icon-hamburger::after,
+.icon-hamburger span{
+  content:"";position:absolute;left:0;right:0;height:2px;background:currentColor;border-radius:1px;
+}
+.icon-hamburger::before{top:0}
+.icon-hamburger::after{bottom:0}
+.icon-hamburger span{top:6px}
+
+/* chấm cam */
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--color-accent);
+  box-shadow:0 0 0 3px rgba(255,106,0,.15);
+  flex:0 0 auto;
+}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 14px;font-weight:600;border-radius:10px;cursor:pointer;transition:.2s;border:1px solid transparent}
+.btn--primary{background:var(--color-primary);color:#fff}
+.btn--primary:hover{filter:brightness(.95)}
+.btn--outline{background:#fff;color:var(--color-primary);border-color:var(--color-primary)}
+.btn--outline:hover{background:#f3f6ff}
+
+/* container dùng riêng cho header (tương tự .container) */
+.site-header__container{max-width:1200px;margin:0 auto;padding:0 16px}
 

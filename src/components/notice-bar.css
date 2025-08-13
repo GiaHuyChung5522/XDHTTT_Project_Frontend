@@ -1,0 +1,110 @@
+.notice-bar {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  font-size: 14px;
+}
+
+.notice-bar--grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Cell chung */
+.notice-bar__cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 44px;
+  line-height: 44px;
+  color: #1a1f36;
+  text-decoration: none;
+  border-left: 1px solid #e6e8ef;
+  position: relative;
+}
+
+.notice-bar__cell:first-child {
+  border-left: none;
+}
+
+/* Danh mục */
+.notice-bar__cell--category {
+  background: #143d8a;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Hamburger icon */
+.icon-hamburger {
+  width: 18px;
+  height: 14px;
+  position: relative;
+  display: inline-block;
+  color: currentColor;
+}
+.icon-hamburger::before,
+.icon-hamburger::after,
+.icon-hamburger span {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.icon-hamburger::before { top: 0; }
+.icon-hamburger::after { bottom: 0; }
+.icon-hamburger span { top: 6px; }
+
+/* Dropdown */
+.notice-bar__dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 260px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  z-index: 1000;
+}
+.notice-bar__cell--category:hover .notice-bar__dropdown,
+.notice-bar__cell--category:focus-within .notice-bar__dropdown {
+  display: block;
+}
+.notice-bar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  color: #1a1f36;
+  text-decoration: none;
+}
+.notice-bar__dropdown-item:hover {
+  background: #f5f5f7;
+}
+
+/* Dấu chấm */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff6a00;
+  flex: 0 0 auto;
+}
+
+/* Link hover */
+.notice-bar__link:hover .notice-bar__text {
+  text-decoration: underline;
+}
+
+.notice-bar__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

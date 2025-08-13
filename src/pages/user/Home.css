@@ -25,6 +25,7 @@
 .home__main-banner {
   flex: 1;
   overflow: hidden;
+  margin-left: 70px;
 }
 
 /* News Panel chiếm 25% chiều rộng */
