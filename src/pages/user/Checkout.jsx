@@ -1,9 +1,7 @@
-// src/pages/Checkout.jsx
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCartStore } from "../../stores/cart";
+import { useCartStore } from "../stores/cart";
 import "./checkout.css";
-import "./cart.css";
 
 const currency = (n) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(n || 0));
@@ -13,9 +11,8 @@ export default function Checkout() {
   const subTotal = useMemo(() => total(), [items, total]);
   const navigate = useNavigate();
 
-  // --- FORM STATE ---
   const [form, setForm] = useState({
-    gender: "male",         // male | female
+    gender: "male",
     name: "",
     phone: "",
     city: "",
@@ -23,11 +20,10 @@ export default function Checkout() {
     ward: "",
     address: "",
     note: "",
-    addrtype: "home",       // home | office
+    addrtype: "home",
   });
   const setF = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
 
-  // --- VALIDATION NGẮN GỌN ---
   const validate = () => {
     if (!form.name.trim()) return "Vui lòng nhập họ tên.";
     if (!/^0\d{9,10}$/.test(form.phone)) return "Số điện thoại không hợp lệ.";
@@ -36,7 +32,6 @@ export default function Checkout() {
     return "";
   };
 
-  // --- PLACE ORDER: chuyển sang trang thành công, shop sẽ liên hệ ---
   const handlePlaceOrder = (e) => {
     e.preventDefault();
     const err = validate();
@@ -53,8 +48,6 @@ export default function Checkout() {
       shippingText: "Liên hệ",
       total: subTotal,
     };
-
-    // Không thu tiền online. Điều hướng sang trang thành công, tại đó shop sẽ hướng dẫn liên hệ.
     navigate("/success", { state: { order } });
   };
 
@@ -66,7 +59,6 @@ export default function Checkout() {
   return (
     <form className="container" onSubmit={handlePlaceOrder}>
       <div className="row">
-        {/* LEFT: THÔNG TIN KHÁCH HÀNG */}
         <div className="col-8">
           <section className="customer card">
             <div className="customer__head">
@@ -80,22 +72,12 @@ export default function Checkout() {
 
             <div className="customer__row">
               <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="male"
-                  checked={form.gender === "male"}
-                  onChange={setF("gender")}
-                /> <span>Anh</span>
+                <input type="radio" name="gender" value="male"
+                       checked={form.gender === "male"} onChange={setF("gender")} /> <span>Anh</span>
               </label>
               <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="female"
-                  checked={form.gender === "female"}
-                  onChange={setF("gender")}
-                /> <span>Chị</span>
+                <input type="radio" name="gender" value="female"
+                       checked={form.gender === "female"} onChange={setF("gender")} /> <span>Chị</span>
               </label>
             </div>
 
@@ -136,23 +118,13 @@ export default function Checkout() {
 
             <div className="customer__row">
               <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="addrtype"
-                  value="home"
-                  checked={form.addrtype === "home"}
-                  onChange={setF("addrtype")}
-                />
+                <input type="radio" name="addrtype" value="home"
+                       checked={form.addrtype === "home"} onChange={setF("addrtype")} />
                 <span>NHÀ RIÊNG (giao mọi thời gian)</span>
               </label>
               <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="addrtype"
-                  value="office"
-                  checked={form.addrtype === "office"}
-                  onChange={setF("addrtype")}
-                />
+                <input type="radio" name="addrtype" value="office"
+                       checked={form.addrtype === "office"} onChange={setF("addrtype")} />
                 <span>CƠ QUAN (giờ hành chính)</span>
               </label>
             </div>
@@ -170,7 +142,6 @@ export default function Checkout() {
           </section>
         </div>
 
-        {/* RIGHT: SẢN PHẨM ĐÃ CHỌN */}
         <div className="col-4">
           <aside className="summary card p-3 position-sticky" style={{ top: 16 }}>
             <h3 className="summary__title mb-2">SẢN PHẨM ĐÃ CHỌN</h3>
@@ -255,13 +226,12 @@ export default function Checkout() {
               <span className="summary__total-value">{currency(subTotal)}</span>
             </div>
 
-            {/* Không thanh toán online. Submit form → /success */}
             <button type="submit" className="btn btn-primary w-100 mt-2" disabled={!items.length}>
               ĐẶT HÀNG
             </button>
             <label className="summary__terms">
               <input type="checkbox" className="form-check-input me-2" defaultChecked />
-              Bằng cách đặt hàng, bạn đồng ý để shop liên hệ xác nhận theo <a href="#">Điều khoản sử dụng</a>.
+              Đặt hàng xong, shop sẽ liên hệ xác nhận. Không thanh toán online.
             </label>
           </aside>
         </div>
