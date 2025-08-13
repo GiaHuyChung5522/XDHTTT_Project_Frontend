@@ -48,7 +48,8 @@
       "price": 26890000,
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
       "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },{
+    },
+    {
       "id": 8,
       "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
       "price": 26890000,
@@ -91,6 +92,9 @@
       "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
     }
   ],
+  "categories": [],
+  "brands": [],
+  "reviews": [],
   "news": [
     {
       "title": "Tạm Ngưng Hỗ Trợ Kỹ Thuật, Bảo Dưỡng Bảo Trì",
@@ -110,6 +114,83 @@
       "date": "28/04/2025",
       "views": 1528,
       "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp"
+    }
+  ],
+  "promotions": [],
+  "banners": [],
+  "stores": [],
+  "coupons": [
+    {
+      "code": "HELLO10",
+      "type": "percent",
+      "value": 10,
+      "minOrder": 10000000,
+      "active": true,
+      "id": 1
+    }
+  ],
+  "carts": [],
+  "cartItems": [],
+  "wishlists": [],
+  "wishlistItems": [],
+  "orders": [],
+  "orderItems": [],
+  "addresses": [],
+  "users": [
+    {
+      "email": "admin@example.com",
+      "password": "$2a$10$<hash_bcrypt_123456>",
+      "role": "admin",
+      "name": "Admin",
+      "id": 1
+    },
+    {
+      "email": "admin@site.com",
+      "password": "$2a$10$tpgC9ORGqwNt837/gUUo3uT4AYjPv/Kzz7xbduVHHdFH3rZqahyPm",
+      "name": "Admin",
+      "role": "admin",
+      "id": 2
+    },
+    {
+      "email": "staff@site.com",
+      "password": "$2a$10$zU/zw7BU6xjVZMZj0lf9C.72xr1bRpfQjAk7A5G48kI3.R4rDFLrq",
+      "name": "Staff",
+      "role": "staff",
+      "id": 3
+    },
+    {
+      "email": "user@site.com",
+      "password": "$2a$10$o8y3z2Uhuo9GE9MQbdB04O2Lgd40IP4oo2uyGXWy1VEMGCkw.cRxC",
+      "name": "User",
+      "role": "user",
+      "id": 4
+    },
+    {
+      "email": "phuoc@gamil.com",
+      "password": "$2a$10$jiXvpM1BjrF4Osa.oBTnEuU3NEo4lVG1tod5Jby.oqZAajOdkLBJW",
+      "name": "Phuoc",
+      "role": "admin",
+      "id": 5
+    },
+    {
+      "email": "userphuoc0519@gmail.com",
+      "password": "$2a$10$CAleNKpMvww/b0q1KCsmI.hSew.UpAyl5m2ZB8vNKoXmXrx/fWneq",
+      "name": "User Phuoc",
+      "role": "user",
+      "id": 6
+    },
+    {
+      "email": "staffphuoc0519@gmail.com",
+      "password": "$2a$10$763mSSGji98.3HY3hEUEBuQnrz8wR6P2uxpsxlkVsqf5Va90oR/d2",
+      "name": "Staff Phuoc",
+      "role": "staff",
+      "id": 7
+    },
+    {
+      "email": "abc@123",
+      "password": "$2a$10$NyLHYe1BeTj.r2ajR62D/.RlLtAs1jn28KOwuqcEPkkI52IS.jM9K",
+      "name": "abc",
+      "id": 8
     }
   ]
 }

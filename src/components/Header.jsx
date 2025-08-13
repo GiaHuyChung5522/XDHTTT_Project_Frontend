@@ -1,20 +1,51 @@
 import React, { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaSearch, FaHeart, FaShoppingCart, FaUser, FaMapMarkerAlt } from "react-icons/fa";
 
-import "../assets/styles/base.css";     // reset + variables + grid, v.v.
-import "./header.css";                  // BEM cho header (kèm alias an toàn)
-import "./notice-bar.css";              // BEM cho notice bar
+import "../assets/styles/base.css";
+import "./header.css";
+import "./notice-bar.css";
+
 import NoticeBar from "./NoticeBar";
+import AuthForm from "./AuthForm";
 
 import logoPhone from "../assets/img/logoPhone.png";
+import { useAuth } from "../context/AuthContext";
+import { Roles } from "../constants/roles";
 
 const Header = () => {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const [authMode, setAuthMode] = useState(null); // "login" | "register" | null
 
-  const addToCart = () => setCartCount(n => n + 1);
-  const addToWishlist = () => setWishlistCount(n => n + 1);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const addToCart = () => setCartCount((n) => n + 1);
+  const addToWishlist = () => setWishlistCount((n) => n + 1);
+
+  const openLogin = () => setAuthMode("login");
+  const openRegister = () => setAuthMode("register");
+  const closeAuth = () => setAuthMode(null);
+
+  const handleAuthSuccess = () => {
+    setAuthMode(null);
+    if (user?.role === Roles.ADMIN) navigate("/admin");
+    else if (user?.role === Roles.STAFF) navigate("/staff");
+    else navigate("/account");
+  };
+
+  const goDashboard = () => {
+    if (!user) return;
+    if (user.role === Roles.ADMIN) navigate("/admin");
+    else if (user.role === Roles.STAFF) navigate("/staff");
+    else navigate("/account");
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     <header className="site-header">
@@ -68,11 +99,25 @@ const Header = () => {
             <span className="site-header__badge" aria-live="polite">{cartCount}</span>
           </Link>
 
+          {/* User */}
           <div className="site-header__user">
             <FaUser className="site-header__action-icon" />
             <div className="site-header__user-menu" role="menu">
-              <button className="btn btn--primary" role="menuitem">Đăng nhập</button>
-              <button className="btn btn--outline" role="menuitem">Tạo tài khoản</button>
+              {!isAuthenticated ? (
+                <>
+                  <button className="btn btn-primary btn-sm" role="menuitem" onClick={openLogin}>Đăng nhập</button>
+                  <button className="btn btn-outline-secondary btn-sm" role="menuitem" onClick={openRegister}>Tạo tài khoản</button>
+                </>
+              ) : (
+                <>
+                  <button className="btn btn-primary btn-sm" role="menuitem" onClick={goDashboard}>
+                    {user?.name} ({user?.role})
+                  </button>
+                  <button className="btn btn-outline-secondary btn-sm" role="menuitem" onClick={handleLogout}>
+                    Đăng xuất
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -82,6 +127,11 @@ const Header = () => {
       <div className="site-header__container">
         <NoticeBar />
       </div>
+
+      {/* Auth Modal */}
+      {authMode && (
+        <AuthForm mode={authMode} onClose={closeAuth} onSuccess={handleAuthSuccess} />
+      )}
     </header>
   );
 };

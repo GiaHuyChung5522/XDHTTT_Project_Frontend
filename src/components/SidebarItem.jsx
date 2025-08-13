@@ -1,50 +1,35 @@
 import React from 'react';
 import './Sidebar.css';
 
-const SidebarMenu = () => {
-  const categories = [
-    {
-      name: "Máy tính xách tay",
-      submenu: ["ACER", "DELL", "HP", "LENOVO", "APPLE"]
-    },
-    {
-      name: "Laptop Gaming - Đồ Họa",
-      submenu: ["RTX 4060", "RTX 4070", "RTX 4080"]
-    },
-    {
-      name: "Laptop Văn phòng",
-      submenu: ["Core i5", "Core i7", "Ryzen 5"]
-    },
-    {
-      name: "Apple Macbook",
-      submenu: ["MacBook Air", "MacBook Pro"]
-    },
-    // Các mục khác nếu không cần submenu thì có thể bỏ qua submenu
-    { name: "RAM - SSD" },
-    { name: "Kho phụ kiện" },
-    { name: "Cổng chuyển" },
-    { name: "Tản nhiệt laptop" }
-  ];
-
+const SidebarItem = ({ item, isActive, onClick }) => {
+  const { name, submenu } = item;
+  
   return (
-    <div className="sidebar-menu">
-      <h2 className="sidebar-title">DANH MỤC</h2>
-      <ul className="sidebar-list">
-        {categories.map((cat, idx) => (
-          <li key={idx} className="sidebar-item">
-            <span>🔹</span> {cat.name}
-            {cat.submenu && (
-              <ul className="submenu">
-                {cat.submenu.map((sub, subIdx) => (
-                  <li key={subIdx} className="submenu-item">{sub}</li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+    <div className="sidebar-item">
+      <div 
+        className={`sidebar-item__header ${isActive ? 'active' : ''}`}
+        onClick={() => onClick(name)}
+      >
+        <span className="sidebar-item__icon">🔹</span>
+        <span className="sidebar-item__name">{name}</span>
+        {submenu && (
+          <span className="sidebar-item__arrow">
+            {isActive ? '▼' : '▶'}
+          </span>
+        )}
+      </div>
+      
+      {submenu && isActive && (
+        <ul className="sidebar-item__submenu">
+          {submenu.map((subItem, index) => (
+            <li key={index} className="sidebar-item__submenu-item">
+              {subItem}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
 
-export default SidebarMenu;
+export default SidebarItem;
