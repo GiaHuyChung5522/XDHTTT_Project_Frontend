@@ -4,7 +4,7 @@ import axios from "axios";
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 export const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: '/api',
   headers: { "Content-Type": "application/json" },
 });
 
@@ -20,7 +20,7 @@ api.interceptors.request.use((config) => {
       console.log('Bearer:', bearer); //kiem tra xem co du lieu khong
       if (bearer) config.headers.Authorization = `Bearer ${bearer}`;
     }
-  } catch (error) {
+    } catch (error) {
     console.error('Auth interceptor error:', error); // Thêm log này
   }
   return config;

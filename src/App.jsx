@@ -1,6 +1,7 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
+import AdminLayout from './layouts/AdminLayout';
 
 // pages hiện có
 import Home from './pages/user/Home';
@@ -8,6 +9,9 @@ import ProductShowcase from './pages/user/ProductList';
 import ProductDetail from './pages/user/ProductDetail';
 import Cart from './pages/user/Cart';
 import NotFound from './pages/NotFound';
+
+import AdminDashboard from './pages/admin/AdminDashboard';
+import StaffDashboard from './pages/staff/StaffDashboard';
 
 // thêm import ApplePage
 import ApplePage from './pages/user/Apple';
@@ -17,75 +21,92 @@ import About from './pages/user/About';
 import KhuyenMai from './pages/user/Promotion';
 import TinTuc from './pages/user/News';
 
-// auth stuff
-import { AuthProvider } from './context/AuthContext';
+// auth stuff - XÓA IMPORT TRÙNG LẶP
 import ProtectedRoute from './components/router/ProtectedRoute';
 import RoleRoute from './components/router/RoleRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Account from './pages/user/Account';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import StaffDashboard from './pages/staff/StaffDashboard';
+
 import Forbidden from './pages/Forbidden';
 import { Roles } from './constants/roles';
+import { AuthProvider } from './context/AuthContext'; // CHỈ GIỮ 1 IMPORT
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<MainLayout><Home /></MainLayout>} />
-          <Route path="/products" element={<MainLayout><ProductShowcase /></MainLayout>} />
-          <Route path="/products/:id" element={<MainLayout><ProductDetail /></MainLayout>} />
-          <Route path="/apple" element={<MainLayout><ApplePage /></MainLayout>} />
-          <Route path="/about" element={<MainLayout><About /></MainLayout>} />
-          <Route path="/khuyen-mai" element={<MainLayout><KhuyenMai /></MainLayout>} />
-          <Route path="/tin-tuc" element={<MainLayout><TinTuc /></MainLayout>} />
-          <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="App">
+          <Routes>
+            {/* Public routes với MainLayout */}
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Home />} />
+              <Route path="products" element={<ProductShowcase />} />
+              <Route path="products/:id" element={<ProductDetail />} />
+              <Route path="cart" element={<Cart />} />
+              <Route path="apple" element={<ApplePage />} />
+              <Route path="about" element={<About />} />
+              <Route path="khuyen-mai" element={<KhuyenMai />} />
+              <Route path="tin-tuc" element={<TinTuc />} />
+            </Route>
 
-          {/* Auth */}
-          <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
-          <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
-          <Route path="/403" element={<MainLayout><Forbidden /></MainLayout>} />
+            {/* Auth routes với MainLayout */}
+            <Route path="/auth" element={<MainLayout />}>
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+            </Route>
 
-          {/* Account (đăng nhập mới vào được) */}
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <MainLayout><Account /></MainLayout>
-              </ProtectedRoute>
-            }
-          />
+            {/* Admin routes với AdminLayout */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={[Roles.ADMIN]}>
+                    <AdminLayout />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminDashboard />} />
+              <Route path="products" element={<AdminDashboard />} />
+              <Route path="orders" element={<AdminDashboard />} />
+            </Route>
 
-          {/* Admin-only */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <RoleRoute roles={[Roles.ADMIN]}>
-                  <MainLayout><AdminDashboard /></MainLayout>
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+            {/* Staff routes với AdminLayout */}
+            <Route
+              path="/staff"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={[Roles.STAFF]}>
+                    <AdminLayout />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<StaffDashboard />} />
+              <Route path="products" element={<StaffDashboard />} />
+              <Route path="orders" element={<StaffDashboard />} />
+            </Route>
 
-          {/* Staff-only */}
-          <Route
-            path="/staff"
-            element={
-              <ProtectedRoute>
-                <RoleRoute roles={[Roles.STAFF]}>
-                  <MainLayout><StaffDashboard /></MainLayout>
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+            {/* User routes với MainLayout */}
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Account />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
 
-          <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

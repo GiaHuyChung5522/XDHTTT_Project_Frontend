@@ -5,21 +5,33 @@
       "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
       "price": 26190000,
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14"
+      "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
+      "cpu": "AMD Ryzen AI 9 365",
+      "ram": "32GB",
+      "screen": "14 inch 2.8K OLED",
+      "gpu": "AMD Radeon 890M"
     },
     {
       "id": 2,
       "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 146",
       "price": 22990000,
       "image": "https://trungtran.vn/images/products/2025/resized/legion_r7000_2024 (8).webp",
-      "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB"
+      "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB",
+      "cpu": "AMD Ryzen AI 9 365",
+      "ram": "32GB",
+      "screen": "14 inch 2.8K OLED",
+      "gpu": "AMD Radeon 890M"
     },
     {
       "id": 3,
       "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
       "price": 22990000,
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB"
+      "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB",
+      "cpu": "AMD Ryzen AI 9 365",
+      "ram": "32GB",
+      "screen": "14 inch 2.8K OLED",
+      "gpu": "AMD Radeon 890M"
     },
     {
       "id": 4,
@@ -97,7 +109,7 @@
   "reviews": [],
   "news": [
     {
-      "title": "Tạm Ngưng Hỗ Trợ Kỹ Thuật, Bảo Dưỡng Bảo Trì",
+      "title": "Dí rồi",
       "date": "05/07/2025",
       "views": 678,
       "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp",
@@ -138,59 +150,60 @@
   "addresses": [],
   "users": [
     {
-      "email": "admin@example.com",
-      "password": "$2a$10$<hash_bcrypt_123456>",
-      "role": "admin",
-      "name": "Admin",
+      "email": "u1@gmail.com",
+      "password": "$2a$10$XAhdPaSQgHLGEfePMcxvxuHr/cKs12D3rqLbG0xllrLOBnU3FmJ66",
+      "name": "U1",
       "id": 1
     },
     {
-      "email": "admin@site.com",
-      "password": "$2a$10$tpgC9ORGqwNt837/gUUo3uT4AYjPv/Kzz7xbduVHHdFH3rZqahyPm",
-      "name": "Admin",
-      "role": "admin",
+      "email": "Teo@gmail.com",
+      "password": "$2a$10$uLfQTECeHiyZtG9HiW0Cp.uZIcLA4GoGLLfACFm//BWW9HlDEELWi",
+      "name": "Teo",
       "id": 2
     },
     {
-      "email": "staff@site.com",
-      "password": "$2a$10$zU/zw7BU6xjVZMZj0lf9C.72xr1bRpfQjAk7A5G48kI3.R4rDFLrq",
-      "name": "Staff",
-      "role": "staff",
+      "email": "test2@example.com",
+      "password": "$2a$10$/IYwd9ouNjt4P8sDhT8cOe.V1tp7X6BLrjkp4lmyrZXoV5p6NEsYK",
       "id": 3
     },
     {
-      "email": "user@site.com",
-      "password": "$2a$10$o8y3z2Uhuo9GE9MQbdB04O2Lgd40IP4oo2uyGXWy1VEMGCkw.cRxC",
-      "name": "User",
-      "role": "user",
-      "id": 4
+      "id": 1755431144630,
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "123456",
+      "role": "user"
     },
     {
-      "email": "phuoc@gamil.com",
-      "password": "$2a$10$jiXvpM1BjrF4Osa.oBTnEuU3NEo4lVG1tod5Jby.oqZAajOdkLBJW",
-      "name": "Phuoc",
-      "role": "admin",
-      "id": 5
+      "id": 1755431854796,
+      "name": "Add your name in the body",
+      "role": "user"
     },
     {
-      "email": "userphuoc0519@gmail.com",
-      "password": "$2a$10$CAleNKpMvww/b0q1KCsmI.hSew.UpAyl5m2ZB8vNKoXmXrx/fWneq",
-      "name": "User Phuoc",
-      "role": "user",
-      "id": 6
+      "id": 1755434140137,
+      "name": "NguyenHuuPhuoc",
+      "email": "Phuoc0519@gmail.com ",
+      "password": "123456",
+      "role": "admin"
     },
     {
-      "email": "staffphuoc0519@gmail.com",
-      "password": "$2a$10$763mSSGji98.3HY3hEUEBuQnrz8wR6P2uxpsxlkVsqf5Va90oR/d2",
-      "name": "Staff Phuoc",
-      "role": "staff",
-      "id": 7
+      "id": 1755434783159,
+      "email": "Phuoc0519@gmail.com",
+      "password": "123456",
+      "role": "user"
     },
     {
-      "email": "abc@123",
-      "password": "$2a$10$NyLHYe1BeTj.r2ajR62D/.RlLtAs1jn28KOwuqcEPkkI52IS.jM9K",
-      "name": "abc",
-      "id": 8
+      "id": 1755435515842,
+      "name": "Admin User",
+      "email": "admin@test.com",
+      "password": "admin123",
+      "role": "admin"
+    },
+    {
+      "id": 1755435621767,
+      "name": "Staff User",
+      "email": "staff@test.com",
+      "password": "staff123",
+      "role": "staff"
     }
   ]
 }

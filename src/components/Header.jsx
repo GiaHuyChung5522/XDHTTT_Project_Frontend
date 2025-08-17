@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaHeart, FaShoppingCart, FaUser, FaMapMarkerAlt } from "react-icons/fa";
+import { FaSearch, FaHeart, FaShoppingCart, FaUser, FaMapMarkerAlt, FaChevronDown } from "react-icons/fa";
 
 import "../assets/styles/base.css";
 import "./header.css";
@@ -16,9 +16,15 @@ import { Roles } from "../constants/roles";
 const Header = () => {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [authMode, setAuthMode] = useState(null); // "login" | "register" | null
+  const [authMode, setAuthMode] = useState(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth();
+
+  const isAdmin = user?.role === Roles.ADMIN;
+  const isStaff = user?.role === Roles.STAFF;
+  const isUser = user?.role === Roles.USER;
+
   const navigate = useNavigate();
 
   const addToCart = () => setCartCount((n) => n + 1);
@@ -45,12 +51,16 @@ const Header = () => {
   const handleLogout = async () => {
     await logout();
     navigate("/");
+    setShowUserMenu(false);
+  };
+
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu);
   };
 
   return (
     <header className="site-header">
       <div className="site-header__container">
-
         {/* Logo + SĐT */}
         <div className="site-header__logo">
           <NavLink to="/" className="site-header__logo-link">
@@ -64,9 +74,15 @@ const Header = () => {
 
         {/* Menu */}
         <nav className="site-header__nav" aria-label="Main menu">
-          <NavLink to="/about" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>Giới thiệu</NavLink>
-          <NavLink to="/khuyen-mai" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>Khuyến mãi</NavLink>
-          <NavLink to="/tin-tuc" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>Tin tức</NavLink>
+          <NavLink to="/about" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>
+            Giới thiệu
+          </NavLink>
+          <NavLink to="/khuyen-mai" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>
+            Khuyến mãi
+          </NavLink>
+          <NavLink to="/tin-tuc" className={({ isActive }) => `site-header__nav-link${isActive ? " is-active" : ""}`}>
+            Tin tức
+          </NavLink>
         </nav>
 
         {/* Search */}
@@ -84,36 +100,98 @@ const Header = () => {
 
         {/* Actions */}
         <div className="site-header__actions">
-          <Link to="/store-location" className="site-header__action-link">
-            <FaMapMarkerAlt className="site-header__action-icon" />
-            <span className="site-header__action-label">ĐỊA CHỈ CỬA HÀNG</span>
-          </Link>
+          {/* Địa chỉ cửa hàng */}
+          <div className="site-header__action-item">
+            <Link to="/store-location" className="site-header__action-link">
+              <FaMapMarkerAlt className="site-header__action-icon" />
+              <span className="site-header__action-label">ĐỊA CHỈ CỬA HÀNG</span>
+            </Link>
+          </div>
 
-          <button type="button" className="site-header__action-btn" onClick={addToWishlist} aria-label="Thêm vào yêu thích">
-            <FaHeart className="site-header__action-icon" />
-            <span className="site-header__badge" aria-live="polite">{wishlistCount}</span>
-          </button>
+          {/* Yêu thích */}
+          <div className="site-header__action-item">
+            <button 
+              type="button" 
+              className="site-header__action-btn" 
+              onClick={addToWishlist} 
+              aria-label="Thêm vào yêu thích"
+            >
+              <FaHeart className="site-header__action-icon" />
+              <span className="site-header__badge" aria-live="polite">{wishlistCount}</span>
+            </button>
+          </div>
 
-          <Link to="/cart" className="site-header__action-btn" aria-label="Giỏ hàng" onClick={addToCart}>
-            <FaShoppingCart className="site-header__action-icon" />
-            <span className="site-header__badge" aria-live="polite">{cartCount}</span>
-          </Link>
+          {/* Giỏ hàng */}
+          <div className="site-header__action-item">
+            <Link to="/cart" className="site-header__action-btn" aria-label="Giỏ hàng" onClick={addToCart}>
+              <FaShoppingCart className="site-header__action-icon" />
+              <span className="site-header__badge" aria-live="polite">{cartCount}</span>
+            </Link>
+          </div>
 
-          {/* User */}
+          {/* User Menu */}
           <div className="site-header__user">
-            <FaUser className="site-header__action-icon" />
-            <div className="site-header__user-menu" role="menu">
+            <button 
+              className="site-header__user-btn"
+              onClick={toggleUserMenu}
+              onMouseEnter={() => setShowUserMenu(true)}
+              aria-expanded={showUserMenu}
+              aria-haspopup="true"
+            >
+              <FaUser className="site-header__action-icon" />
+              <FaChevronDown className="site-header__chevron" />
+            </button>
+            
+            {/* Dropdown Menu */}
+            <div 
+              className={`site-header__user-menu ${showUserMenu ? 'show' : ''}`}
+              onMouseLeave={() => setShowUserMenu(false)}
+              role="menu"
+            >
               {!isAuthenticated ? (
                 <>
-                  <button className="btn btn-primary btn-sm" role="menuitem" onClick={openLogin}>Đăng nhập</button>
-                  <button className="btn btn-outline-secondary btn-sm" role="menuitem" onClick={openRegister}>Tạo tài khoản</button>
+                  <button 
+                    className="site-header__menu-item site-header__menu-item--primary" 
+                    role="menuitem" 
+                    onClick={openLogin}
+                  >
+                    <FaUser className="site-header__menu-icon" />
+                    Đăng nhập
+                  </button>
+                  <button 
+                    className="site-header__menu-item site-header__menu-item--secondary" 
+                    role="menuitem" 
+                    onClick={openRegister}
+                  >
+                    <FaUser className="site-header__menu-icon" />
+                    Tạo tài khoản
+                  </button>
                 </>
               ) : (
                 <>
-                  <button className="btn btn-primary btn-sm" role="menuitem" onClick={goDashboard}>
-                    {user?.name} ({user?.role})
+                  <div className="site-header__user-info">
+                    <div className="site-header__user-avatar">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="site-header__user-details">
+                      <div className="site-header__user-name">{user?.name}</div>
+                      <div className="site-header__user-role">{user?.role}</div>
+                    </div>
+                  </div>
+                  <button 
+                    className="site-header__menu-item" 
+                    role="menuitem" 
+                    onClick={goDashboard}
+                  >
+                    <FaUser className="site-header__menu-icon" />
+                    Tài khoản của tôi
                   </button>
-                  <button className="btn btn-outline-secondary btn-sm" role="menuitem" onClick={handleLogout}>
+                  <button 
+                    className="site-header__menu-item site-header__menu-item--danger" 
+                    role="menuitem" 
+                    onClick={handleLogout}
+                  >
+                    <FaUser className="site-header__menu-icon" />
                     Đăng xuất
                   </button>
                 </>

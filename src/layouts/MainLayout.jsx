@@ -1,11 +1,15 @@
-import Header from '../components/Header';
-import Footer from '../components/Footer'; // thêm sau
+import React from "react";
+import { Outlet } from "react-router-dom";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="main-layout">
       <Header />
-      <main className="flex-grow">{children}</main>
+      <main className="main-content">
+        <Outlet />
+      </main>
       <Footer />
     </div>
   );

@@ -1,17 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3001', // nơi json-server đang chạy
+        target: 'http://localhost:3002', // Thay đổi từ 3001 thành 3002
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '') // bỏ /api khi gửi sang backend
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   }
 });
-  

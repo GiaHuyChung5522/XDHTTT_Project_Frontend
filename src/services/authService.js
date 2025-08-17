@@ -1,29 +1,86 @@
-// src/services/authService.js
-import { api } from "./http";
-import { setAuth, getAuth, clearAuth } from "../utils/storage";
+const API_BASE = '/api';
 
-export async function login({ email, password }) {
-  const { data } = await api.post("/login", { email, password });
-  // data = { accessToken, user }
-  setAuth({ token: data.accessToken, user: data.user });
-  return { token: data.accessToken, user: data.user };
-}
+export const login = async (formData) => {
+  try {
+    const response = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
 
-export async function register({ name, email, password, role }) {
-  const payload = { name, email, password };
-  if (role) payload.role = role; // DEV seeding
-  const { data } = await api.post("/register", payload);
-  setAuth({ token: data.accessToken, user: data.user });
-  return { token: data.accessToken, user: data.user };
-}
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
 
-export async function getProfile() {
-  const auth = getAuth();
-  if (!auth?.user?.id) return null;
-  const { data } = await api.get(`/users/${auth.user.id}`);
-  return { token: auth.token, user: data };
-}
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
+};
 
-export async function logout() {
-  clearAuth();
-}
+export const register = async (formData) => {
+  try {
+    const response = await fetch(`${API_BASE}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Registration failed');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
+};
+
+export const getProfile = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    const response = await fetch(`${API_BASE}/profile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Profile fetch failed');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    return null;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      await fetch(`${API_BASE}/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    localStorage.removeItem('token');
+  }
+};

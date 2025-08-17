@@ -11,7 +11,6 @@ import NewsPanel from "../../components/NewsSection";
 import ProductShowcase from "./ProductList";
 import LaptopNeedsSection from "../../components/LaptopNeedsSection";
 
-
 // Component chính của trang chủ
 const Home = () => {
   return (
@@ -38,16 +37,27 @@ const Home = () => {
       </div>
 
       {/* Hàng thứ hai: khu vực trưng bày sản phẩm */}
-
-        <LaptopNeedsSection />
+      <LaptopNeedsSection />
       
+      {/* ProductShowcase với 1 hàng (5 sản phẩm) */}
       <div className="home__product-showcase">
-        <ProductShowcase />
+        <ProductShowcase 
+          title="Máy tính xách tay"
+          rows={1} // Chỉ hiển thị 1 hàng
+          viewAllHref="/products"
+        />
       </div>
 
+      {/* ProductShowcase với 2 hàng (10 sản phẩm) */}
       <div className="home__product-showcase">
-        <ProductShowcase />
+        <ProductShowcase 
+          title="Laptop Gaming"
+          rows={2} // Hiển thị 2 hàng
+          viewAllHref="/gaming-laptops"
+        />
       </div>
+
+      
     </div>
   );
 };
