@@ -9,7 +9,7 @@ import "./notice-bar.css";
 import NoticeBar from "./NoticeBar";
 import AuthForm from "./AuthForm";
 
-import logoPhone from "../assets/img/logoPhone.png";
+import logoPhone from "../assets/img/logoCongTy.png";
 import { useAuth } from "../context/AuthContext";
 import { Roles } from "../constants/roles";
 
@@ -66,7 +66,7 @@ const Header = () => {
           <NavLink to="/" className="site-header__logo-link">
             <img src={logoPhone} alt="Nhom_7_UHT" className="site-header__logo-img" />
             <div className="site-header__logo-text">
-              <div className="site-header__brand">Nhom_7_UHT</div>
+              <div className="site-header__brand">KINZ</div>
               <div className="site-header__phone">0987654321</div>
             </div>
           </NavLink>

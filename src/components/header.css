@@ -258,7 +258,7 @@
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.3s ease;
-  z-index: 1000;
+  z-index: 1051;
 }
 
 .site-header__user-menu.show {

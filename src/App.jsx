@@ -3,25 +3,25 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 
-// pages hiện có
+// pages user
 import Home from './pages/user/Home';
 import ProductShowcase from './pages/user/ProductList';
 import ProductDetail from './pages/user/ProductDetail';
 import Cart from './pages/user/Cart';
+import ApplePage from './pages/user/Apple';
+import About from './pages/user/About';
+import KhuyenMai from './pages/user/Promotion';
+import PromotionDetail from './pages/user/PromotionDetail'; // NEW
+import TinTuc from './pages/user/News';
+import NewsDetail from './pages/user/NewsDetail'; 
+
 import NotFound from './pages/NotFound';
 
+// pages admin & staff
 import AdminDashboard from './pages/admin/AdminDashboard';
 import StaffDashboard from './pages/staff/StaffDashboard';
 
-// thêm import ApplePage
-import ApplePage from './pages/user/Apple';
-
-// đổi sang About
-import About from './pages/user/About';
-import KhuyenMai from './pages/user/Promotion';
-import TinTuc from './pages/user/News';
-
-// auth stuff - XÓA IMPORT TRÙNG LẶP
+// auth
 import ProtectedRoute from './components/router/ProtectedRoute';
 import RoleRoute from './components/router/RoleRoute';
 import Login from './pages/auth/Login';
@@ -30,7 +30,7 @@ import Account from './pages/user/Account';
 
 import Forbidden from './pages/Forbidden';
 import { Roles } from './constants/roles';
-import { AuthProvider } from './context/AuthContext'; // CHỈ GIỮ 1 IMPORT
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
@@ -46,17 +46,23 @@ function App() {
               <Route path="cart" element={<Cart />} />
               <Route path="apple" element={<ApplePage />} />
               <Route path="about" element={<About />} />
+
+              {/* Khuyến mãi */}
               <Route path="khuyen-mai" element={<KhuyenMai />} />
+              <Route path="khuyen-mai/:id" element={<PromotionDetail />} /> {/* NEW */}
+
+              {/* Tin tức */}
               <Route path="tin-tuc" element={<TinTuc />} />
+              <Route path="tin-tuc/:id" element={<NewsDetail />} />
             </Route>
 
-            {/* Auth routes với MainLayout */}
+            {/* Auth routes */}
             <Route path="/auth" element={<MainLayout />}>
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
             </Route>
 
-            {/* Admin routes với AdminLayout */}
+            {/* Admin routes */}
             <Route
               path="/admin"
               element={
@@ -73,7 +79,7 @@ function App() {
               <Route path="orders" element={<AdminDashboard />} />
             </Route>
 
-            {/* Staff routes với AdminLayout */}
+            {/* Staff routes */}
             <Route
               path="/staff"
               element={
@@ -89,7 +95,7 @@ function App() {
               <Route path="orders" element={<StaffDashboard />} />
             </Route>
 
-            {/* User routes với MainLayout */}
+            {/* User routes */}
             <Route
               path="/account"
               element={

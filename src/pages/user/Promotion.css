@@ -1,0 +1,146 @@
+/* Container chính cho trang khuyến mãi */
+.promotions-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Phần tiêu đề của trang */
+.promotions-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.promotions-header h1 {
+    font-size: 3.2rem;    /* Tăng kích thước một chút */
+    font-weight: 900;     /* Làm chữ đậm nhất */
+    margin-bottom: 10px;
+    color: var(--text-color, #464444);
+    text-transform: uppercase; /* VIẾT IN HOA TOÀN BỘ */
+    letter-spacing: 1.5px;   /* Tăng khoảng cách giữa các chữ */
+    text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.5); /* Thêm viền mờ */
+}
+
+.promotions-header p {
+    font-size: 1.2rem;
+    color: #504d4d;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Lưới chứa các thẻ khuyến mãi */
+.promotions-grid {
+    display: grid;
+    /* Hiển thị 1 cột trên mobile, 2 trên tablet và 3 trên desktop */
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+/* Kiểu dáng cho mỗi thẻ khuyến mãi */
+.promo-card {
+    background-color: var(--card-bg-color, #2c2c2c);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.promo-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 123, 255, 0.2);
+}
+
+/* Vùng chứa ảnh */
+.promo-image-wrapper {
+    position: relative;
+    height: 220px;
+}
+
+.promo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Làm mờ ảnh một chút để chữ nổi bật hơn */
+    filter: brightness(0.8);
+}
+
+.promo-tag {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: var(--primary-color, #007bff);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Vùng chứa nội dung chữ */
+.promo-content {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Giúp footer luôn ở dưới cùng */
+}
+
+.promo-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: var(--text-color, #f4f4f4);
+    line-height: 1.3;
+}
+
+.promo-content p {
+    font-size: 1rem;
+    color: #bbb;
+    line-height: 1.6;
+    flex-grow: 1; /* Đảm bảo nội dung đẩy footer xuống */
+    margin-bottom: 20px;
+}
+
+/* Phần chân của thẻ */
+.promo-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #444;
+    padding-top: 15px;
+    margin-top: auto; /* Quan trọng: Đẩy footer xuống dưới */
+}
+
+.promo-expiry {
+    font-size: 0.9rem;
+    color: #ffc107; /* Màu vàng cho sự chú ý */
+    font-weight: 500;
+}
+
+.promo-expiry .fas {
+    margin-right: 5px;
+}
+
+.promo-button {
+    background-color: transparent;
+    color: var(--primary-color, #007bff);
+    border: 2px solid var(--primary-color, #007bff);
+    padding: 8px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.promo-button:hover {
+    background-color: var(--primary-color, #007bff);
+    color: #fff;
+}
+
+/* Responsive cho thiết bị nhỏ hơn */
+@media (max-width: 400px) {
+    .promotions-grid {
+        grid-template-columns: 1fr;
+    }
+}
