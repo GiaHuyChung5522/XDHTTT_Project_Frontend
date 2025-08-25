@@ -6,14 +6,37 @@ import './App.css';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 
+<<<<<<< HEAD
 // Import pages
+=======
+// pages user
+>>>>>>> eebdd9b11460000b483e54b3d9e5b6a239a259b1
 import Home from './pages/user/Home';
 import About from './pages/user/About';
 import Products from './pages/user/ProductList';
 import ProductDetail from './pages/user/ProductDetail';
 import Cart from './pages/user/Cart';
+<<<<<<< HEAD
 import Checkout from './pages/user/Checkout';
 import OrderSuccess from './pages/user/OrderSuccess';
+=======
+import ApplePage from './pages/user/Apple';
+import About from './pages/user/About';
+import KhuyenMai from './pages/user/Promotion';
+import PromotionDetail from './pages/user/PromotionDetail'; // NEW
+import TinTuc from './pages/user/News';
+import NewsDetail from './pages/user/NewsDetail'; 
+
+import NotFound from './pages/NotFound';
+
+// pages admin & staff
+import AdminDashboard from './pages/admin/AdminDashboard';
+import StaffDashboard from './pages/staff/StaffDashboard';
+
+// auth
+import ProtectedRoute from './components/router/ProtectedRoute';
+import RoleRoute from './components/router/RoleRoute';
+>>>>>>> eebdd9b11460000b483e54b3d9e5b6a239a259b1
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Account from './pages/user/Account';
@@ -23,6 +46,7 @@ import Promotion from './pages/user/Promotion';
 import Apple from './pages/user/Apple';
 import NotFound from './pages/NotFound';
 import Forbidden from './pages/Forbidden';
+<<<<<<< HEAD
 
 // Import admin pages
 import AdminLogin from './pages/admin2/pages/Login';
@@ -52,6 +76,10 @@ import { CartProvider } from './context/CartContext';
 import ProtectedRoute from './components/router/ProtectedRoute';
 import RoleRoute from './components/router/RoleRoute';
 import AdminProtectedRoute from './components/router/AdminProtectedRoute';
+=======
+import { Roles } from './constants/roles';
+import { AuthProvider } from './context/AuthContext';
+>>>>>>> eebdd9b11460000b483e54b3d9e5b6a239a259b1
 
 function App() {
   return (
@@ -63,11 +91,22 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
+<<<<<<< HEAD
               <Route path="products" element={<Products />} />
               <Route path="products/:id" element={<ProductDetail />} />
               <Route path="news" element={<News />} />
               <Route path="promotion" element={<Promotion />} />
               <Route path="apple" element={<Apple />} />
+=======
+
+              {/* Khuyến mãi */}
+              <Route path="khuyen-mai" element={<KhuyenMai />} />
+              <Route path="khuyen-mai/:id" element={<PromotionDetail />} /> {/* NEW */}
+
+              {/* Tin tức */}
+              <Route path="tin-tuc" element={<TinTuc />} />
+              <Route path="tin-tuc/:id" element={<NewsDetail />} />
+>>>>>>> eebdd9b11460000b483e54b3d9e5b6a239a259b1
             </Route>
 
             {/* Auth routes */}
@@ -76,6 +115,7 @@ function App() {
               <Route path="register" element={<Register />} />
             </Route>
 
+<<<<<<< HEAD
             {/* Protected user routes */}
             <Route path="/user" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               <Route path="account" element={<Account />} />
@@ -105,6 +145,52 @@ function App() {
 
             {/* Admin login route */}
             <Route path="/admin2/login" element={<ThemeProvider><LanguageProvider><AdminLogin /></LanguageProvider></ThemeProvider>} />
+=======
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={[Roles.ADMIN]}>
+                    <AdminLayout />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminDashboard />} />
+              <Route path="products" element={<AdminDashboard />} />
+              <Route path="orders" element={<AdminDashboard />} />
+            </Route>
+
+            {/* Staff routes */}
+            <Route
+              path="/staff"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={[Roles.STAFF]}>
+                    <AdminLayout />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<StaffDashboard />} />
+              <Route path="products" element={<StaffDashboard />} />
+              <Route path="orders" element={<StaffDashboard />} />
+            </Route>
+
+            {/* User routes */}
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Account />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+>>>>>>> eebdd9b11460000b483e54b3d9e5b6a239a259b1
 
             {/* Error routes */}
             <Route path="/forbidden" element={<Forbidden />} />

@@ -1,6 +1,7 @@
 import React from "react";
 import "./LaptopNeedsSection.css";
 import "bootstrap-icons/font/bootstrap-icons.css"; // import icon bootstrap
+import laptopSieuPham from "../assets/img/laptopSieuPham.jpg";
 
 const CATEGORIES = [
   {
@@ -34,7 +35,7 @@ const CATEGORIES = [
   {
     id: "flagship",
     title: "SIÊU PHẨM",
-    image: "https://via.placeholder.com/300x200?text=Flagship",
+    image: laptopSieuPham,
     icons: ["bi-award", "bi-star", "bi-stars"],
     href: "/laptops?need=flagship",
   },
