@@ -3,7 +3,8 @@ import "./ProductList.css";
 import { getProducts } from "../../services/products";
 import FilterTabsHeader from "../../components/FilterTabsHeader";
 
-const FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+const FALLBACK_IMG =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
 
 const ProductList = ({
   title = "Máy tính xách tay",
@@ -12,8 +13,6 @@ const ProductList = ({
   itemRenderer,       // (product)=>JSX — nếu muốn override card
   viewAllHref = "/products",
   totalOverride,      // optional: nếu muốn hiển thị tổng tùy chính
-  limit = 5,          // Mặc định hiển thị 5 sản phẩm
-  rows = 1,           // Số hàng muốn hiển thị (1 hoặc 2)
 }) => {
   const [items, setItems] = useState([]);
   const [active, setActive] = useState("");
@@ -21,10 +20,8 @@ const ProductList = ({
   const [err, setErr] = useState("");
   const [fade, setFade] = useState(false);
 
-  // Tính toán số sản phẩm cần hiển thị dựa trên số hàng
-  const productsPerRow = 5; // 5 sản phẩm mỗi hàng
-  const displayLimit = rows * productsPerRow; // Tổng số sản phẩm cần hiển thị
-
+  // Luôn hiển thị đúng 5 sản phẩm như mẫu
+  const limit = 5;
   const q = useMemo(
     () => [fixedQ, active].filter(Boolean).join(" ").trim(),
     [fixedQ, active]
@@ -40,13 +37,17 @@ const ProductList = ({
       try {
         const { items: data, total } = await getProducts({
           page: 1,
-          limit: displayLimit, // Sử dụng displayLimit thay vì limit
+          limit,
           q,
           sort: "id",
           order: "desc",
         });
         if (!alive) return;
         setItems(data || []);
+        // Lưu tổng nếu cần hiển thị (dùng totalOverride nếu có)
+        if (typeof totalOverride === "undefined") {
+          // không cần set state riêng; hiển thị trực tiếp từ API trong header
+        }
       } catch (e) {
         if (!alive) return;
         console.error(e);
@@ -62,54 +63,38 @@ const ProductList = ({
     return () => {
       alive = false;
     };
-  }, [q, displayLimit]); // Thêm displayLimit vào dependencies
+  }, [q]); // đổi tabs/fixedQ sẽ refetch
 
-  const totalShow = totalOverride;
+  const totalShow = totalOverride; // nếu cần bạn có thể truyền từ ngoài
 
   return (
     <section className="product-showcase">
-      {/* Header với tiêu đề và bộ lọc */}
+      {/* Header với FilterTabsHeader + Xem tất cả */}
       <div className="product-showcase__header">
         <div className="product-showcase__title-section">
           <h2 className="product-showcase__title">{title}</h2>
-          {/* Hiển thị số lượng sản phẩm */}
-          {items.length > 0 && (
-            <span className="product-showcase__count">({items.length} sản phẩm)</span>
-          )}
         </div>
 
         <div className="product-showcase__filters">
-          {/* Bộ lọc thương hiệu */}
-          <div className="product-showcase__brand-filters">
-            <span className="brand-filter">Acer</span>
-            <span className="brand-filter">Lenovo</span>
-            <span className="brand-filter">Apple</span>
-            <span className="brand-filter">Gigabyte</span>
-          </div>
-          
-          {/* FilterTabsHeader nếu có tabs */}
-          {tabs.length > 0 && (
-            <FilterTabsHeader
-              title=""
-              options={tabs}
-              value={active}
-              onChange={(opt) => {
-                setActive(opt);
-              }}
-              total={totalShow}
-            />
-          )}
-          
+          <FilterTabsHeader
+            title=""
+            options={tabs}
+            value={active}
+            onChange={(opt) => {
+              setActive(opt);
+            }}
+            total={totalShow}
+          />
           <a href={viewAllHref} className="product-showcase__view-all">
             {`Xem tất cả${typeof totalShow === "number" ? ` (${totalShow})` : ""}`}
           </a>
         </div>
       </div>
 
-      {/* Danh sách sản phẩm theo số hàng được chỉ định */}
+      {/* Danh sách 5 sản phẩm theo hàng ngang */}
       {loading ? (
         <div className="product-showcase__products" aria-busy="true">
-          {Array.from({ length: displayLimit }).map((_, i) => (
+          {Array.from({ length: limit }).map((_, i) => (
             <div key={`sk-${i}`} className="product-card skeleton-card">
               <div className="product-card__image-container">
                 <div className="skeleton skeleton-img" />
@@ -127,9 +112,10 @@ const ProductList = ({
       ) : items.length === 0 ? (
         <div className="product-list__empty">Không có sản phẩm.</div>
       ) : (
-        <div className={`product-showcase__products product-showcase__products--${rows}-rows ${fade ? "fade-out" : "fade-in"}`}>
+        <div className={`product-showcase__products ${fade ? "fade-out" : "fade-in"}`}>
           {items.map((p) => {
             if (itemRenderer) {
+              // Cho phép custom card bên ngoài
               return (
                 <div key={p.id} className="product-card">
                   {itemRenderer(p)}
@@ -137,19 +123,21 @@ const ProductList = ({
               );
             }
 
-            const cpu = p.cpu ?? p.specs?.cpu ?? p.description;
+            const cpu = p.cpu ?? p.specs?.cpu;
             const ram = p.ram ?? p.specs?.ram;
             const screen = p.screen ?? p.specs?.screen;
             const gpu = p.gpu ?? p.specs?.graphics;
 
             return (
               <div key={p.id} className="product-card" title={p.name}>
-                {/* Badge màu cam như trong ảnh */}
-                <div className="product-card__badge">
-                  {p.badge ?? "Sẵn Hàng Tại Showroom"}
-                </div>
+                {/* Badge */}
+                {(p.badge || p.isNew) && (
+                  <div className="product-card__badge">
+                    {p.badge ?? "Sản phẩm mới"}
+                  </div>
+                )}
 
-                {/* Hình ảnh sản phẩm */}
+                {/* Ảnh */}
                 <div className="product-card__image-container">
                   <img
                     src={p.image}
@@ -161,19 +149,21 @@ const ProductList = ({
                   />
                 </div>
 
-                {/* Thông tin cơ bản - giống hệt ảnh */}
+                {/* Thông tin cơ bản */}
                 <div className="product-card__content">
                   <h3 className="product-card__name">{p.name}</h3>
                   {p.price && <div className="product-card__price">{p.price}</div>}
-                  <div className="product-card__versions">
-                    {p.versionsLabel ?? p.versions ?? "1 phiên bản"}
-                  </div>
+                  {(p.versionsLabel || p.versions) && (
+                    <div className="product-card__versions">
+                      {p.versionsLabel ?? (Array.isArray(p.versions) ? p.versions.join(", ") : p.versions)}
+                    </div>
+                  )}
                   <div className="product-card__favorite">
                     <span className="heart-icon">♥</span> Yêu thích
                   </div>
                 </div>
 
-                {/* Overlay chi tiết khi hover - giống hệt ảnh */}
+                {/* Overlay chi tiết khi hover (giống mẫu) */}
                 <div className="product-card__details">
                   <div className="product-card__specs">
                     {cpu && (
@@ -199,27 +189,22 @@ const ProductList = ({
                   </div>
 
                   <div className="product-card__actions">
-                    {/* Nút thêm vào giỏ hàng */}
                     <button
                       className="btn btn--cart"
                       onClick={(e) => {
                         e.stopPropagation();
                         // TODO: thêm vào giỏ
                       }}
-                      title="Thêm vào giỏ hàng"
                     >
                       <span className="cart-icon">🛒</span>
                       Thêm vào giỏ
                     </button>
-                    
-                    {/* Nút so sánh */}
                     <button
                       className="btn btn--compare"
                       onClick={(e) => {
                         e.stopPropagation();
                         // TODO: logic so sánh
                       }}
-                      title="So sánh sản phẩm"
                     >
                       So sánh
                     </button>

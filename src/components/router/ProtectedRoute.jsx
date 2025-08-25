@@ -7,7 +7,7 @@ export default function ProtectedRoute({ children }) {
   const location = useLocation();
 
   if (loading) return <div className="container py-5">Đang tải…</div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!isAuthenticated) return <Navigate to="/auth/login" replace state={{ from: location }} />;
   return children;
 }
     

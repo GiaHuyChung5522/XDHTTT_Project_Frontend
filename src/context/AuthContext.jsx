@@ -13,10 +13,14 @@ export function AuthProvider({ children }) {
     let mounted = true;
     (async () => {
       try {
+        // Khởi tạo từ localStorage nếu có
+        const tokenFromStorage = localStorage.getItem('token');
+        if (tokenFromStorage) setToken(tokenFromStorage);
+
         const res = await authSvc.getProfile();
-        if (mounted && res) {
-          setUser(res.user);
-          setToken(res.token);
+        if (mounted && res?.user) {
+          const normalizedUser = { ...res.user, role: String(res.user.role || '').toLowerCase() };
+          setUser(normalizedUser);
         }
       } catch {
         // ignore
@@ -29,19 +33,27 @@ export function AuthProvider({ children }) {
 
   const login = async (form) => {
     const { user, token } = await authSvc.login(form);
-    setUser(user); setToken(token);
+    const normalizedUser = { ...user, role: String(user.role || '').toLowerCase() };
+    setUser(normalizedUser); setToken(token);
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
     return user;
   };
 
   const register = async (form) => {
     const { user, token } = await authSvc.register(form);
-    setUser(user); setToken(token);
+    const normalizedUser = { ...user, role: String(user.role || '').toLowerCase() };
+    setUser(normalizedUser); setToken(token);
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
     return user;
   };
 
   const logout = async () => {
     await authSvc.logout();
     setUser(null); setToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   const isAuthenticated = !!user && !!token;

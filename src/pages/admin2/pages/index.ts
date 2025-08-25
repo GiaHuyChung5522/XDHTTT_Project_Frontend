@@ -1,0 +1,14 @@
+export { default as Login } from './Login';
+export { default as Dashboard } from './Dashboard';
+export { default as Products } from './Products';
+export { default as Categories } from './Categories';
+export { default as Brands } from './Brands';
+export { default as Orders } from './Orders';
+export { default as Customers } from './Customers';
+export { default as Posts } from './Posts';
+export { default as Topics } from './Topics';
+export { default as Messages } from './Messages';
+export { default as Notifications } from './Notifications';
+export { default as Analytics } from './Analytics';
+export { default as Profile } from './Profile'; 
+export { default as Settings } from './Settings';

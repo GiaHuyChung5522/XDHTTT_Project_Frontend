@@ -36,14 +36,14 @@ const Header = () => {
 
   const handleAuthSuccess = () => {
     setAuthMode(null);
-    if (user?.role === Roles.ADMIN) navigate("/admin");
+            if (user?.role === Roles.ADMIN) navigate("/admin2");
     else if (user?.role === Roles.STAFF) navigate("/staff");
     else navigate("/account");
   };
 
   const goDashboard = () => {
     if (!user) return;
-    if (user.role === Roles.ADMIN) navigate("/admin");
+          if (user.role === Roles.ADMIN) navigate("/admin2");
     else if (user.role === Roles.STAFF) navigate("/staff");
     else navigate("/account");
   };

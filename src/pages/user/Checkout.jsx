@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCartStore } from "../stores/cart";
+import { useCartStore } from "../../stores/cart";
 import "./checkout.css";
 
 const currency = (n) =>

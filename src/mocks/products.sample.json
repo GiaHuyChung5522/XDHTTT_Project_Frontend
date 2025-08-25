@@ -1,0 +1,40 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Laptop Dell XPS 13",
+      "description": "Laptop cao cấp cho doanh nhân",
+      "price": 25000000,
+      "category": "Laptop Văn phòng",
+      "stock": 15,
+      "image": "/src/assets/img/sanpham1.jpg",
+      "status": "active",
+      "createdAt": "2024-01-01",
+      "updatedAt": "2024-01-15"
+    },
+    {
+      "id": "2",
+      "name": "MacBook Pro M2",
+      "description": "Laptop mạnh mẽ cho thiết kế đồ họa",
+      "price": 45000000,
+      "category": "Laptop Đồ họa",
+      "stock": 8,
+      "image": "/src/assets/img/sanpham1.jpg",
+      "status": "active",
+      "createdAt": "2024-01-02",
+      "updatedAt": "2024-01-14"
+    },
+    {
+      "id": "3",
+      "name": "Laptop Asus ROG",
+      "description": "Laptop gaming hiệu năng cao",
+      "price": 32000000,
+      "category": "Laptop Gaming",
+      "stock": 12,
+      "image": "/src/assets/img/sanpham1.jpg",
+      "status": "active",
+      "createdAt": "2024-01-03",
+      "updatedAt": "2024-01-13"
+    }
+  ]
+}

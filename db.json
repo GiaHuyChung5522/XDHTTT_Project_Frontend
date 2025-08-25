@@ -1,209 +1,54 @@
 {
-  "products": [
+  "product": [
     {
       "id": 1,
-      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
-      "price": 26190000,
+      "name": "Lenovo IdeaPad 5 Pro 14 GT",
+      "price": "26.190.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
-      "cpu": "AMD Ryzen AI 9 365",
-      "ram": "32GB",
-      "screen": "14 inch 2.8K OLED",
-      "gpu": "AMD Radeon 890M"
+      "description": "Ryzen AI 9 365 RAM 32GB SSD 1TB 14"
     },
     {
       "id": 2,
-      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 146",
-      "price": 22990000,
-      "image": "https://trungtran.vn/images/products/2025/resized/legion_r7000_2024 (8).webp",
-      "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB",
-      "cpu": "AMD Ryzen AI 9 365",
-      "ram": "32GB",
-      "screen": "14 inch 2.8K OLED",
-      "gpu": "AMD Radeon 890M"
+      "name": "Gigabyte Gaming A16",
+      "price": "22.990.000",
+      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
+      "description": "GA6H CMH2VN893SH i5-13420H RAM 16GB"
     },
     {
       "id": 3,
-      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
-      "price": 22990000,
+      "name": "Lenovo Legion R7000",
+      "price": "22.990.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB",
-      "cpu": "AMD Ryzen AI 9 365",
-      "ram": "32GB",
-      "screen": "14 inch 2.8K OLED",
-      "gpu": "AMD Radeon 890M"
+      "description": "2024 Ryzen 7 8745H RAM 16GB SSD 512GB"
     },
     {
       "id": 4,
-      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
-      "price": 23900000,
+      "name": "Lenovo IdeaPad 5 Pro 16 GT",
+      "price": "23.900.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
       "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
     },
     {
       "id": 5,
-      "name": "Lenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14T",
-      "price": 23900000,
+      "name": "Lenovo IdeaPad 5 Pro 16 GT",
+      "price": "23.900.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
       "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
     },
     {
       "id": 6,
-      "name": "Lenovo IdeaPad 5 Pro 16 GTLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14",
-      "price": 23900000,
+      "name": "Lenovo IdeaPad 5 Pro 16 GT",
+      "price": "23.900.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
       "description": "2025 Ultra 5 225H RAM 32GB SSD 1TB"
     },
     {
       "id": 7,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
+      "name": "Lenovo Legion Slim 5",
+      "price": "26.890.000",
       "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
       "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 8,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 9,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 10,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 11,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 12,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    },
-    {
-      "id": 13,
-      "name": "Lenovo Legion SlimLenovo IdeaPad 5 Pro 14 GT 2025 Ryzen AI 9 365 RAM 32GB SSD 1TB 14 5",
-      "price": 26890000,
-      "image": "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-      "description": "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-    }
-  ],
-  "categories": [],
-  "brands": [],
-  "reviews": [],
-  "news": [
-    {
-      "title": "Dí rồi",
-      "date": "05/07/2025",
-      "views": 678,
-      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp",
-      "active": true
-    },
-    {
-      "title": "Đặt Lịch Hẹn Trước Để Được Hỗ Trợ Tốt Hơn",
-      "date": "01/06/2025",
-      "views": 2416,
-      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp"
-    },
-    {
-      "title": "Thông Báo Lịch Làm Việc Dịp Đại Lễ 30/4 - 1/5",
-      "date": "28/04/2025",
-      "views": 1528,
-      "image": "https://trungtran.vn/images/news/2025/07/original/cover-fanpage-100_1751651437.webp"
-    }
-  ],
-  "promotions": [],
-  "banners": [],
-  "stores": [],
-  "coupons": [
-    {
-      "code": "HELLO10",
-      "type": "percent",
-      "value": 10,
-      "minOrder": 10000000,
-      "active": true,
-      "id": 1
-    }
-  ],
-  "carts": [],
-  "cartItems": [],
-  "wishlists": [],
-  "wishlistItems": [],
-  "orders": [],
-  "orderItems": [],
-  "addresses": [],
-  "users": [
-    {
-      "email": "u1@gmail.com",
-      "password": "$2a$10$XAhdPaSQgHLGEfePMcxvxuHr/cKs12D3rqLbG0xllrLOBnU3FmJ66",
-      "name": "U1",
-      "id": 1
-    },
-    {
-      "email": "Teo@gmail.com",
-      "password": "$2a$10$uLfQTECeHiyZtG9HiW0Cp.uZIcLA4GoGLLfACFm//BWW9HlDEELWi",
-      "name": "Teo",
-      "id": 2
-    },
-    {
-      "email": "test2@example.com",
-      "password": "$2a$10$/IYwd9ouNjt4P8sDhT8cOe.V1tp7X6BLrjkp4lmyrZXoV5p6NEsYK",
-      "id": 3
-    },
-    {
-      "id": 1755431144630,
-      "name": "Test User",
-      "email": "test@example.com",
-      "password": "123456",
-      "role": "user"
-    },
-    {
-      "id": 1755431854796,
-      "name": "Add your name in the body",
-      "role": "user"
-    },
-    {
-      "id": 1755434140137,
-      "name": "NguyenHuuPhuoc",
-      "email": "Phuoc0519@gmail.com ",
-      "password": "123456",
-      "role": "admin"
-    },
-    {
-      "id": 1755434783159,
-      "email": "Phuoc0519@gmail.com",
-      "password": "123456",
-      "role": "user"
-    },
-    {
-      "id": 1755435515842,
-      "name": "Admin User",
-      "email": "admin@test.com",
-      "password": "admin123",
-      "role": "admin"
-    },
-    {
-      "id": 1755435621767,
-      "name": "Staff User",
-      "email": "staff@test.com",
-      "password": "staff123",
-      "role": "staff"
     }
   ]
 }
+

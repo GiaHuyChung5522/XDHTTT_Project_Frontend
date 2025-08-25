@@ -5,7 +5,7 @@ export default function TestApi() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/products")
+    fetch("/api/product")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

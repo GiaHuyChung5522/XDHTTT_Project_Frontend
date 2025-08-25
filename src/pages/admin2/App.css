@@ -1,0 +1,142 @@
+#root{
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Sidebar Menu Styling */
+.custom-sidebar-menu {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-sidebar-menu .ant-menu-item {
+  margin: 4px 0 !important;
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.custom-sidebar-menu .ant-menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 10px;
+}
+
+.custom-sidebar-menu .ant-menu-item:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15) !important;
+}
+
+.custom-sidebar-menu .ant-menu-item:hover::before {
+  opacity: 1;
+}
+
+.custom-sidebar-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.2) !important;
+  transform: translateX(6px) !important;
+}
+
+.custom-sidebar-menu .ant-menu-item-selected::before {
+  opacity: 1;
+}
+
+.custom-sidebar-menu .ant-menu-item .anticon {
+  font-size: 16px !important;
+  margin-right: 12px !important;
+  color: inherit !important;
+  transition: all 0.3s ease !important;
+}
+
+.custom-sidebar-menu .ant-menu-item:hover .anticon {
+  transform: scale(1.1) !important;
+}
+
+.custom-sidebar-menu .ant-menu-item-selected .anticon {
+  color: #60a5fa !important;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.5) !important;
+}
+
+/* Collapsed menu styling */
+.ant-menu-inline-collapsed .custom-sidebar-menu .ant-menu-item,
+.custom-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item {
+  padding: 16px 0 !important;
+  text-align: center !important;
+  margin: 6px 8px !important;
+  border-radius: 12px !important;
+  width: calc(100% - 16px) !important;
+}
+
+.ant-menu-inline-collapsed .custom-sidebar-menu .ant-menu-item .anticon,
+.custom-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item .anticon {
+  margin-right: 0 !important;
+  font-size: 18px !important;
+}
+
+.ant-menu-inline-collapsed .custom-sidebar-menu .ant-menu-item:hover,
+.custom-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item:hover {
+  transform: translateX(0) scale(1.05) !important;
+}
+
+/* Scrollbar styling for sidebar */
+.ant-layout-sider::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Floating particles animation */
+@keyframes floatParticles {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(360deg);
+  }
+}
+
+/* Fade in animation for sidebar components */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

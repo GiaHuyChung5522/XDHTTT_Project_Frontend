@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import './StaffDashboard.css';
 
 const StaffDashboard = () => {
+  const { token } = useAuth();
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('products');
@@ -13,7 +15,7 @@ const StaffDashboard = () => {
 
   const loadProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch('/api/product');
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -33,11 +35,11 @@ const StaffDashboard = () => {
 
   const updateProduct = async (productId, updates) => {
     try {
-      await fetch(`/api/products/${productId}`, {
+      await fetch(`/api/product/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth')?.token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updates)
       });
@@ -53,7 +55,7 @@ const StaffDashboard = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth')?.token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status })
       });
@@ -66,7 +68,7 @@ const StaffDashboard = () => {
   return (
     <div className="staff-dashboard">
       <div className="staff-header">
-        <h1>Staff Dashboard</h1>
+      <h1>Staff Dashboard</h1>
         <p>Quản lý sản phẩm và đơn hàng</p>
       </div>
 

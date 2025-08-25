@@ -1,9 +1,9 @@
-import { api } from '../lib/api';
+import newsData from '../data/news.json';
 
 export async function getNews({ page = 1, limit = 10, q = '' } = {}) {
-  const params = { _page: page, _limit: limit };
-  if (q) params.q = q;
-  const { data, headers } = await api.getWithHeaders('/news', params);
-  const total = Number(headers.get('x-total-count') || (Array.isArray(data) ? data.length : 0));
-  return { items: data || [], page, limit, total };
+  const all = Array.isArray(newsData) ? newsData : [];
+  const filtered = q ? all.filter(i => String(i.title || '').toLowerCase().includes(String(q).toLowerCase())) : all;
+  const start = (page - 1) * limit;
+  const items = filtered.slice(start, start + limit);
+  return { items, page, limit, total: filtered.length };
 }
