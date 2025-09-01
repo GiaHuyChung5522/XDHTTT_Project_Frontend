@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar } from 'antd';
+import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar, Progress } from 'antd';
 import { Column, Line, Pie } from '@ant-design/charts';
 import { motion, type Variants } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -13,96 +13,134 @@ import {
   RiseOutlined,
   FallOutlined,
   BarChartOutlined,
+  EyeOutlined,
+  ShoppingOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
-// Mock data with subtle colors
+// Function to get real stats from localStorage
+const getRealStats = () => {
+  try {
+    const orders = localStorage.getItem('orders');
+    const orderData = orders ? JSON.parse(orders) : [];
+    
+    const totalRevenue = orderData
+      .filter(order => order.status === 'delivered')
+      .reduce((sum, order) => sum + order.total, 0);
+    
+    const pendingOrders = orderData.filter(order => order.status === 'pending').length;
+    const totalOrders = orderData.length;
+    const uniqueCustomers = new Set(orderData.map(order => order.customerInfo?.phone)).size;
+    
+    return {
+      totalRevenue,
+      pendingOrders,
+      totalOrders,
+      uniqueCustomers
+    };
+  } catch (error) {
+    return {
+      totalRevenue: 0,
+      pendingOrders: 0,
+      totalOrders: 0,
+      uniqueCustomers: 0
+    };
+  }
+};
+
+const realStats = getRealStats();
+
+// Mock data with real stats
 const mockStats = [
   {
     title: 'Tổng doanh thu',
-    value: 234500000,
+    value: realStats.totalRevenue,
     prefix: '₫',
     suffix: '',
     precision: 0,
     trend: 'up',
     trendValue: 12.5,
     icon: <DollarOutlined />,
-    color: '#3b82f6', // Blue
-    bgColor: '#eff6ff',
+    color: '#6366f1', // Indigo
+    bgColor: '#eef2ff',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
     title: 'Đơn hàng mới',
-    value: 1234,
+    value: realStats.pendingOrders,
     prefix: '',
     suffix: '',
     precision: 0,
     trend: 'up',
     trendValue: 8.3,
     icon: <ShoppingCartOutlined />,
-    color: '#10b981', // Green
-    bgColor: '#f0fdf4',
+    color: '#10b981', // Emerald
+    bgColor: '#ecfdf5',
+    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
   },
   {
-    title: 'Khách hàng',
-    value: 5678,
+    title: 'Tổng đơn hàng',
+    value: realStats.totalOrders,
     prefix: '',
     suffix: '',
     precision: 0,
-    trend: 'down',
-    trendValue: -2.1,
+    trend: 'up',
+    trendValue: 15.7,
     icon: <UserOutlined />,
-    color: '#8b5cf6', // Purple
-    bgColor: '#faf5ff',
+    color: '#8b5cf6', // Violet
+    bgColor: '#f5f3ff',
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   },
   {
-    title: 'Sản phẩm',
-    value: 456,
+    title: 'Khách hàng',
+    value: realStats.uniqueCustomers,
     prefix: '',
     suffix: '',
     precision: 0,
     trend: 'up',
     trendValue: 15.7,
     icon: <TagOutlined />,
-    color: '#f59e0b', // Orange
+    color: '#f59e0b', // Amber
     bgColor: '#fffbeb',
+    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
   },
 ];
 
-const mockOrders = [
-  {
-    key: '1',
-    orderNumber: '#ORD-001',
-    customer: 'Nguyễn Văn A',
-    amount: 2500000,
-    status: 'Đang xử lý',
-    date: '2024-12-09',
-  },
-  {
-    key: '2',
-    orderNumber: '#ORD-002',
-    customer: 'Trần Thị B',
-    amount: 1800000,
-    status: 'Đã giao hàng',
-    date: '2024-12-09',
-  },
-  {
-    key: '3',
-    orderNumber: '#ORD-003',
-    customer: 'Lê Văn C',
-    amount: 3200000,
-    status: 'Đã xác nhận',
-    date: '2024-12-08',
-  },
-  {
-    key: '4',
-    orderNumber: '#ORD-004',
-    customer: 'Phạm Thị D',
-    amount: 1500000,
-    status: 'Đang giao hàng',
-    date: '2024-12-08',
-  },
-];
+// Function to get real orders from localStorage
+const getRealOrders = () => {
+  try {
+    const orders = localStorage.getItem('orders');
+    const orderData = orders ? JSON.parse(orders) : [];
+    
+    return orderData.slice(0, 5).map((order, index) => ({
+      key: index + 1,
+      orderNumber: order.orderId,
+      customer: order.customerInfo?.name || 'Khách hàng',
+      amount: order.total,
+      status: order.status === 'pending' ? 'Chờ xác nhận' :
+              order.status === 'confirmed' ? 'Đã xác nhận' :
+              order.status === 'shipped' ? 'Đang giao hàng' :
+              order.status === 'delivered' ? 'Đã giao hàng' : 'Đã hủy',
+      date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
+      statusColor: order.status === 'pending' ? '#f59e0b' :
+                   order.status === 'confirmed' ? '#3b82f6' :
+                   order.status === 'shipped' ? '#8b5cf6' :
+                   order.status === 'delivered' ? '#10b981' : '#ef4444',
+      statusBg: order.status === 'pending' ? '#fffbeb' :
+                order.status === 'confirmed' ? '#eff6ff' :
+                order.status === 'shipped' ? '#f5f3ff' :
+                order.status === 'delivered' ? '#ecfdf5' : '#fef2f2',
+    }));
+  } catch (error) {
+    return [];
+  }
+};
+
+const mockOrders = getRealOrders();
 
 const mockTopProducts = [
   {
@@ -111,6 +149,7 @@ const mockTopProducts = [
     revenue: 15600000,
     image: 'https://via.placeholder.com/40x40?text=Áo',
     growth: 12,
+    color: '#6366f1',
   },
   {
     name: 'Quần jeans nữ',
@@ -118,6 +157,7 @@ const mockTopProducts = [
     revenue: 13400000,
     image: 'https://via.placeholder.com/40x40?text=Quần',
     growth: 8,
+    color: '#10b981',
   },
   {
     name: 'Váy dạ hội',
@@ -125,6 +165,7 @@ const mockTopProducts = [
     revenue: 22250000,
     image: 'https://via.placeholder.com/40x40?text=Váy',
     growth: -3,
+    color: '#8b5cf6',
   },
   {
     name: 'Áo khoác nam',
@@ -132,6 +173,7 @@ const mockTopProducts = [
     revenue: 19000000,
     image: 'https://via.placeholder.com/40x40?text=Áo',
     growth: 15,
+    color: '#f59e0b',
   },
 ];
 
@@ -160,10 +202,10 @@ const categoryData = [
 ];
 
 const orderStatusData = [
-  { type: 'Hoàn thành', value: 68 },
-  { type: 'Đang xử lý', value: 18 },
-  { type: 'Đang giao', value: 10 },
-  { type: 'Đã hủy', value: 4 },
+  { type: 'Hoàn thành', value: 68, color: '#10b981' },
+  { type: 'Đang xử lý', value: 18, color: '#f59e0b' },
+  { type: 'Đang giao', value: 10, color: '#3b82f6' },
+  { type: 'Đã hủy', value: 4, color: '#ef4444' },
 ];
 
 const Dashboard: React.FC = () => {
@@ -173,20 +215,23 @@ const Dashboard: React.FC = () => {
       dataIndex: 'orderNumber',
       key: 'orderNumber',
       render: (text: string) => (
-        <Text strong style={{ color: '#3b82f6' }}>{text}</Text>
+        <Text strong style={{ color: '#6366f1', fontSize: '14px' }}>{text}</Text>
       ),
     },
     {
       title: 'Khách hàng',
       dataIndex: 'customer',
       key: 'customer',
+      render: (text: string) => (
+        <Text style={{ fontSize: '14px' }}>{text}</Text>
+      ),
     },
     {
       title: 'Giá trị',
       dataIndex: 'amount',
       key: 'amount',
       render: (amount: number) => (
-        <Text strong style={{ color: '#059669' }}>
+        <Text strong style={{ color: '#059669', fontSize: '14px' }}>
           ₫{amount.toLocaleString()}
         </Text>
       ),
@@ -195,46 +240,55 @@ const Dashboard: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
-        const colors: { [key: string]: string } = {
-          'Đang xử lý': '#f59e0b',
-          'Đã xác nhận': '#3b82f6',
-          'Đang giao hàng': '#8b5cf6',
-          'Đã giao hàng': '#10b981',
-        };
-        return (
-          <span style={{ 
-            color: colors[status] || '#6b7280',
-            fontWeight: '500',
-          }}>
-            {status}
-          </span>
-        );
-      },
+      render: (status: string, record: any) => (
+        <span style={{
+          padding: '4px 12px',
+          borderRadius: '20px',
+          fontSize: '12px',
+          fontWeight: '500',
+          backgroundColor: record.statusBg,
+          color: record.statusColor,
+        }}>
+          {status}
+        </span>
+      ),
     },
     {
       title: 'Ngày',
       dataIndex: 'date',
       key: 'date',
       render: (date: string) => (
-        <Text type="secondary">{date}</Text>
+        <Text type="secondary" style={{ fontSize: '13px' }}>{date}</Text>
       ),
     },
   ];
 
-  // Chart configs with subtle colors
+  // Chart configs with modern colors
   const revenueChartConfig = {
     data: revenueData,
     xField: 'month',
     yField: 'revenue',
     smooth: true,
-    color: '#3b82f6',
+    color: '#6366f1',
     point: {
-      size: 4,
+      size: 5,
       shape: 'circle',
+      style: {
+        fill: '#6366f1',
+        stroke: '#ffffff',
+        lineWidth: 2,
+      },
     },
     areaStyle: {
-      fill: 'rgba(59,130,246,0.12)',
+      fill: 'linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)',
+    },
+    lineStyle: {
+      lineWidth: 3,
+    },
+    yAxis: {
+      label: {
+        formatter: (value: string) => `${(parseInt(value) / 1000000).toFixed(0)}M`,
+      },
     },
   };
 
@@ -246,10 +300,14 @@ const Dashboard: React.FC = () => {
     label: {
       position: 'right' as const,
       style: {
-        fill: '#111827',
+        fill: '#374151',
         opacity: 0.9,
-        fontWeight: '500',
+        fontWeight: '600',
+        fontSize: 12,
       },
+    },
+    barStyle: {
+      borderRadius: [0, 4, 4, 0],
     },
   };
 
@@ -262,6 +320,10 @@ const Dashboard: React.FC = () => {
     label: {
       type: 'outer',
       content: '{name}: {percentage}',
+      style: {
+        fontSize: 12,
+        fontWeight: '500',
+      },
     },
     interactions: [
       {
@@ -298,8 +360,21 @@ const Dashboard: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh' }}
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {/* Header */}
+        <motion.div variants={itemVariants}>
+          <div style={{ marginBottom: '24px' }}>
+            <Title level={2} style={{ margin: 0, color: '#1f2937', fontWeight: '700' }}>
+              Dashboard
+            </Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>
+              Chào mừng trở lại! Đây là tổng quan về hoạt động kinh doanh của bạn.
+            </Text>
+          </div>
+        </motion.div>
+
         {/* Stats Cards */}
         <Row gutter={[24, 24]}>
           {mockStats.map((stat, index) => (
@@ -308,11 +383,13 @@ const Dashboard: React.FC = () => {
                 <Card 
                   style={{
                     background: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    height: '140px',
+                    border: 'none',
+                    borderRadius: '16px',
+                    height: '160px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    overflow: 'hidden',
                   }}
-                  styles={{ body: { padding: '20px', height: '100%' } }}
+                  bodyStyle={{ padding: '24px', height: '100%' }}
                 >
                   <div style={{ 
                     height: '100%', 
@@ -321,22 +398,27 @@ const Dashboard: React.FC = () => {
                     justifyContent: 'space-between' 
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <Text style={{ 
                           color: '#6b7280', 
                           fontSize: '14px', 
-                          fontWeight: '500',
-                          marginBottom: '8px',
+                          fontWeight: '600',
+                          marginBottom: '12px',
                           display: 'block',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
                         }}>
                           {stat.title}
                         </Text>
                         <div>
                           <Text style={{ 
                             color: '#111827', 
-                            fontSize: '24px', 
-                            fontWeight: '700',
+                            fontSize: '28px', 
+                            fontWeight: '800',
                             lineHeight: 1,
+                            background: stat.gradient,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
                           }}>
                             {stat.prefix}
                             <CountUp 
@@ -349,45 +431,46 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '12px',
                         background: stat.bgColor,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        border: `2px solid ${stat.color}20`,
                       }}>
                         {React.cloneElement(stat.icon, { 
-                          style: { fontSize: '18px', color: stat.color }
+                          style: { fontSize: '20px', color: stat.color }
                         })}
                       </div>
                     </div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}>
                       {stat.trend === 'up' ? (
                         <RiseOutlined style={{ 
                           color: '#10b981', 
-                          marginRight: 6, 
-                          fontSize: '14px' 
+                          marginRight: 8, 
+                          fontSize: '16px' 
                         }} />
                       ) : (
                         <FallOutlined style={{ 
                           color: '#ef4444', 
-                          marginRight: 6, 
-                          fontSize: '14px' 
+                          marginRight: 8, 
+                          fontSize: '16px' 
                         }} />
                       )}
                       <Text style={{ 
                         color: stat.trend === 'up' ? '#10b981' : '#ef4444', 
-                        fontSize: '13px', 
-                        fontWeight: '500' 
+                        fontSize: '14px', 
+                        fontWeight: '600' 
                       }}>
                         {Math.abs(stat.trendValue)}%
                       </Text>
                       <Text style={{ 
                         color: '#6b7280', 
                         fontSize: '13px',
-                        marginLeft: '4px',
+                        marginLeft: '6px',
                       }}>
                         so với tháng trước
                       </Text>
@@ -401,49 +484,46 @@ const Dashboard: React.FC = () => {
 
         {/* Charts Row */}
         <Row gutter={[24, 24]}>
+          {/* Revenue Chart */}
           <Col xs={24} lg={16}>
             <motion.div variants={itemVariants}>
-              <Card 
+              <Card
                 title={
-                  <Space>
-                    <BarChartOutlined style={{ color: '#3b82f6' }} />
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                      Doanh thu theo tháng
-                    </span>
-                  </Space>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <BarChartOutlined style={{ marginRight: 8, color: '#6366f1' }} />
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Doanh thu theo tháng</span>
+                  </div>
                 }
                 style={{
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  border: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                styles={{ body: { padding: '20px' } }}
+                bodyStyle={{ padding: '24px' }}
               >
                 <Line {...revenueChartConfig} height={300} />
               </Card>
             </motion.div>
           </Col>
 
+          {/* Order Status */}
           <Col xs={24} lg={8}>
             <motion.div variants={itemVariants}>
-              <Card 
+              <Card
                 title={
-                  <Space>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      background: '#f59e0b',
-                    }} />
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                      Trạng thái đơn hàng
-                    </span>
-                  </Space>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <ShoppingOutlined style={{ marginRight: 8, color: '#10b981' }} />
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Trạng thái đơn hàng</span>
+                  </div>
                 }
                 style={{
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  border: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                styles={{ body: { padding: '20px' } }}
+                bodyStyle={{ padding: '24px' }}
               >
                 <Pie {...pieChartConfig} height={300} />
               </Card>
@@ -451,40 +531,31 @@ const Dashboard: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Bottom Row */}
         <Row gutter={[24, 24]}>
           {/* Recent Orders */}
           <Col xs={24} lg={16}>
             <motion.div variants={itemVariants}>
-              <Card 
+              <Card
                 title={
-                  <Space>
-                    <ShoppingCartOutlined style={{ color: '#3b82f6' }} />
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                      Đơn hàng gần đây
-                    </span>
-                  </Space>
-                }
-                extra={
-                  <a href="#" style={{ 
-                    color: '#3b82f6',
-                    fontWeight: '500',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                  }}>
-                    Xem tất cả →
-                  </a>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <ClockCircleOutlined style={{ marginRight: 8, color: '#f59e0b' }} />
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Đơn hàng gần đây</span>
+                  </div>
                 }
                 style={{
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  border: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                styles={{ body: { padding: '20px' } }}
+                bodyStyle={{ padding: '24px' }}
               >
                 <Table
                   columns={orderColumns}
                   dataSource={mockOrders}
                   pagination={false}
-                  size="small"
+                  size="middle"
                 />
               </Card>
             </motion.div>
@@ -493,136 +564,64 @@ const Dashboard: React.FC = () => {
           {/* Top Products */}
           <Col xs={24} lg={8}>
             <motion.div variants={itemVariants}>
-              <Card 
+              <Card
                 title={
-                  <Space>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '4px',
-                      background: '#10b981',
-                    }} />
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                      Sản phẩm bán chạy
-                    </span>
-                  </Space>
-                }
-                extra={
-                  <a href="#" style={{ 
-                    color: '#3b82f6',
-                    fontWeight: '500',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                  }}>
-                    Xem tất cả →
-                  </a>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <TagOutlined style={{ marginRight: 8, color: '#8b5cf6' }} />
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Sản phẩm bán chạy</span>
+                  </div>
                 }
                 style={{
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  border: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                bodyStyle={{ padding: '20px' }}
+                bodyStyle={{ padding: '24px' }}
               >
                 <List
-                  itemLayout="horizontal"
                   dataSource={mockTopProducts}
-                  size="small"
                   renderItem={(item, index) => (
-                    <List.Item style={{ 
-                      padding: '12px 0',
-                      borderBottom: index === mockTopProducts.length - 1 ? 'none' : '1px solid #f3f4f6'
-                    }}>
+                    <List.Item style={{ padding: '12px 0', borderBottom: index === mockTopProducts.length - 1 ? 'none' : '1px solid #f3f4f6' }}>
                       <List.Item.Meta
                         avatar={
-                          <div style={{ position: 'relative' }}>
-                            <Avatar src={item.image} shape="square" size={44} />
-                            <div style={{
-                              position: 'absolute',
-                              top: '-6px',
-                              right: '-6px',
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '50%',
-                              background: index === 0 ? '#f59e0b' : index === 1 ? '#10b981' : '#3b82f6',
+                          <Avatar 
+                            size={40} 
+                            style={{ 
+                              background: item.color,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '10px',
-                              color: 'white',
-                              fontWeight: '600',
-                            }}>
-                              {index + 1}
-                            </div>
-                          </div>
+                            }}
+                          >
+                            {item.name.charAt(0)}
+                          </Avatar>
                         }
                         title={
+                          <Text strong style={{ fontSize: '14px', color: '#1f2937' }}>
+                            {item.name}
+                          </Text>
+                        }
+                        description={
                           <div>
-                            <Text strong style={{ fontSize: '14px', color: '#111827' }}>
-                              {item.name}
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              {item.sales} đã bán • ₫{item.revenue.toLocaleString()}
                             </Text>
-                            <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
-                              {item.growth > 0 ? (
-                                <ArrowUpOutlined style={{ 
-                                  color: '#10b981', 
-                                  fontSize: '11px', 
-                                  marginRight: '4px' 
-                                }} />
-                              ) : (
-                                <ArrowDownOutlined style={{ 
-                                  color: '#ef4444', 
-                                  fontSize: '11px', 
-                                  marginRight: '4px' 
-                                }} />
-                              )}
+                            <div style={{ marginTop: '4px' }}>
                               <Text style={{ 
-                                fontSize: '11px',
-                                color: item.growth > 0 ? '#10b981' : '#ef4444',
-                                fontWeight: '500'
+                                color: item.growth >= 0 ? '#10b981' : '#ef4444',
+                                fontSize: '12px',
+                                fontWeight: '600',
                               }}>
-                                {Math.abs(item.growth)}%
+                                {item.growth >= 0 ? '+' : ''}{item.growth}%
                               </Text>
                             </div>
                           </div>
-                        }
-                        description={
-                          <Space direction="vertical" size={2}>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>
-                              Đã bán: {item.sales} sản phẩm
-                            </Text>
-                            <Text strong style={{ color: '#059669', fontSize: '13px' }}>
-                              ₫{item.revenue.toLocaleString()}
-                            </Text>
-                          </Space>
                         }
                       />
                     </List.Item>
                   )}
                 />
-              </Card>
-            </motion.div>
-          </Col>
-        </Row>
-
-        {/* Category Performance */}
-        <Row gutter={[24, 24]}>
-          <Col span={24}>
-            <motion.div variants={itemVariants}>
-              <Card 
-                title={
-                  <Space>
-                    <TagOutlined style={{ color: '#8b5cf6' }} />
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                      Hiệu suất theo danh mục
-                    </span>
-                  </Space>
-                }
-                style={{
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
-                }}
-                bodyStyle={{ padding: '20px' }}
-              >
-                <Column {...categoryChartConfig} height={300} />
               </Card>
             </motion.div>
           </Col>

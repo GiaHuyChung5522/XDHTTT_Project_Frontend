@@ -17,17 +17,17 @@ export interface AuthResponse {
 }
 
 class AuthService {
-  private readonly TOKEN_KEY = 'auth_token';
-  private readonly USER_KEY = 'auth_user';
+  private readonly TOKEN_KEY = 'adminToken';
+  private readonly USER_KEY = 'adminUser';
 
   // Mock admin credentials - trong thực tế sẽ call API
   private readonly mockAdmin = {
-    email: 'admin',
+    email: 'admin@gmail.com',
     password: 'admin123',
     user: {
       id: '1',
-      email: 'admin',
-      name: 'Admin ',
+      email: 'admin@gmail.com',
+      name: 'Admin 7N Fashion',
       role: 'admin' as const,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
     }

@@ -1,241 +1,452 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCartStore } from "../../stores/cart";
-import "./checkout.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import { 
+  UserOutlined, 
+  PhoneOutlined, 
+  EnvironmentOutlined,
+  CreditCardOutlined,
+  BankOutlined,
+  DollarOutlined,
+  LockOutlined,
+  CheckCircleOutlined,
+  ArrowLeftOutlined,
+  ShoppingCartOutlined
+} from '@ant-design/icons';
+import { 
+  Button, 
+  Form, 
+  Input, 
+  Select, 
+  Radio, 
+  Checkbox, 
+  message, 
+  Steps,
+  Card,
+  Divider,
+  Modal,
+  Alert
+} from 'antd';
+import './checkout.css';
+
+const { TextArea } = Input;
+const { Option } = Select;
 
 const currency = (n) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(n || 0));
 
 export default function Checkout() {
-  const { items, total, updateQty, removeItem } = useCartStore();
-  const subTotal = useMemo(() => total(), [items, total]);
+  const { cartItems, removeFromCart } = useCart();
   const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    gender: "male",
-    name: "",
-    phone: "",
-    city: "",
-    district: "",
-    ward: "",
-    address: "",
-    note: "",
-    addrtype: "home",
-  });
-  const setF = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+  // Tính toán tổng tiền
+  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const shippingFee = subtotal > 500000 ? 0 : 30000;
+  const total = subtotal + shippingFee;
 
-  const validate = () => {
-    if (!form.name.trim()) return "Vui lòng nhập họ tên.";
-    if (!/^0\d{9,10}$/.test(form.phone)) return "Số điện thoại không hợp lệ.";
-    if (!form.city || !form.district || !form.ward || !form.address.trim()) return "Địa chỉ chưa đầy đủ.";
-    if (!items.length) return "Giỏ hàng đang trống.";
-    return "";
+  const steps = [
+    {
+      title: 'Thông tin giao hàng',
+      icon: <UserOutlined />,
+    },
+    {
+      title: 'Phương thức thanh toán',
+      icon: <CreditCardOutlined />,
+    },
+    {
+      title: 'Xác nhận đơn hàng',
+      icon: <CheckCircleOutlined />,
+    },
+  ];
+
+  const handleNext = async () => {
+    try {
+      if (currentStep === 0) {
+        await form.validateFields(['name', 'phone', 'address', 'city', 'district', 'ward']);
+      }
+      setCurrentStep(currentStep + 1);
+    } catch (error) {
+      message.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+    }
   };
 
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
-    const err = validate();
-    if (err) return alert(err);
-
-    const fullAddress = `${form.address}, ${form.ward}, ${form.district}, ${form.city}`;
-    const order = {
-      code: "DH" + Date.now().toString().slice(-7),
-      name: (form.gender === "male" ? "Anh " : "Chị ") + form.name.trim(),
-      phone: form.phone,
-      address: fullAddress,
-      note: form.note,
-      subtotal: subTotal,
-      shippingText: "Liên hệ",
-      total: subTotal,
-    };
-    navigate("/success", { state: { order } });
+  const handlePrev = () => {
+    setCurrentStep(currentStep - 1);
   };
 
-  const changeQty = (id, cur, delta) => {
-    const n = Math.max(1, Number(cur || 1) + Number(delta || 0));
-    updateQty(id, n);
+  const handlePlaceOrder = async () => {
+    try {
+      setLoading(true);
+      
+      // Giả lập API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const orderData = {
+        orderId: 'DH' + Date.now().toString().slice(-7),
+        customerInfo: form.getFieldsValue(),
+        items: cartItems,
+        paymentMethod,
+        subtotal,
+        shippingFee,
+        total,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+
+      // Lưu vào localStorage hoặc gửi API
+      localStorage.setItem('lastOrder', JSON.stringify(orderData));
+      
+      // Lưu đơn hàng vào danh sách đơn hàng cho admin
+      const existingOrders = localStorage.getItem('orders');
+      const orders = existingOrders ? JSON.parse(existingOrders) : [];
+      orders.unshift(orderData);
+      localStorage.setItem('orders', JSON.stringify(orders));
+      
+      message.success('Đặt hàng thành công!');
+      navigate('/order-success', { state: { order: orderData } });
+      
+    } catch (error) {
+      message.error('Có lỗi xảy ra, vui lòng thử lại');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderShippingInfo = () => (
+    <div className="checkout-section">
+      <h3>Thông tin giao hàng</h3>
+      
+      <Form form={form} layout="vertical" className="checkout-form">
+        <div className="form-row">
+          <Form.Item
+            name="name"
+            label="Họ và tên"
+            rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+            className="form-item"
+          >
+            <Input prefix={<UserOutlined />} placeholder="Nhập họ và tên" />
+          </Form.Item>
+          
+          <Form.Item
+            name="phone"
+            label="Số điện thoại"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điện thoại' },
+              { pattern: /^0\d{9,10}$/, message: 'Số điện thoại không hợp lệ' }
+            ]}
+            className="form-item"
+          >
+            <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
+          </Form.Item>
+        </div>
+
+        <div className="form-row">
+          <Form.Item
+            name="city"
+            label="Tỉnh/Thành phố"
+            rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
+            className="form-item"
+          >
+            <Select placeholder="Chọn tỉnh/thành phố">
+              <Option value="hanoi">Hà Nội</Option>
+              <Option value="hcm">TP. Hồ Chí Minh</Option>
+              <Option value="danang">Đà Nẵng</Option>
+              <Option value="haiphong">Hải Phòng</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            name="district"
+            label="Quận/Huyện"
+            rules={[{ required: true, message: 'Vui lòng chọn quận/huyện' }]}
+            className="form-item"
+          >
+            <Select placeholder="Chọn quận/huyện">
+              <Option value="baidinh">Ba Đình</Option>
+              <Option value="hoankiem">Hoàn Kiếm</Option>
+              <Option value="tayho">Tây Hồ</Option>
+              <Option value="longbien">Long Biên</Option>
+            </Select>
+          </Form.Item>
+        </div>
+
+        <div className="form-row">
+          <Form.Item
+            name="ward"
+            label="Phường/Xã"
+            rules={[{ required: true, message: 'Vui lòng chọn phường/xã' }]}
+            className="form-item"
+          >
+            <Select placeholder="Chọn phường/xã">
+              <Option value="phuctan">Phúc Tân</Option>
+              <Option value="dongxuan">Đồng Xuân</Option>
+              <Option value="hangma">Hàng Mã</Option>
+              <Option value="hangdao">Hàng Đào</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            name="address"
+            label="Địa chỉ chi tiết"
+            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
+            className="form-item"
+          >
+            <Input prefix={<EnvironmentOutlined />} placeholder="Số nhà, tên đường" />
+          </Form.Item>
+        </div>
+
+        <Form.Item name="note" label="Ghi chú (không bắt buộc)">
+          <TextArea rows={3} placeholder="Ghi chú về đơn hàng..." />
+        </Form.Item>
+      </Form>
+    </div>
+  );
+
+  const renderPaymentMethod = () => (
+    <div className="checkout-section">
+      <h3>Phương thức thanh toán</h3>
+      
+      <Radio.Group 
+        value={paymentMethod} 
+        onChange={(e) => setPaymentMethod(e.target.value)}
+        className="payment-methods"
+      >
+        <Card className="payment-method-card">
+          <Radio value="cash">
+            <div className="payment-method-content">
+              <DollarOutlined className="payment-icon" />
+              <div>
+                <h4>Thanh toán tiền mặt</h4>
+                <p>Thanh toán khi nhận hàng (COD)</p>
+              </div>
+            </div>
+          </Radio>
+        </Card>
+
+        <Card className="payment-method-card">
+          <Radio value="bank">
+            <div className="payment-method-content">
+              <BankOutlined className="payment-icon" />
+              <div>
+                <h4>Chuyển khoản ngân hàng</h4>
+                <p>Chuyển khoản qua tài khoản ngân hàng</p>
+              </div>
+            </div>
+          </Radio>
+        </Card>
+
+        <Card className="payment-method-card">
+          <Radio value="card">
+            <div className="payment-method-content">
+              <CreditCardOutlined className="payment-icon" />
+              <div>
+                <h4>Thẻ tín dụng/Ghi nợ</h4>
+                <p>Thanh toán qua thẻ Visa, Mastercard</p>
+              </div>
+            </div>
+          </Radio>
+        </Card>
+      </Radio.Group>
+
+      {paymentMethod === 'bank' && (
+        <Alert
+          message="Thông tin chuyển khoản"
+          description={
+            <div>
+              <p><strong>Ngân hàng:</strong> Vietcombank</p>
+              <p><strong>Số tài khoản:</strong> 1234567890</p>
+              <p><strong>Chủ tài khoản:</strong> CÔNG TY 7N FASHION</p>
+              <p><strong>Nội dung:</strong> Thanh toan don hang [Mã đơn hàng]</p>
+            </div>
+          }
+          type="info"
+          showIcon
+          className="bank-info"
+        />
+      )}
+
+      {paymentMethod === 'card' && (
+        <div className="card-payment-form">
+          <h4>Thông tin thẻ</h4>
+          <div className="form-row">
+            <Form.Item name="cardNumber" label="Số thẻ" className="form-item">
+              <Input placeholder="1234 5678 9012 3456" />
+            </Form.Item>
+            <Form.Item name="cardHolder" label="Chủ thẻ" className="form-item">
+              <Input placeholder="NGUYEN VAN A" />
+            </Form.Item>
+          </div>
+          <div className="form-row">
+            <Form.Item name="expiry" label="Ngày hết hạn" className="form-item">
+              <Input placeholder="MM/YY" />
+            </Form.Item>
+            <Form.Item name="cvv" label="CVV" className="form-item">
+              <Input placeholder="123" />
+            </Form.Item>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderOrderSummary = () => (
+    <div className="checkout-section">
+      <h3>Xác nhận đơn hàng</h3>
+      
+      <div className="order-summary">
+        <div className="order-items">
+          <h4>Sản phẩm đã chọn ({cartItems.length})</h4>
+          {cartItems.map((item) => (
+            <div key={item.id} className="order-item">
+              <img src={item.image || '/src/assets/img/sanpham1.jpg'} alt={item.name} />
+              <div className="item-info">
+                <h5>{item.name}</h5>
+                <p>Số lượng: {item.quantity}</p>
+                <p className="item-price">₫{(item.price * item.quantity).toLocaleString()}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Divider />
+
+        <div className="order-total">
+          <div className="total-row">
+            <span>Tạm tính:</span>
+            <span>₫{subtotal.toLocaleString()}</span>
+          </div>
+          <div className="total-row">
+            <span>Phí vận chuyển:</span>
+            <span>{shippingFee === 0 ? 'Miễn phí' : `₫${shippingFee.toLocaleString()}`}</span>
+          </div>
+          <Divider />
+          <div className="total-row total-final">
+            <span>Tổng cộng:</span>
+            <span className="final-amount">₫{total.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div className="order-info">
+          <h4>Thông tin giao hàng</h4>
+          <p><strong>Tên:</strong> {form.getFieldValue('name')}</p>
+          <p><strong>SĐT:</strong> {form.getFieldValue('phone')}</p>
+          <p><strong>Địa chỉ:</strong> {form.getFieldValue('address')}, {form.getFieldValue('ward')}, {form.getFieldValue('district')}, {form.getFieldValue('city')}</p>
+        </div>
+
+        <div className="order-info">
+          <h4>Phương thức thanh toán</h4>
+          <p>
+            {paymentMethod === 'cash' && 'Thanh toán tiền mặt khi nhận hàng'}
+            {paymentMethod === 'bank' && 'Chuyển khoản ngân hàng'}
+            {paymentMethod === 'card' && 'Thẻ tín dụng/Ghi nợ'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return renderShippingInfo();
+      case 1:
+        return renderPaymentMethod();
+      case 2:
+        return renderOrderSummary();
+      default:
+        return null;
+    }
   };
 
   return (
-    <form className="container" onSubmit={handlePlaceOrder}>
-      <div className="row">
-        <div className="col-8">
-          <section className="customer card">
-            <div className="customer__head">
-              <h2 className="customer__title">THÔNG TIN KHÁCH HÀNG</h2>
-            </div>
-
-            <div className="customer__buytype">
-              <button type="button" className="customer__buybtn customer__buybtn--active">Giao tận nơi</button>
-              <button type="button" className="customer__buybtn">Nhận tại cửa hàng</button>
-            </div>
-
-            <div className="customer__row">
-              <label className="customer__radio">
-                <input type="radio" name="gender" value="male"
-                       checked={form.gender === "male"} onChange={setF("gender")} /> <span>Anh</span>
-              </label>
-              <label className="customer__radio">
-                <input type="radio" name="gender" value="female"
-                       checked={form.gender === "female"} onChange={setF("gender")} /> <span>Chị</span>
-              </label>
-            </div>
-
-            <div className="customer__grid">
-              <div className="customer__field">
-                <label>Họ và tên *</label>
-                <input className="customer__input" placeholder="Nhập họ tên"
-                       value={form.name} onChange={setF("name")} />
-              </div>
-              <div className="customer__field">
-                <label>Số điện thoại *</label>
-                <input className="customer__input" placeholder="Số điện thoại" inputMode="tel"
-                       value={form.phone} onChange={setF("phone")} />
-              </div>
-
-              <div className="customer__field">
-                <label>Tỉnh/ Thành phố *</label>
-                <input className="customer__input" placeholder="Tỉnh/ Thành phố"
-                       value={form.city} onChange={setF("city")} />
-              </div>
-              <div className="customer__field">
-                <label>Quận/ Huyện *</label>
-                <input className="customer__input" placeholder="Quận/ Huyện"
-                       value={form.district} onChange={setF("district")} />
-              </div>
-
-              <div className="customer__field">
-                <label>Phường/ Xã *</label>
-                <input className="customer__input" placeholder="Phường/ Xã"
-                       value={form.ward} onChange={setF("ward")} />
-              </div>
-              <div className="customer__field">
-                <label>Số nhà, tên đường *</label>
-                <input className="customer__input" placeholder="Số nhà, tên đường"
-                       value={form.address} onChange={setF("address")} />
-              </div>
-            </div>
-
-            <div className="customer__row">
-              <label className="customer__radio">
-                <input type="radio" name="addrtype" value="home"
-                       checked={form.addrtype === "home"} onChange={setF("addrtype")} />
-                <span>NHÀ RIÊNG (giao mọi thời gian)</span>
-              </label>
-              <label className="customer__radio">
-                <input type="radio" name="addrtype" value="office"
-                       checked={form.addrtype === "office"} onChange={setF("addrtype")} />
-                <span>CƠ QUAN (giờ hành chính)</span>
-              </label>
-            </div>
-
-            <div className="customer__field customer__field--full">
-              <label>Yêu cầu khác (không bắt buộc)</label>
-              <textarea className="customer__input customer__input--textarea" rows={3}
-                        value={form.note} onChange={setF("note")} />
-            </div>
-
-            <div className="customer__row customer__row--checks">
-              <label className="customer__check"><input type="checkbox" /> Gọi người khác nhận hàng (nếu có)</label>
-              <label className="customer__check"><input type="checkbox" /> Xuất hóa đơn công ty</label>
-            </div>
-          </section>
+    <div className="checkout-page">
+      <div className="container">
+        <div className="checkout-header">
+          <Button 
+            type="link" 
+            onClick={() => navigate('/cart')}
+            icon={<ArrowLeftOutlined />}
+          >
+            Quay lại giỏ hàng
+          </Button>
+          <h1>Thanh toán</h1>
         </div>
 
-        <div className="col-4">
-          <aside className="summary card p-3 position-sticky" style={{ top: 16 }}>
-            <h3 className="summary__title mb-2">SẢN PHẨM ĐÃ CHỌN</h3>
+        <div className="checkout-content">
+          <div className="checkout-main">
+            <Steps current={currentStep} items={steps} className="checkout-steps" />
+            
+            <div className="checkout-form-container">
+              {renderStepContent()}
+            </div>
 
-            {!items.length && <div className="text-muted">Chưa có sản phẩm.</div>}
+            <div className="checkout-actions">
+              {currentStep > 0 && (
+                <Button onClick={handlePrev} size="large">
+                  Quay lại
+                </Button>
+              )}
+              
+              {currentStep < steps.length - 1 && (
+                <Button type="primary" onClick={handleNext} size="large">
+                  Tiếp tục
+                </Button>
+              )}
+              
+              {currentStep === steps.length - 1 && (
+                <Button 
+                  type="primary" 
+                  onClick={handlePlaceOrder} 
+                  size="large"
+                  loading={loading}
+                  icon={<LockOutlined />}
+                >
+                  Đặt hàng
+                </Button>
+              )}
+            </div>
+          </div>
 
-            <ul className="summary__list mb-3">
-              {items.map((it) => (
-                <li key={it.id} className="summary__item border rounded p-2 position-relative bg-white">
-                  <button
-                    type="button"
-                    className="btn-close position-absolute top-0 end-0 m-2"
-                    aria-label="Xóa"
-                    onClick={() => removeItem(it.id)}
-                  />
-                  <img
-                    src={it.image || "/src/assets/img/sanpham1.jpg"}
-                    alt={it.name}
-                    className="summary__img rounded border"
-                  />
-                  <div className="summary__info flex-grow-1">
-                    <div className="summary__name fw-semibold">{it.name}</div>
-
-                    <div className="d-flex align-items-center justify-content-between">
-                      <div className="btn-group btn-group-sm" role="group" aria-label="Số lượng">
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => changeQty(it.id, it.qty, -1)}
-                          disabled={(it.qty || 1) <= 1}
-                        >−</button>
-
-                        <input
-                          className="form-control form-control-sm text-center qty-input"
-                          value={it.qty || 1}
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          onChange={(e) => updateQty(it.id, e.target.value)}
-                          onBlur={(e) => updateQty(it.id, e.target.value)}
-                        />
-
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => changeQty(it.id, it.qty, +1)}
-                        >+</button>
-                      </div>
-
-                      <div className="fw-bold text-danger">
-                        {currency(Number(it.price || 0) * Number(it.qty || 1))}
-                      </div>
+          <div className="checkout-sidebar">
+            <Card title="Tóm tắt đơn hàng" className="summary-card">
+              <div className="summary-items">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="summary-item">
+                    <img src={item.image || '/src/assets/img/sanpham1.jpg'} alt={item.name} />
+                    <div>
+                      <h5>{item.name}</h5>
+                      <p>Số lượng: {item.quantity}</p>
                     </div>
-
-                    <div className="small text-muted mt-1">
-                      Đơn giá: {currency(it.price)}
-                    </div>
+                    <span>₫{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="summary__coupon">
-              <input className="summary__coupon-input" placeholder="Nhập mã giảm giá" />
-              <button type="button" className="btn btn-outline-primary">Áp dụng</button>
-            </div>
-
-            <div className="summary__line">
-              <span className="summary__muted">Tạm tính</span>
-              <strong>{currency(subTotal)}</strong>
-            </div>
-            <div className="summary__line">
-              <span className="summary__muted">Phí vận chuyển</span>
-              <span className="summary__muted">Liên hệ</span>
-            </div>
-            <div className="summary__line">
-              <span className="summary__muted">Mã giảm giá</span>
-              <span>0đ</span>
-            </div>
-
-            <div className="summary__total">
-              <span>TỔNG TIỀN</span>
-              <span className="summary__total-value">{currency(subTotal)}</span>
-            </div>
-
-            <button type="submit" className="btn btn-primary w-100 mt-2" disabled={!items.length}>
-              ĐẶT HÀNG
-            </button>
-            <label className="summary__terms">
-              <input type="checkbox" className="form-check-input me-2" defaultChecked />
-              Đặt hàng xong, shop sẽ liên hệ xác nhận. Không thanh toán online.
-            </label>
-          </aside>
+                ))}
+              </div>
+              
+              <Divider />
+              
+              <div className="summary-total">
+                <div className="total-row">
+                  <span>Tạm tính:</span>
+                  <span>₫{subtotal.toLocaleString()}</span>
+                </div>
+                <div className="total-row">
+                  <span>Phí vận chuyển:</span>
+                  <span>{shippingFee === 0 ? 'Miễn phí' : `₫${shippingFee.toLocaleString()}`}</span>
+                </div>
+                <Divider />
+                <div className="total-row total-final">
+                  <span>Tổng cộng:</span>
+                  <span className="final-amount">₫{total.toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
-    </form>
+    </div>
   );
 }

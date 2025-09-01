@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById } from "../../services/products";
-import { useCartStore } from "../../stores/cart";
+import { useCart } from "../../context/CartContext";
+import { message } from 'antd';
 
 const currency = (n) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(n || 0));
@@ -13,7 +14,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  const addToCart = useCartStore((s) => s.addToCart);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     let alive = true;
@@ -36,6 +37,14 @@ export default function ProductDetail() {
       alive = false;
     };
   }, [id]);
+
+  const handleAddToCart = () => {
+    // Thêm sản phẩm với số lượng đã chọn
+    for (let i = 0; i < qty; i++) {
+      addToCart(product);
+    }
+    message.success(`Đã thêm ${qty} sản phẩm vào giỏ hàng!`);
+  };
 
   if (loading) {
     return <div className="p-6 bg-white rounded-lg shadow">Đang tải sản phẩm…</div>;
@@ -74,7 +83,7 @@ export default function ProductDetail() {
         </div>
 
         <button
-          onClick={() => addToCart(product, qty)}
+          onClick={handleAddToCart}
           className="rounded-md bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 transition"
         >
           Thêm vào giỏ

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import "./ProductList.css";
 import { getProducts } from "../../services/products";
 import FilterTabsHeader from "../../components/FilterTabsHeader";
+import { useCart } from "../../context/CartContext";
+import { message } from 'antd';
 
 const FALLBACK_IMG =
   "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -10,15 +12,16 @@ const ProductList = ({
   title = "Máy tính xách tay",
   tabs = [],
   fixedQ = "",
-  itemRenderer,       // (product)=>JSX — nếu muốn override card
+  itemRenderer = null,       // (product)=>JSX — nếu muốn override card
   viewAllHref = "/products",
-  totalOverride,      // optional: nếu muốn hiển thị tổng tùy chính
+  totalOverride = null,      // optional: nếu muốn hiển thị tổng tùy chính
 }) => {
   const [items, setItems] = useState([]);
   const [active, setActive] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [fade, setFade] = useState(false);
+  const { addToCart } = useCart();
 
   // Luôn hiển thị đúng 5 sản phẩm như mẫu
   const limit = 5;
@@ -66,6 +69,11 @@ const ProductList = ({
   }, [q]); // đổi tabs/fixedQ sẽ refetch
 
   const totalShow = totalOverride; // nếu cần bạn có thể truyền từ ngoài
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+  };
 
   return (
     <section className="product-showcase">
@@ -193,7 +201,7 @@ const ProductList = ({
                       className="btn btn--cart"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // TODO: thêm vào giỏ
+                        handleAddToCart(p);
                       }}
                     >
                       <span className="cart-icon">🛒</span>

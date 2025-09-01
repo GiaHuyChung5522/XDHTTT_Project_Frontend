@@ -1,271 +1,240 @@
-// src/pages/Checkout.jsx
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCartStore } from "../../stores/cart";
-import "./checkout.css";
-import "./cart.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import { 
+  ShoppingCartOutlined, 
+  DeleteOutlined, 
+  PlusOutlined, 
+  MinusOutlined,
+  ArrowLeftOutlined,
+  HeartOutlined,
+  HeartFilled
+} from '@ant-design/icons';
+import { Button, Empty, message, Modal, Input, Divider } from 'antd';
+import './cart.css';
 
 const currency = (n) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(n || 0));
 
-export default function Checkout() {
-  const { items, total, updateQty, removeItem } = useCartStore();
-  const subTotal = useMemo(() => total(), [items, total]);
+export default function Cart() {
+  const { cartItems, addToCart, removeFromCart, increaseQty, decreaseQty } = useCart();
   const navigate = useNavigate();
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-  // --- FORM STATE ---
-  const [form, setForm] = useState({
-    gender: "male",         // male | female
-    name: "",
-    phone: "",
-    city: "",
-    district: "",
-    ward: "",
-    address: "",
-    note: "",
-    addrtype: "home",       // home | office
-  });
-  const setF = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+  // Tính toán tổng tiền
+  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const shippingFee = subtotal > 500000 ? 0 : 30000; // Miễn phí ship cho đơn > 500k
+  const discount = appliedCoupon ? subtotal * 0.1 : 0; // Giảm 10% nếu có coupon
+  const total = subtotal + shippingFee - discount;
 
-  // --- VALIDATION NGẮN GỌN ---
-  const validate = () => {
-    if (!form.name.trim()) return "Vui lòng nhập họ tên.";
-    if (!/^0\d{9,10}$/.test(form.phone)) return "Số điện thoại không hợp lệ.";
-    if (!form.city || !form.district || !form.ward || !form.address.trim()) return "Địa chỉ chưa đầy đủ.";
-    if (!items.length) return "Giỏ hàng đang trống.";
-    return "";
+  const handleApplyCoupon = () => {
+    if (couponCode.trim()) {
+      setAppliedCoupon({ code: couponCode, discount: 0.1 });
+      message.success('Áp dụng mã giảm giá thành công!');
+    }
   };
 
-  // --- PLACE ORDER: chuyển sang trang thành công, shop sẽ liên hệ ---
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
-    const err = validate();
-    if (err) return alert(err);
-
-    const fullAddress = `${form.address}, ${form.ward}, ${form.district}, ${form.city}`;
-    const order = {
-      code: "DH" + Date.now().toString().slice(-7),
-      name: (form.gender === "male" ? "Anh " : "Chị ") + form.name.trim(),
-      phone: form.phone,
-      address: fullAddress,
-      note: form.note,
-      subtotal: subTotal,
-      shippingText: "Liên hệ",
-      total: subTotal,
-    };
-
-    // Không thu tiền online. Điều hướng sang trang thành công, tại đó shop sẽ hướng dẫn liên hệ.
-    navigate("/success", { state: { order } });
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    message.info('Đã xóa mã giảm giá');
   };
 
-  const changeQty = (id, cur, delta) => {
-    const n = Math.max(1, Number(cur || 1) + Number(delta || 0));
-    updateQty(id, n);
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      message.warning('Giỏ hàng đang trống!');
+      return;
+    }
+    navigate('/checkout');
   };
 
-  return (
-    <form className="container" onSubmit={handlePlaceOrder}>
-      <div className="row">
-        {/* LEFT: THÔNG TIN KHÁCH HÀNG */}
-        <div className="col-8">
-          <section className="customer card">
-            <div className="customer__head">
-              <h2 className="customer__title">THÔNG TIN KHÁCH HÀNG</h2>
-            </div>
+  const handleContinueShopping = () => {
+    navigate('/products');
+  };
 
-            <div className="customer__buytype">
-              <button type="button" className="customer__buybtn customer__buybtn--active">Giao tận nơi</button>
-              <button type="button" className="customer__buybtn">Nhận tại cửa hàng</button>
-            </div>
+  const handleRemoveItem = (itemId) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?',
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      onOk: () => {
+        removeFromCart(itemId);
+        message.success('Đã xóa sản phẩm khỏi giỏ hàng');
+      }
+    });
+  };
 
-            <div className="customer__row">
-              <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="male"
-                  checked={form.gender === "male"}
-                  onChange={setF("gender")}
-                /> <span>Anh</span>
-              </label>
-              <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="female"
-                  checked={form.gender === "female"}
-                  onChange={setF("gender")}
-                /> <span>Chị</span>
-              </label>
-            </div>
-
-            <div className="customer__grid">
-              <div className="customer__field">
-                <label>Họ và tên *</label>
-                <input className="customer__input" placeholder="Nhập họ tên"
-                       value={form.name} onChange={setF("name")} />
-              </div>
-              <div className="customer__field">
-                <label>Số điện thoại *</label>
-                <input className="customer__input" placeholder="Số điện thoại" inputMode="tel"
-                       value={form.phone} onChange={setF("phone")} />
-              </div>
-
-              <div className="customer__field">
-                <label>Tỉnh/ Thành phố *</label>
-                <input className="customer__input" placeholder="Tỉnh/ Thành phố"
-                       value={form.city} onChange={setF("city")} />
-              </div>
-              <div className="customer__field">
-                <label>Quận/ Huyện *</label>
-                <input className="customer__input" placeholder="Quận/ Huyện"
-                       value={form.district} onChange={setF("district")} />
-              </div>
-
-              <div className="customer__field">
-                <label>Phường/ Xã *</label>
-                <input className="customer__input" placeholder="Phường/ Xã"
-                       value={form.ward} onChange={setF("ward")} />
-              </div>
-              <div className="customer__field">
-                <label>Số nhà, tên đường *</label>
-                <input className="customer__input" placeholder="Số nhà, tên đường"
-                       value={form.address} onChange={setF("address")} />
-              </div>
-            </div>
-
-            <div className="customer__row">
-              <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="addrtype"
-                  value="home"
-                  checked={form.addrtype === "home"}
-                  onChange={setF("addrtype")}
-                />
-                <span>NHÀ RIÊNG (giao mọi thời gian)</span>
-              </label>
-              <label className="customer__radio">
-                <input
-                  type="radio"
-                  name="addrtype"
-                  value="office"
-                  checked={form.addrtype === "office"}
-                  onChange={setF("addrtype")}
-                />
-                <span>CƠ QUAN (giờ hành chính)</span>
-              </label>
-            </div>
-
-            <div className="customer__field customer__field--full">
-              <label>Yêu cầu khác (không bắt buộc)</label>
-              <textarea className="customer__input customer__input--textarea" rows={3}
-                        value={form.note} onChange={setF("note")} />
-            </div>
-
-            <div className="customer__row customer__row--checks">
-              <label className="customer__check"><input type="checkbox" /> Gọi người khác nhận hàng (nếu có)</label>
-              <label className="customer__check"><input type="checkbox" /> Xuất hóa đơn công ty</label>
-            </div>
-          </section>
-        </div>
-
-        {/* RIGHT: SẢN PHẨM ĐÃ CHỌN */}
-        <div className="col-4">
-          <aside className="summary card p-3 position-sticky" style={{ top: 16 }}>
-            <h3 className="summary__title mb-2">SẢN PHẨM ĐÃ CHỌN</h3>
-
-            {!items.length && <div className="text-muted">Chưa có sản phẩm.</div>}
-
-            <ul className="summary__list mb-3">
-              {items.map((it) => (
-                <li key={it.id} className="summary__item border rounded p-2 position-relative bg-white">
-                  <button
-                    type="button"
-                    className="btn-close position-absolute top-0 end-0 m-2"
-                    aria-label="Xóa"
-                    onClick={() => removeItem(it.id)}
-                  />
-                  <img
-                    src={it.image || "/src/assets/img/sanpham1.jpg"}
-                    alt={it.name}
-                    className="summary__img rounded border"
-                  />
-                  <div className="summary__info flex-grow-1">
-                    <div className="summary__name fw-semibold">{it.name}</div>
-
-                    <div className="d-flex align-items-center justify-content-between">
-                      <div className="btn-group btn-group-sm" role="group" aria-label="Số lượng">
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => changeQty(it.id, it.qty, -1)}
-                          disabled={(it.qty || 1) <= 1}
-                        >−</button>
-
-                        <input
-                          className="form-control form-control-sm text-center qty-input"
-                          value={it.qty || 1}
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          onChange={(e) => updateQty(it.id, e.target.value)}
-                          onBlur={(e) => updateQty(it.id, e.target.value)}
-                        />
-
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => changeQty(it.id, it.qty, +1)}
-                        >+</button>
-                      </div>
-
-                      <div className="fw-bold text-danger">
-                        {currency(Number(it.price || 0) * Number(it.qty || 1))}
-                      </div>
-                    </div>
-
-                    <div className="small text-muted mt-1">
-                      Đơn giá: {currency(it.price)}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="summary__coupon">
-              <input className="summary__coupon-input" placeholder="Nhập mã giảm giá" />
-              <button type="button" className="btn btn-outline-primary">Áp dụng</button>
-            </div>
-
-            <div className="summary__line">
-              <span className="summary__muted">Tạm tính</span>
-              <strong>{currency(subTotal)}</strong>
-            </div>
-            <div className="summary__line">
-              <span className="summary__muted">Phí vận chuyển</span>
-              <span className="summary__muted">Liên hệ</span>
-            </div>
-            <div className="summary__line">
-              <span className="summary__muted">Mã giảm giá</span>
-              <span>0đ</span>
-            </div>
-
-            <div className="summary__total">
-              <span>TỔNG TIỀN</span>
-              <span className="summary__total-value">{currency(subTotal)}</span>
-            </div>
-
-            {/* Không thanh toán online. Submit form → /success */}
-            <button type="submit" className="btn btn-primary w-100 mt-2" disabled={!items.length}>
-              ĐẶT HÀNG
-            </button>
-            <label className="summary__terms">
-              <input type="checkbox" className="form-check-input me-2" defaultChecked />
-              Bằng cách đặt hàng, bạn đồng ý để shop liên hệ xác nhận theo <a href="#">Điều khoản sử dụng</a>.
-            </label>
-          </aside>
+  if (cartItems.length === 0) {
+    return (
+      <div className="cart-empty">
+        <div className="container">
+          <div className="cart-empty-content">
+            <Empty
+              image={<ShoppingCartOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />}
+              description="Giỏ hàng của bạn đang trống"
+            >
+              <Button 
+                type="primary" 
+                size="large"
+                onClick={handleContinueShopping}
+                icon={<ArrowLeftOutlined />}
+              >
+                Tiếp tục mua sắm
+              </Button>
+            </Empty>
+          </div>
         </div>
       </div>
-    </form>
+    );
+  }
+
+  return (
+    <div className="cart-page">
+      <div className="container">
+        <div className="cart-header">
+          <h1 className="cart-title">
+            <ShoppingCartOutlined /> Giỏ hàng ({cartItems.length} sản phẩm)
+          </h1>
+          <Button 
+            type="link" 
+            onClick={handleContinueShopping}
+            icon={<ArrowLeftOutlined />}
+          >
+            Tiếp tục mua sắm
+          </Button>
+        </div>
+
+        <div className="cart-content">
+          <div className="cart-main">
+            {/* Danh sách sản phẩm */}
+            <div className="cart-items">
+              {cartItems.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <div className="cart-item-image">
+                    <img src={item.image || '/src/assets/img/sanpham1.jpg'} alt={item.name} />
+                  </div>
+                  
+                  <div className="cart-item-info">
+                    <h3 className="cart-item-name">{item.name}</h3>
+                    <p className="cart-item-price">₫{item.price?.toLocaleString()}</p>
+                    
+                    <div className="cart-item-actions">
+                      <div className="quantity-controls">
+                        <Button 
+                          type="text" 
+                          icon={<MinusOutlined />}
+                          onClick={() => decreaseQty(item.id)}
+                          disabled={item.quantity <= 1}
+                        />
+                        <span className="quantity">{item.quantity}</span>
+                        <Button 
+                          type="text" 
+                          icon={<PlusOutlined />}
+                          onClick={() => increaseQty(item.id)}
+                        />
+                      </div>
+                      
+                      <div className="cart-item-total">
+                        ₫{(item.price * item.quantity).toLocaleString()}
+                      </div>
+                      
+                      <Button 
+                        type="text" 
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleRemoveItem(item.id)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mã giảm giá */}
+            <div className="coupon-section">
+              <h3>Mã giảm giá</h3>
+              <div className="coupon-input">
+                <Input
+                  placeholder="Nhập mã giảm giá"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  onPressEnter={handleApplyCoupon}
+                />
+                <Button 
+                  type="primary"
+                  onClick={handleApplyCoupon}
+                  disabled={!couponCode.trim()}
+                >
+                  Áp dụng
+                </Button>
+              </div>
+              {appliedCoupon && (
+                <div className="applied-coupon">
+                  <span>Đã áp dụng: {appliedCoupon.code}</span>
+                  <Button type="link" onClick={handleRemoveCoupon}>
+                    Xóa
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Tóm tắt đơn hàng */}
+          <div className="cart-summary">
+            <div className="summary-card">
+              <h3>Tóm tắt đơn hàng</h3>
+              
+              <div className="summary-item">
+                <span>Tạm tính:</span>
+                <span>₫{subtotal.toLocaleString()}</span>
+              </div>
+              
+              <div className="summary-item">
+                <span>Phí vận chuyển:</span>
+                <span>{shippingFee === 0 ? 'Miễn phí' : `₫${shippingFee.toLocaleString()}`}</span>
+              </div>
+              
+              {appliedCoupon && (
+                <div className="summary-item discount">
+                  <span>Giảm giá ({appliedCoupon.code}):</span>
+                  <span>-₫{discount.toLocaleString()}</span>
+                </div>
+              )}
+              
+              <Divider />
+              
+              <div className="summary-total">
+                <span>Tổng cộng:</span>
+                <span className="total-amount">₫{total.toLocaleString()}</span>
+              </div>
+              
+              {shippingFee > 0 && (
+                <div className="free-shipping-note">
+                  Mua thêm ₫{(500000 - subtotal).toLocaleString()} để được miễn phí vận chuyển
+                </div>
+              )}
+              
+              <Button 
+                type="primary" 
+                size="large" 
+                block
+                onClick={handleCheckout}
+                className="checkout-btn"
+              >
+                Tiến hành thanh toán
+              </Button>
+              
+              <div className="secure-checkout">
+                <span>🔒 Thanh toán an toàn</span>
+                <span>✓ Giao hàng miễn phí</span>
+                <span>✓ Đổi trả 30 ngày</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

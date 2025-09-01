@@ -63,5 +63,5 @@ export default {
       },
     },
   },
-  plugins: [animate],
+  plugins: [],
 } satisfies Config
