@@ -156,7 +156,7 @@ const Topics: React.FC = () => {
       postCount: editingTopic?.postCount || 0,
       createdAt: editingTopic?.createdAt || dayjs().format('YYYY-MM-DD'),
       updatedAt: dayjs().format('YYYY-MM-DD'),
-      slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+      slug: (values.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
       parentName: values.parentId ? topics.find(t => t.id === values.parentId)?.name : undefined,
     };
 

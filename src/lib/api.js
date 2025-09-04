@@ -62,7 +62,19 @@ async function request(path, options = {}) {
 }
 
 async function json(res) {
-  return res.status !== 204 ? res.json() : null;
+  if (res.status === 204) return null;
+  
+  try {
+    const text = await res.text();
+    console.log('Raw response text:', text);
+    
+    if (!text) return null;
+    
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    throw new Error(`Invalid JSON response: ${error.message}`);
+  }
 }
 
 export const api = {

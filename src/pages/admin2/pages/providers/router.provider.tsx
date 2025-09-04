@@ -28,23 +28,27 @@ import Login from "../../../../pages/auth/Login";
 import Register from "../../../../pages/auth/Register";
 import Account from "../../../../pages/user/Account";
 import News from "../../../../pages/user/News";
+import ProductDemo from "../../../../pages/user/ProductDemo";
 import NewsDetail from "../../../../pages/user/NewsDetail";
 import Promotion from "../../../../pages/user/Promotion";
 import PromotionDetail from "../../../../pages/user/PromotionDetail";
 import Wishlist from "../../../../pages/user/Wishlist";
 import About from "../../../../pages/user/About";
 import OrderSuccess from "../../../../pages/user/OrderSuccess";
+import UserOrders from "../../../../pages/user/UserOrders";
+import UserProfile from "../../../../pages/user/UserProfile";
+import TestAuth from "../../../../pages/TestAuth";
 import NotFound from "../../../../pages/NotFound";
 
 // Tạo router chính kết nối cả ecommerce và admin
 const mainRoutes = createBrowserRouter([
   // Admin routes
   {
-    path: "/admin2/login",
+    path: "/admin/login",
     element: <AdminLogin />,
   },
   {
-    path: "/admin2",
+    path: "/admin",
     element: (
       <ProtectedRoute requireAdmin={true}>
         <AdminLayout />
@@ -144,6 +148,10 @@ const mainRoutes = createBrowserRouter([
         element: <Account />,
       },
       {
+        path: "product-demo",
+        element: <ProductDemo />,
+      },
+      {
         path: "news",
         element: <News />,
       },
@@ -170,6 +178,18 @@ const mainRoutes = createBrowserRouter([
       {
         path: "order-success",
         element: <OrderSuccess />,
+      },
+      {
+        path: "orders",
+        element: <UserOrders />,
+      },
+      {
+        path: "profile",
+        element: <UserProfile />,
+      },
+      {
+        path: "test-auth",
+        element: <TestAuth />,
       },
     ],
   },

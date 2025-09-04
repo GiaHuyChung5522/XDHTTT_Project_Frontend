@@ -9,9 +9,11 @@ export default function Login() {
   const { user } = useAuth();
 
   const onSuccess = () => {
-    if (user?.role === Roles.ADMIN) navigate("/admin2", { replace: true });
-    else if (user?.role === Roles.STAFF) navigate("/staff", { replace: true });
-    else navigate("/account", { replace: true });
+    const stored = localStorage.getItem('user');
+    const nextUser = stored ? JSON.parse(stored) : user;
+    if (nextUser?.role === Roles.ADMIN) navigate("/admin2", { replace: true });
+    else if (nextUser?.role === Roles.STAFF) navigate("/staff", { replace: true });
+    else navigate("/", { replace: true }); // Redirect về trang chủ thay vì /account
   };
 
   return (
@@ -31,6 +33,7 @@ export default function Login() {
           className="btn btn-outline-secondary"
           onClick={() => navigate('/admin2/login')} 
         >
+          Admin Login
         </button>
       </div>
     </div>

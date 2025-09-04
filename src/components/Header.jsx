@@ -36,17 +36,22 @@ const Header = () => {
 
   const handleAuthSuccess = () => {
     setAuthMode(null);
-            if (user?.role === Roles.ADMIN) navigate("/admin2");
-    else if (user?.role === Roles.STAFF) navigate("/staff");
+    const stored = localStorage.getItem('user');
+    const nextUser = stored ? JSON.parse(stored) : user;
+    if (nextUser?.role === Roles.ADMIN) navigate("/admin");
+    else if (nextUser?.role === Roles.STAFF) navigate("/staff");
     else navigate("/account");
   };
 
   const goDashboard = () => {
-    if (!user) return;
-          if (user.role === Roles.ADMIN) navigate("/admin2");
-    else if (user.role === Roles.STAFF) navigate("/staff");
+    const stored = localStorage.getItem('user');
+    const nextUser = stored ? JSON.parse(stored) : user;
+    if (!nextUser) return;
+    if (nextUser.role === Roles.ADMIN) navigate("/admin/dashboard");
+    else if (nextUser.role === Roles.STAFF) navigate("/staff");
     else navigate("/account");
   };
+
 
   const handleLogout = async () => {
     await logout();
@@ -178,14 +183,24 @@ const Header = () => {
                       <div className="site-header__user-role">{user?.role}</div>
                     </div>
                   </div>
-                  <button 
+                  <Link 
+                    to="/profile"
                     className="site-header__menu-item" 
-                    role="menuitem" 
-                    onClick={goDashboard}
+                    role="menuitem"
+                    onClick={() => setShowUserMenu(false)}
                   >
                     <FaUser className="site-header__menu-icon" />
                     Tài khoản của tôi
-                  </button>
+                  </Link>
+                  <Link 
+                    to="/orders"
+                    className="site-header__menu-item" 
+                    role="menuitem"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <FaShoppingCart className="site-header__menu-icon" />
+                    Đơn hàng của tôi
+                  </Link>
                   <button 
                     className="site-header__menu-item site-header__menu-item--danger" 
                     role="menuitem" 

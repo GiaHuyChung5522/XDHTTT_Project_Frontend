@@ -1,5 +1,6 @@
 import React from 'react';
-import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar, Progress } from 'antd';
+import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar, Progress, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { Column, Line, Pie } from '@ant-design/charts';
 import { motion, type Variants } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -18,6 +19,10 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
+  PlusOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -28,34 +33,47 @@ const getRealStats = () => {
     const orders = localStorage.getItem('orders');
     const orderData = orders ? JSON.parse(orders) : [];
     
-    const totalRevenue = orderData
-      .filter(order => order.status === 'delivered')
-      .reduce((sum, order) => sum + order.total, 0);
+    const cart = localStorage.getItem('cart');
+    const cartData = cart ? JSON.parse(cart) : [];
     
-    const pendingOrders = orderData.filter(order => order.status === 'pending').length;
+    const users = localStorage.getItem('users');
+    const userData = users ? JSON.parse(users) : [];
+    
+    const totalRevenue = orderData
+      .filter((order: any) => order.status === 'delivered')
+      .reduce((sum: number, order: any) => sum + order.total, 0);
+    
+    const pendingOrders = orderData.filter((order: any) => order.status === 'pending').length;
     const totalOrders = orderData.length;
-    const uniqueCustomers = new Set(orderData.map(order => order.customerInfo?.phone)).size;
+    const uniqueCustomers = new Set(orderData.map((order: any) => order.customerInfo?.phone)).size;
+    
+    // Calculate total products in cart (active users)
+    const totalProductsInCart = cartData.reduce((sum: number, item: any) => sum + item.quantity, 0);
     
     return {
       totalRevenue,
       pendingOrders,
       totalOrders,
-      uniqueCustomers
+      uniqueCustomers,
+      totalProductsInCart,
+      totalUsers: userData.length
     };
   } catch (error) {
     return {
       totalRevenue: 0,
       pendingOrders: 0,
       totalOrders: 0,
-      uniqueCustomers: 0
+      uniqueCustomers: 0,
+      totalProductsInCart: 0,
+      totalUsers: 0
     };
   }
 };
 
 const realStats = getRealStats();
 
-// Mock data with real stats
-const mockStats = [
+// Real stats with actual data
+const realStatsData = [
   {
     title: 'Tổng doanh thu',
     value: realStats.totalRevenue,
@@ -70,21 +88,34 @@ const mockStats = [
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
-    title: 'Đơn hàng mới',
+    title: 'Đơn hàng chờ xử lý',
     value: realStats.pendingOrders,
     prefix: '',
     suffix: '',
     precision: 0,
     trend: 'up',
     trendValue: 8.3,
+    icon: <ClockCircleOutlined />,
+    color: '#f59e0b', // Amber
+    bgColor: '#fffbeb',
+    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+  },
+  {
+    title: 'Tổng đơn hàng',
+    value: realStats.totalOrders,
+    prefix: '',
+    suffix: '',
+    precision: 0,
+    trend: 'up',
+    trendValue: 15.7,
     icon: <ShoppingCartOutlined />,
     color: '#10b981', // Emerald
     bgColor: '#ecfdf5',
     gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
   },
   {
-    title: 'Tổng đơn hàng',
-    value: realStats.totalOrders,
+    title: 'Tổng người dùng',
+    value: realStats.totalUsers,
     prefix: '',
     suffix: '',
     precision: 0,
@@ -95,19 +126,6 @@ const mockStats = [
     bgColor: '#f5f3ff',
     gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   },
-  {
-    title: 'Khách hàng',
-    value: realStats.uniqueCustomers,
-    prefix: '',
-    suffix: '',
-    precision: 0,
-    trend: 'up',
-    trendValue: 15.7,
-    icon: <TagOutlined />,
-    color: '#f59e0b', // Amber
-    bgColor: '#fffbeb',
-    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-  },
 ];
 
 // Function to get real orders from localStorage
@@ -116,7 +134,7 @@ const getRealOrders = () => {
     const orders = localStorage.getItem('orders');
     const orderData = orders ? JSON.parse(orders) : [];
     
-    return orderData.slice(0, 5).map((order, index) => ({
+    return orderData.slice(0, 5).map((order: any, index: number) => ({
       key: index + 1,
       orderNumber: order.orderId,
       customer: order.customerInfo?.name || 'Khách hàng',
@@ -125,6 +143,12 @@ const getRealOrders = () => {
               order.status === 'confirmed' ? 'Đã xác nhận' :
               order.status === 'shipped' ? 'Đang giao hàng' :
               order.status === 'delivered' ? 'Đã giao hàng' : 'Đã hủy',
+      paymentStatus: order.paymentStatus === 'paid' ? 'Đã thanh toán' :
+                    order.paymentStatus === 'pending' ? 'Chờ thanh toán' :
+                    order.paymentStatus === 'failed' ? 'Thanh toán thất bại' : 'Chờ thanh toán',
+      paymentMethod: order.paymentMethod === 'cash' ? 'Tiền mặt' :
+                    order.paymentMethod === 'bank' ? 'Chuyển khoản' :
+                    order.paymentMethod === 'card' ? 'Thẻ tín dụng' : 'Tiền mặt',
       date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
       statusColor: order.status === 'pending' ? '#f59e0b' :
                    order.status === 'confirmed' ? '#3b82f6' :
@@ -134,6 +158,9 @@ const getRealOrders = () => {
                 order.status === 'confirmed' ? '#eff6ff' :
                 order.status === 'shipped' ? '#f5f3ff' :
                 order.status === 'delivered' ? '#ecfdf5' : '#fef2f2',
+      paymentStatusColor: order.paymentStatus === 'paid' ? '#10b981' :
+                         order.paymentStatus === 'pending' ? '#f59e0b' :
+                         order.paymentStatus === 'failed' ? '#ef4444' : '#f59e0b',
     }));
   } catch (error) {
     return [];
@@ -209,6 +236,7 @@ const orderStatusData = [
 ];
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const orderColumns = [
     {
       title: 'Mã đơn hàng',
@@ -251,6 +279,31 @@ const Dashboard: React.FC = () => {
         }}>
           {status}
         </span>
+      ),
+    },
+    {
+      title: 'Thanh toán',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
+      render: (paymentStatus: string, record: any) => (
+        <div>
+          <span style={{
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '11px',
+            fontWeight: '500',
+            backgroundColor: record.paymentStatusColor + '20',
+            color: record.paymentStatusColor,
+            display: 'inline-block',
+            marginBottom: '2px',
+          }}>
+            {paymentStatus}
+          </span>
+          <br />
+          <Text type="secondary" style={{ fontSize: '10px' }}>
+            {record.paymentMethod}
+          </Text>
+        </div>
       ),
     },
     {
@@ -366,18 +419,137 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <motion.div variants={itemVariants}>
           <div style={{ marginBottom: '24px' }}>
-            <Title level={2} style={{ margin: 0, color: '#1f2937', fontWeight: '700' }}>
-              Dashboard
-            </Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>
-              Chào mừng trở lại! Đây là tổng quan về hoạt động kinh doanh của bạn.
-            </Text>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <Title level={2} style={{ margin: 0, color: '#1f2937', fontWeight: '700' }}>
+                  Dashboard
+                </Title>
+                <Text type="secondary" style={{ fontSize: '16px' }}>
+                  Chào mừng trở lại! Đây là tổng quan về hoạt động kinh doanh của bạn.
+                </Text>
+              </div>
+              <Space>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={() => navigate('/admin2/products')}
+                  style={{ borderRadius: '8px' }}
+                >
+                  Thêm sản phẩm
+                </Button>
+                <Button 
+                  icon={<SettingOutlined />}
+                  onClick={() => navigate('/admin2/settings')}
+                  style={{ borderRadius: '8px' }}
+                >
+                  Cài đặt
+                </Button>
+              </Space>
+            </div>
+            
+            {/* Quick Actions */}
+            <Card 
+              style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '12px',
+                color: 'white'
+              }}
+              bodyStyle={{ padding: '20px' }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12} md={6}>
+                  <Button 
+                    type="text" 
+                    icon={<TeamOutlined />}
+                    onClick={() => navigate('/admin2/customers')}
+                    style={{ 
+                      color: 'white', 
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      borderRadius: '8px',
+                      width: '100%',
+                      height: '60px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý khách hàng</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xem và quản lý người dùng</div>
+                  </Button>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Button 
+                    type="text" 
+                    icon={<ShoppingCartOutlined />}
+                    onClick={() => navigate('/admin2/orders')}
+                    style={{ 
+                      color: 'white', 
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      borderRadius: '8px',
+                      width: '100%',
+                      height: '60px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý đơn hàng</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xử lý và theo dõi đơn hàng</div>
+                  </Button>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Button 
+                    type="text" 
+                    icon={<TagOutlined />}
+                    onClick={() => navigate('/admin2/products')}
+                    style={{ 
+                      color: 'white', 
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      borderRadius: '8px',
+                      width: '100%',
+                      height: '60px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý sản phẩm</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Thêm, sửa, xóa sản phẩm</div>
+                  </Button>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Button 
+                    type="text" 
+                    icon={<FileTextOutlined />}
+                    onClick={() => navigate('/admin2/analytics')}
+                    style={{ 
+                      color: 'white', 
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      borderRadius: '8px',
+                      width: '100%',
+                      height: '60px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Báo cáo & Phân tích</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xem báo cáo chi tiết</div>
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
           </div>
         </motion.div>
 
         {/* Stats Cards */}
         <Row gutter={[24, 24]}>
-          {mockStats.map((stat, index) => (
+          {realStatsData.map((stat, index) => (
             <Col xs={24} sm={12} lg={6} key={index}>
               <motion.div variants={itemVariants}>
                 <Card 
@@ -440,9 +612,9 @@ const Dashboard: React.FC = () => {
                         justifyContent: 'center',
                         border: `2px solid ${stat.color}20`,
                       }}>
-                        {React.cloneElement(stat.icon, { 
-                          style: { fontSize: '20px', color: stat.color }
-                        })}
+                        <div style={{ fontSize: '20px', color: stat.color }}>
+                          {stat.icon}
+                        </div>
                       </div>
                     </div>
                     

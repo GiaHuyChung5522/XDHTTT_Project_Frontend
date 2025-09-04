@@ -82,35 +82,78 @@ export default function Checkout() {
     try {
       setLoading(true);
       
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Validate payment method specific fields
+      if (paymentMethod === 'card') {
+        await form.validateFields(['cardNumber', 'cardHolder', 'expiry', 'cvv']);
+      }
       
+      // Simulate payment processing
+      message.loading('Đang xử lý thanh toán...', 0);
+      
+      // Simulate different processing times based on payment method
+      const processingTime = paymentMethod === 'card' ? 3000 : 
+                           paymentMethod === 'bank' ? 2000 : 1000;
+      
+      await new Promise(resolve => setTimeout(resolve, processingTime));
+      
+      // Simulate payment success/failure (90% success rate for demo)
+      const paymentSuccess = Math.random() > 0.1;
+      
+      if (!paymentSuccess) {
+        message.destroy();
+        message.error('Thanh toán thất bại. Vui lòng thử lại hoặc chọn phương thức khác.');
+        return;
+      }
+      
+      message.destroy();
+      message.success('Thanh toán thành công!');
+      
+      // Create order data
       const orderData = {
         orderId: 'DH' + Date.now().toString().slice(-7),
         customerInfo: form.getFieldsValue(),
         items: cartItems,
         paymentMethod,
+        paymentStatus: 'paid',
         subtotal,
         shippingFee,
         total,
-        status: 'pending',
+        status: paymentMethod === 'cash' ? 'pending' : 'confirmed',
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        paymentDetails: paymentMethod === 'card' ? {
+          cardLast4: form.getFieldValue('cardNumber')?.slice(-4),
+          cardType: 'Visa', // Demo
+          transactionId: 'TXN' + Date.now().toString().slice(-8)
+        } : paymentMethod === 'bank' ? {
+          bankName: 'Vietcombank',
+          accountNumber: '1234567890',
+          transactionId: 'BANK' + Date.now().toString().slice(-8)
+        } : null
       };
 
-      // Lưu vào localStorage hoặc gửi API
+      // Save to localStorage
       localStorage.setItem('lastOrder', JSON.stringify(orderData));
       
-      // Lưu đơn hàng vào danh sách đơn hàng cho admin
+      // Add to orders list for admin
       const existingOrders = localStorage.getItem('orders');
       const orders = existingOrders ? JSON.parse(existingOrders) : [];
       orders.unshift(orderData);
       localStorage.setItem('orders', JSON.stringify(orders));
       
+      // Clear cart after successful order
+      cartItems.forEach(item => removeFromCart(item.id));
+      
       message.success('Đặt hàng thành công!');
       navigate('/order-success', { state: { order: orderData } });
       
     } catch (error) {
-      message.error('Có lỗi xảy ra, vui lòng thử lại');
+      message.destroy();
+      if (error.errorFields) {
+        message.error('Vui lòng kiểm tra lại thông tin thanh toán');
+      } else {
+        message.error('Có lỗi xảy ra, vui lòng thử lại');
+      }
     } finally {
       setLoading(false);
     }
@@ -272,20 +315,81 @@ export default function Checkout() {
       {paymentMethod === 'card' && (
         <div className="card-payment-form">
           <h4>Thông tin thẻ</h4>
+          <Alert
+            message="Demo Mode"
+            description="Đây là chế độ demo. Thông tin thẻ sẽ không được xử lý thực tế."
+            type="info"
+            showIcon
+            style={{ marginBottom: '16px' }}
+          />
           <div className="form-row">
-            <Form.Item name="cardNumber" label="Số thẻ" className="form-item">
-              <Input placeholder="1234 5678 9012 3456" />
+            <Form.Item 
+              name="cardNumber" 
+              label="Số thẻ" 
+              className="form-item"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số thẻ' },
+                { pattern: /^[0-9\s]{16,19}$/, message: 'Số thẻ không hợp lệ' }
+              ]}
+            >
+              <Input 
+                placeholder="1234 5678 9012 3456" 
+                maxLength={19}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, '');
+                  value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                  e.target.value = value;
+                }}
+              />
             </Form.Item>
-            <Form.Item name="cardHolder" label="Chủ thẻ" className="form-item">
-              <Input placeholder="NGUYEN VAN A" />
+            <Form.Item 
+              name="cardHolder" 
+              label="Chủ thẻ" 
+              className="form-item"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên chủ thẻ' },
+                { min: 2, message: 'Tên chủ thẻ phải có ít nhất 2 ký tự' }
+              ]}
+            >
+              <Input placeholder="NGUYEN VAN A" style={{ textTransform: 'uppercase' }} />
             </Form.Item>
           </div>
           <div className="form-row">
-            <Form.Item name="expiry" label="Ngày hết hạn" className="form-item">
-              <Input placeholder="MM/YY" />
+            <Form.Item 
+              name="expiry" 
+              label="Ngày hết hạn" 
+              className="form-item"
+              rules={[
+                { required: true, message: 'Vui lòng nhập ngày hết hạn' },
+                { pattern: /^(0[1-9]|1[0-2])\/\d{2}$/, message: 'Định dạng MM/YY' }
+              ]}
+            >
+              <Input 
+                placeholder="MM/YY" 
+                maxLength={5}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, '');
+                  if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                  }
+                  e.target.value = value;
+                }}
+              />
             </Form.Item>
-            <Form.Item name="cvv" label="CVV" className="form-item">
-              <Input placeholder="123" />
+            <Form.Item 
+              name="cvv" 
+              label="CVV" 
+              className="form-item"
+              rules={[
+                { required: true, message: 'Vui lòng nhập CVV' },
+                { pattern: /^[0-9]{3,4}$/, message: 'CVV phải có 3-4 số' }
+              ]}
+            >
+              <Input 
+                placeholder="123" 
+                maxLength={4}
+                type="password"
+              />
             </Form.Item>
           </div>
         </div>

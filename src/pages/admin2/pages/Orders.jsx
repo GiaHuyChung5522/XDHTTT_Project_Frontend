@@ -205,9 +205,9 @@ export default function Orders() {
 
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = order.id.toLowerCase().includes(searchText.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-                         order.customerPhone.includes(searchText);
+    const matchesSearch = (order.id || '').toLowerCase().includes(searchText.toLowerCase()) ||
+                         (order.customerName || '').toLowerCase().includes(searchText.toLowerCase()) ||
+                         (order.customerPhone || '').includes(searchText);
     const matchesDate = !dateRange || (
       dayjs(order.createdAt).isAfter(dateRange[0]) && 
       dayjs(order.createdAt).isBefore(dateRange[1])

@@ -1,0 +1,257 @@
+.user-orders {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.orders-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.orders-header h2 {
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.order-detail {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.order-detail .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-detail .ant-descriptions-item-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.order-detail .ant-steps-item-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.order-detail .ant-steps-item-description {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.order-detail .ant-timeline-item-content {
+  margin-left: 8px;
+}
+
+.order-detail .ant-table-thead > tr > th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #374151;
+}
+
+.order-detail .ant-avatar {
+  border: 1px solid #e5e7eb;
+}
+
+/* Status colors */
+.status-pending {
+  color: #f59e0b;
+  background: #fffbeb;
+}
+
+.status-confirmed {
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+.status-shipped {
+  color: #8b5cf6;
+  background: #f5f3ff;
+}
+
+.status-delivered {
+  color: #10b981;
+  background: #ecfdf5;
+}
+
+.status-cancelled {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Payment status colors */
+.payment-paid {
+  color: #10b981;
+  background: #ecfdf5;
+}
+
+.payment-pending {
+  color: #f59e0b;
+  background: #fffbeb;
+}
+
+.payment-failed {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-orders {
+    padding: 16px;
+  }
+  
+  .order-detail .ant-row {
+    flex-direction: column;
+  }
+  
+  .order-detail .ant-col {
+    margin-bottom: 16px;
+  }
+}
+
+/* Loading states */
+.ant-table-loading .ant-table-tbody > tr > td {
+  background: #fafafa;
+}
+
+/* Empty state */
+.ant-empty {
+  padding: 40px 0;
+}
+
+.ant-empty-description {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Card hover effects */
+.ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Button styles */
+.ant-btn-link {
+  padding: 0;
+  height: auto;
+  color: #1890ff;
+}
+
+.ant-btn-link:hover {
+  color: #40a9ff;
+}
+
+/* Tag styles */
+.ant-tag {
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Search and filter styles */
+.ant-input-search .ant-input {
+  border-radius: 6px;
+}
+
+.ant-select {
+  border-radius: 6px;
+}
+
+/* Table styles */
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f8fafc;
+}
+
+/* Modal styles */
+.ant-modal-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+}
+
+.ant-modal-body {
+  padding: 24px;
+}
+
+.ant-modal-title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Timeline styles */
+.ant-timeline-item-head {
+  border-width: 2px;
+}
+
+.ant-timeline-item-content {
+  margin-left: 12px;
+}
+
+/* Steps styles */
+.ant-steps-item-icon {
+  border-width: 2px;
+}
+
+.ant-steps-item-process .ant-steps-item-icon {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.ant-steps-item-finish .ant-steps-item-icon {
+  background: #52c41a;
+  border-color: #52c41a;
+}
+
+/* Avatar styles */
+.ant-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Typography styles */
+.ant-typography {
+  margin-bottom: 0;
+}
+
+/* Divider styles */
+.ant-divider {
+  margin: 12px 0;
+  border-color: #e5e7eb;
+}
+
+/* Badge styles */
+.ant-badge-count {
+  background: #ff4d4f;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+/* Space styles */
+.ant-space {
+  width: 100%;
+}
+
+.ant-space-item {
+  flex: 1;
+}
+
+/* Row and Col styles */
+.ant-row {
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.ant-col {
+  padding-left: 8px;
+  padding-right: 8px;
+}

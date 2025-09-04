@@ -17,8 +17,8 @@ const AdminProtectedRoute = ({ children }) => {
     : !!adminAuthService.getCurrentUser?.()?.role === 'admin';
 
   if (!isAuthenticated) {
-    // Nếu chưa đăng nhập → về trang login admin2
-    return <Navigate to="/admin2/login" replace />;
+    // Nếu chưa đăng nhập → về trang login admin
+    return <Navigate to="/admin/login" replace />;
   }
 
   if (!hasAdminRole) {

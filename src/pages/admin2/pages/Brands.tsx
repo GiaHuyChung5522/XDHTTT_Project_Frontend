@@ -170,7 +170,7 @@ const Brands: React.FC = () => {
       key: editingBrand ? editingBrand.key : String(brands.length + 1),
       id: editingBrand ? editingBrand.id : `brand-${String(brands.length + 1).padStart(3, '0')}`,
       name: values.name,
-      slug: values.slug || values.name.toLowerCase().replace(/\s+/g, '-'),
+      slug: values.slug || (values.name || '').toLowerCase().replace(/\s+/g, '-'),
       description: values.description || '',
       logo: 'https://via.placeholder.com/60x60?text=' + values.name.slice(0, 2).toUpperCase(),
       website: values.website,

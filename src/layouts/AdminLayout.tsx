@@ -19,9 +19,9 @@ const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { isDark, updateTheme } = useTheme();
   const [currentUser] = useState(() => authService.getCurrentUser() || {
-    name: 'Admin 7N Fashion', 
-    email: 'admin@7nfashion.com', 
-    avatar: '👨‍💼'
+    name: 'Quản trị viên', 
+    email: 'admin@example.com', 
+    avatar: '👤'
   });
 
   const navigate = useNavigate();
@@ -37,15 +37,9 @@ const AdminLayout: React.FC = () => {
     { key: '/admin2', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/admin2/analytics', icon: <BarChartOutlined />, label: 'Thống kê' },
     { key: '/admin2/categories', icon: <AppstoreOutlined />, label: 'Danh mục' },
-    { key: '/admin2/brands', icon: <CrownOutlined />, label: 'Thương hiệu' },
     { key: '/admin2/products', icon: <ShopOutlined />, label: 'Sản phẩm' },
     { key: '/admin2/orders', icon: <ShoppingCartOutlined />, label: 'Đơn hàng' },
     { key: '/admin2/customers', icon: <UserOutlined />, label: 'Khách hàng' },
-    { key: '/admin2/posts', icon: <FileTextOutlined />, label: 'Bài viết' },
-    { key: '/admin2/topics', icon: <BulbOutlined />, label: 'Chủ đề' },
-    { key: '/admin2/messages', icon: <MessageOutlined />, label: 'Tin nhắn' },
-    { key: '/admin2/notifications', icon: <NotificationOutlined />, label: 'Thông báo' },
-    { key: '/admin2/profile', icon: <ProfileOutlined />, label: 'Hồ sơ' },
     { key: '/admin2/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
   ];
 
@@ -270,7 +264,7 @@ const AdminLayout: React.FC = () => {
         </Content>
       </Layout>
 
-      <style jsx>{`
+      <style>{`
         .admin-menu .ant-menu-item {
           margin: 4px 16px;
           border-radius: 8px;

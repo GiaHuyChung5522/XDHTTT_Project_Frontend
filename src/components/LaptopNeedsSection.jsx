@@ -6,38 +6,17 @@ import laptopSieuPham from "../assets/img/laptopSieuPham.jpg";
 const CATEGORIES = [
   {
     id: "office",
-    title: "HỌC TẬP, VĂN PHÒNG",
+    title: "Laptop văn phòng",
     image: "https://trungtran.vn/images/products/cat/resized/dm2_1673947421.webp",
     icons: ["bi-file-earmark-text", "bi-pen", "bi-globe2"],
-    href: "/laptops?need=office",
-  },
-  {
-    id: "design",
-    title: "ĐỒ HỌA, KỸ THUẬT",
-    image: "https://trungtran.vn/images/products/cat/resized/dm3_1673947441.webp",
-    icons: ["bi-brush", "bi-vector-pen", "bi-cpu"],
-    href: "/laptops?need=design",
-  },
-  {
-    id: "dev",
-    title: "LẬP TRÌNH",
-    image: "https://trungtran.vn/images/products/cat/resized/dm4_1673947431.webp",
-    icons: ["bi-code-slash", "bi-boxes", "bi-terminal"],
-    href: "/laptops?need=dev",
+    href: "/products?category=laptop-van-phong",
   },
   {
     id: "gaming",
-    title: "GAME",
+    title: "Laptop gaming",
     image: "https://trungtran.vn/images/products/cat/resized/dm1_1673947409.webp",
     icons: ["bi-controller", "bi-joystick", "bi-lightning-charge"],
-    href: "/laptops?need=gaming",
-  },
-  {
-    id: "flagship",
-    title: "SIÊU PHẨM",
-    image: laptopSieuPham,
-    icons: ["bi-award", "bi-star", "bi-stars"],
-    href: "/laptops?need=flagship",
+    href: "/products?category=laptop-gaming",
   },
 ];
 

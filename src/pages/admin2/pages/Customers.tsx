@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray } from '../../../utils/initData';
 import {
   Table,
   Button,
@@ -54,7 +55,57 @@ interface Customer {
   orders: CustomerOrder[];
 }
 
-// Mock data
+// Function to get real customers from localStorage
+const getRealCustomers = (): Customer[] => {
+  try {
+    const users = localStorage.getItem('users');
+    const userData = users ? JSON.parse(users) : [];
+    
+    const orders = localStorage.getItem('orders');
+    const orderData = orders ? JSON.parse(orders) : [];
+    
+    return userData.map((user: any, index: number) => {
+      const userOrders = orderData.filter((order: any) => 
+        order.customerInfo?.email === user.email || order.customerInfo?.phone === user.telephone
+      );
+      
+      const totalSpent = userOrders
+        .filter((order: any) => order.status === 'delivered')
+        .reduce((sum: number, order: any) => sum + order.total, 0);
+      
+      const lastOrder = userOrders.length > 0 
+        ? userOrders.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+        : null;
+      
+      return {
+        key: getSafeString(user.id) || index.toString(),
+        id: getSafeString(user.id) || index.toString(),
+        name: `${getSafeString(user.firstName)} ${getSafeString(user.lastName)}`.trim() || getSafeString(user.email) || 'Khách hàng',
+        email: getSafeString(user.email) || 'Chưa có email',
+        phone: getSafeString(user.telephone) || 'Chưa cập nhật',
+        address: getSafeString(user.address) || 'Chưa cập nhật',
+        totalOrders: userOrders.length,
+        totalSpent: totalSpent,
+        lastOrderDate: lastOrder ? new Date(lastOrder.createdAt).toLocaleDateString('vi-VN') : 'Chưa có đơn hàng',
+        status: userOrders.length > 0 ? 'active' : 'inactive',
+        joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN'),
+        orders: userOrders.map((order: any) => ({
+          id: getSafeString(order.orderId) || 'N/A',
+          date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
+          total: getSafeNumber(order.total),
+          status: order.status === 'pending' ? 'Chờ xác nhận' :
+                  order.status === 'confirmed' ? 'Đã xác nhận' :
+                  order.status === 'shipped' ? 'Đang giao hàng' :
+                  order.status === 'delivered' ? 'Đã giao hàng' : 'Đã hủy',
+        })),
+      };
+    });
+  } catch (error) {
+    return [];
+  }
+};
+
+// Mock data (fallback)
 const mockCustomers: Customer[] = [
   {
     key: '1',
@@ -150,7 +201,15 @@ const mockCustomers: Customer[] = [
 ];
 
 const Customers: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>(() => {
+    const realCustomers = getRealCustomers();
+    return realCustomers.length > 0 ? realCustomers : mockCustomers;
+  });
+
+  useEffect(() => {
+    // Initialize localStorage data on component mount
+    initializeLocalStorageData();
+  }, []);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>(mockCustomers);
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -163,10 +222,10 @@ const Customers: React.FC = () => {
 
     if (searchText) {
       filtered = filtered.filter(customer =>
-        customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchText.toLowerCase()) ||
-        customer.phone.includes(searchText) ||
-        customer.id.toLowerCase().includes(searchText.toLowerCase())
+        getSafeString(customer.name).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(customer.email).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(customer.phone).includes(searchText) ||
+        getSafeString(customer.id).toLowerCase().includes(searchText.toLowerCase())
       );
     }
 

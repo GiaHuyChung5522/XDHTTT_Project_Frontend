@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray } from '../../../utils/initData';
 import {
   Table,
   Button,
@@ -45,7 +46,31 @@ interface Product {
   createdAt: string;
 }
 
-// Mock data
+// Function to get real products from localStorage
+const getRealProducts = (): Product[] => {
+  try {
+    const products = localStorage.getItem('products');
+    const productData = products ? JSON.parse(products) : [];
+    
+    return productData.map((product: any, index: number) => ({
+      key: getSafeString(product.id) || index.toString(),
+      id: getSafeString(product.id) || index.toString(),
+      name: getSafeString(product.name) || 'Sản phẩm không tên',
+      category: getSafeString(product.category) || 'Không phân loại',
+      price: getSafeNumber(product.price),
+      salePrice: getSafeNumber(product.salePrice),
+      stock: getSafeNumber(product.stock),
+      status: getSafeNumber(product.stock) > 0 ? 'active' : 'out_of_stock',
+      image: getSafeString(product.image) || 'https://via.placeholder.com/100x100?text=No+Image',
+      description: getSafeString(product.description) || 'Không có mô tả',
+      createdAt: getSafeString(product.createdAt) || new Date().toISOString(),
+    }));
+  } catch (error) {
+    return [];
+  }
+};
+
+// Mock data (fallback)
 const mockProducts: Product[] = [
   {
     key: '1',
@@ -121,7 +146,15 @@ const mockCategories = [
 ];
 
 const Products: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const realProducts = getRealProducts();
+    return realProducts.length > 0 ? realProducts : mockProducts;
+  });
+
+  useEffect(() => {
+    // Initialize localStorage data on component mount
+    initializeLocalStorageData();
+  }, []);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(mockProducts);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -136,8 +169,8 @@ const Products: React.FC = () => {
 
     if (searchText) {
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        product.id.toLowerCase().includes(searchText.toLowerCase())
+        getSafeString(product.name).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(product.id).toLowerCase().includes(searchText.toLowerCase())
       );
     }
 

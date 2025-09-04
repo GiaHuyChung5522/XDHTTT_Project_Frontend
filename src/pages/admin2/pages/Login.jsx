@@ -20,7 +20,7 @@ const AdminLogin = () => {
       message.success('Đăng nhập thành công!');
       
       // Chuyển hướng đến dashboard admin
-      navigate('/admin2', { replace: true });
+      navigate('/admin', { replace: true });
     } catch (error) {
       message.error(error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
@@ -136,19 +136,14 @@ const AdminLogin = () => {
 
           <Divider>
             <Text type="secondary" className="text-xs">
-              Thông tin đăng nhập demo
+              Chỉ dành cho quản trị viên được ủy quyền
             </Text>
           </Divider>
 
           <div className="text-center">
-            <Space direction="vertical" size={2}>
-              <Text type="secondary" className="text-sm">
-                <strong>Email:</strong> admin@gmail.com
-              </Text>
-              <Text type="secondary" className="text-sm">
-                <strong>Mật khẩu:</strong> admin123
-              </Text>
-            </Space>
+            <Text type="secondary" className="text-sm">
+              Vui lòng liên hệ quản trị viên để được cấp quyền truy cập
+            </Text>
           </div>
 
           <div className="text-center mt-6">

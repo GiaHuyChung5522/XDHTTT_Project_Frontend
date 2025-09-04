@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Button,
@@ -18,6 +18,7 @@ import {
   Divider,
   message,
 } from 'antd';
+import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray, getSafeObject } from '../../../utils/initData';
 import {
   SearchOutlined,
   EyeOutlined,
@@ -59,7 +60,63 @@ interface Order {
   notes?: string;
 }
 
-// Mock data
+// Function to get real orders from localStorage
+const getRealOrders = (): Order[] => {
+  try {
+    const orders = localStorage.getItem('orders');
+    const orderData = orders ? JSON.parse(orders) : [];
+    
+    return orderData.map((order: any, index: number) => ({
+      key: getSafeString(order.orderId) || index.toString(),
+      id: getSafeString(order.orderId) || index.toString(),
+      customerName: getSafeString(order.customerInfo?.name) || 'Khách hàng',
+      customerEmail: getSafeString(order.customerInfo?.email) || 'Chưa có email',
+      customerPhone: getSafeString(order.customerInfo?.phone) || 'Chưa có SĐT',
+      shippingAddress: getSafeString(order.customerInfo?.address) || 'Chưa có địa chỉ',
+      items: getSafeArray(order.items),
+      subtotal: getSafeNumber(order.subtotal),
+      shipping: getSafeNumber(order.shipping),
+      tax: getSafeNumber(order.tax),
+      total: getSafeNumber(order.total),
+      status: getSafeString(order.status) || 'pending',
+      paymentStatus: getSafeString(order.paymentStatus) || 'pending',
+      paymentMethod: getSafeString(order.paymentMethod) || 'cash',
+      notes: getSafeString(order.notes),
+      createdAt: getSafeString(order.createdAt) || new Date().toISOString(),
+      updatedAt: getSafeString(order.updatedAt) || new Date().toISOString(),
+      timeline: [
+        {
+          status: 'pending',
+          title: 'Đơn hàng được tạo',
+          description: 'Đơn hàng đã được tạo và đang chờ xác nhận',
+          time: order.createdAt || new Date().toISOString(),
+        },
+        ...(order.status === 'confirmed' ? [{
+          status: 'confirmed',
+          title: 'Đơn hàng được xác nhận',
+          description: 'Đơn hàng đã được xác nhận và đang chuẩn bị',
+          time: order.updatedAt || new Date().toISOString(),
+        }] : []),
+        ...(order.status === 'shipped' ? [{
+          status: 'shipped',
+          title: 'Đơn hàng đang giao',
+          description: 'Đơn hàng đã được giao cho đơn vị vận chuyển',
+          time: order.updatedAt || new Date().toISOString(),
+        }] : []),
+        ...(order.status === 'delivered' ? [{
+          status: 'delivered',
+          title: 'Đơn hàng đã giao',
+          description: 'Đơn hàng đã được giao thành công',
+          time: order.updatedAt || new Date().toISOString(),
+        }] : []),
+      ],
+    }));
+  } catch (error) {
+    return [];
+  }
+};
+
+// Mock data (fallback)
 const mockOrders: Order[] = [
   {
     key: '1',
@@ -178,13 +235,62 @@ const mockOrders: Order[] = [
 ];
 
 const Orders: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const realOrders = getRealOrders();
+    return realOrders.length > 0 ? realOrders : mockOrders;
+  });
+
+  useEffect(() => {
+    // Initialize localStorage data on component mount
+    initializeLocalStorageData();
+  }, []);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<string>('');
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Load orders from localStorage
+  const loadOrders = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const savedOrders = localStorage.getItem('orders');
+      const allOrders = savedOrders ? JSON.parse(savedOrders) : mockOrders;
+      
+      // Convert to proper format
+      const formattedOrders = allOrders.map((order: any, index: number) => ({
+        key: index.toString(),
+        id: order.orderId || order.id,
+        customerName: order.customerInfo?.name || order.customerName || 'Khách hàng',
+        customerEmail: order.customerInfo?.email || order.customerEmail || 'N/A',
+        customerPhone: order.customerInfo?.phone || order.customerPhone || 'N/A',
+        shippingAddress: order.customerInfo?.address || order.shippingAddress || 'N/A',
+        items: order.items || [],
+        subtotal: order.subtotal || 0,
+        shippingFee: order.shippingFee || 0,
+        total: order.total || 0,
+        paymentMethod: order.paymentMethod || 'cash',
+        paymentStatus: order.paymentStatus || (order.paymentMethod === 'cash' ? 'pending' : 'paid'),
+        status: order.status || 'pending',
+        createdAt: order.createdAt || new Date().toISOString(),
+        updatedAt: order.updatedAt || new Date().toISOString(),
+        notes: order.customerInfo?.note || order.notes || '',
+        paymentDetails: order.paymentDetails || null
+      }));
+      
+      setOrders(formattedOrders);
+    } catch (error) {
+      message.error('Không thể tải danh sách đơn hàng');
+      setOrders(mockOrders);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter orders
   const handleFilter = () => {
@@ -192,9 +298,10 @@ const Orders: React.FC = () => {
 
     if (searchText) {
       filtered = filtered.filter(order =>
-        order.id.toLowerCase().includes(searchText.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(searchText.toLowerCase())
+        getSafeString(order.id).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(order.customerName).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(order.customerEmail).toLowerCase().includes(searchText.toLowerCase()) ||
+        getSafeString(order.customerPhone).includes(searchText)
       );
     }
 
@@ -210,6 +317,10 @@ const Orders: React.FC = () => {
   };
 
   React.useEffect(() => {
+    loadOrders();
+  }, []);
+
+  React.useEffect(() => {
     handleFilter();
   }, [searchText, selectedStatus, selectedPaymentStatus, orders]);
 
@@ -218,13 +329,32 @@ const Orders: React.FC = () => {
     setIsDetailModalVisible(true);
   };
 
-  const handleUpdateStatus = (orderId: string, newStatus: string) => {
-    setOrders(orders.map(order =>
-      order.id === orderId
-        ? { ...order, status: newStatus as any, updatedAt: new Date().toLocaleString() }
-        : order
-    ));
-    message.success('Đã cập nhật trạng thái đơn hàng');
+  const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const updatedOrders = orders.map(order =>
+        order.id === orderId
+          ? { ...order, status: newStatus as any, updatedAt: new Date().toISOString() }
+          : order
+      );
+      
+      setOrders(updatedOrders);
+      
+      // Update localStorage
+      const savedOrders = localStorage.getItem('orders');
+      if (savedOrders) {
+        const allOrders = JSON.parse(savedOrders);
+        const updatedAllOrders = allOrders.map((order: any) =>
+          (order.orderId || order.id) === orderId
+            ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
+            : order
+        );
+        localStorage.setItem('orders', JSON.stringify(updatedAllOrders));
+      }
+      
+      message.success(`Đã cập nhật trạng thái đơn hàng ${orderId} thành ${getStatusText(newStatus)}`);
+    } catch (error) {
+      message.error('Không thể cập nhật trạng thái đơn hàng');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -265,6 +395,15 @@ const Orders: React.FC = () => {
     }
   };
 
+  const getPaymentStatusText = (status: string) => {
+    switch (status) {
+      case 'paid': return 'Đã thanh toán';
+      case 'pending': return 'Chờ thanh toán';
+      case 'failed': return 'Thanh toán thất bại';
+      default: return 'Không xác định';
+    }
+  };
+
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -278,18 +417,6 @@ const Orders: React.FC = () => {
     }
   };
 
-  const getPaymentStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Chờ thanh toán';
-      case 'paid':
-        return 'Đã thanh toán';
-      case 'failed':
-        return 'Thanh toán thất bại';
-      default:
-        return status;
-    }
-  };
 
   const getOrderStatusStep = (status: string) => {
     const steps = ['pending', 'confirmed', 'processing', 'shipping', 'delivered'];
@@ -349,7 +476,7 @@ const Orders: React.FC = () => {
       width: 130,
       render: (status: string, record: Order) => (
         <div>
-          <Tag color={getPaymentStatusColor(status)} size="small">
+          <Tag color={getPaymentStatusColor(status)}>
             {getPaymentStatusText(status)}
           </Tag>
           <br />
@@ -450,6 +577,7 @@ const Orders: React.FC = () => {
           <Table
             columns={columns}
             dataSource={filteredOrders}
+            loading={loading}
             pagination={{
               total: filteredOrders.length,
               pageSize: 10,
@@ -571,7 +699,7 @@ const Orders: React.FC = () => {
                     </div>
                     <Divider style={{ margin: '8px 0' }} />
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text strong size={16}>Tổng cộng:</Text>
+                      <Text strong style={{ fontSize: 16 }}>Tổng cộng:</Text>
                       <Text strong style={{ color: '#3f8600', fontSize: 16 }}>
                         ₫{selectedOrder.total.toLocaleString()}
                       </Text>

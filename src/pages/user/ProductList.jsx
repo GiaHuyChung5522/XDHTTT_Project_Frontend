@@ -4,12 +4,14 @@ import { getProducts } from "../../services/products";
 import FilterTabsHeader from "../../components/FilterTabsHeader";
 import { useCart } from "../../context/CartContext";
 import { message } from 'antd';
+import ProductCard from "../../components/ProductCard";
+import { getSafeString } from "../../utils/initData";
 
 const FALLBACK_IMG =
   "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
 
 const ProductList = ({
-  title = "Máy tính xách tay",
+  title = "Laptop văn phòng",
   tabs = [],
   fixedQ = "",
   itemRenderer = null,       // (product)=>JSX — nếu muốn override card
@@ -75,6 +77,42 @@ const ProductList = ({
     message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
   };
 
+  const handleLike = (product) => {
+    // TODO: Implement like functionality
+    console.log('Like product:', product.name);
+  };
+
+  const handleCompare = (product) => {
+    // TODO: Implement compare functionality
+    console.log('Compare product:', product.name);
+  };
+
+  // Tạo thông số chi tiết cho sản phẩm
+  const getProductSpecifications = (product) => {
+    // Tạo thông số mẫu dựa trên tên sản phẩm
+    const specs = {
+      cpu: "AMD Ryzen 7 H 255",
+      ram: "24GB DDR5 4800MHz",
+      screen: "14\" 2.8K (2880x1800) OLED",
+      graphics: "AMD Radeon™ 780M"
+    };
+
+    // Tùy chỉnh theo tên sản phẩm
+    const productName = getSafeString(product.name).toLowerCase();
+    if (productName.includes('lenovo')) {
+      specs.cpu = "AMD Ryzen 7 H 255";
+      specs.ram = "24GB DDR5 4800MHz";
+    } else if (productName.includes('gigabyte')) {
+      specs.cpu = "Intel Core i7-12700H";
+      specs.ram = "16GB DDR4 3200MHz";
+    } else if (productName.includes('acer')) {
+      specs.cpu = "AMD Ryzen 7 8745H";
+      specs.ram = "16GB DDR5 4800MHz";
+    }
+
+    return specs;
+  };
+
   return (
     <section className="product-showcase">
       {/* Header với FilterTabsHeader + Xem tất cả */}
@@ -123,7 +161,6 @@ const ProductList = ({
         <div className={`product-showcase__products ${fade ? "fade-out" : "fade-in"}`}>
           {items.map((p) => {
             if (itemRenderer) {
-              // Cho phép custom card bên ngoài
               return (
                 <div key={p.id} className="product-card">
                   {itemRenderer(p)}
@@ -131,94 +168,20 @@ const ProductList = ({
               );
             }
 
-            const cpu = p.cpu ?? p.specs?.cpu;
-            const ram = p.ram ?? p.specs?.ram;
-            const screen = p.screen ?? p.specs?.screen;
-            const gpu = p.gpu ?? p.specs?.graphics;
-
             return (
-              <div key={p.id} className="product-card" title={p.name}>
-                {/* Badge */}
-                {(p.badge || p.isNew) && (
-                  <div className="product-card__badge">
-                    {p.badge ?? "Sản phẩm mới"}
-                  </div>
-                )}
-
-                {/* Ảnh */}
-                <div className="product-card__image-container">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="product-card__image"
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => { e.currentTarget.src = FALLBACK_IMG; }}
-                  />
-                </div>
-
-                {/* Thông tin cơ bản */}
-                <div className="product-card__content">
-                  <h3 className="product-card__name">{p.name}</h3>
-                  {p.price && <div className="product-card__price">{p.price}</div>}
-                  {(p.versionsLabel || p.versions) && (
-                    <div className="product-card__versions">
-                      {p.versionsLabel ?? (Array.isArray(p.versions) ? p.versions.join(", ") : p.versions)}
-                    </div>
-                  )}
-                  <div className="product-card__favorite">
-                    <span className="heart-icon">♥</span> Yêu thích
-                  </div>
-                </div>
-
-                {/* Overlay chi tiết khi hover (giống mẫu) */}
-                <div className="product-card__details">
-                  <div className="product-card__specs">
-                    {cpu && (
-                      <div className="spec-item">
-                        <strong>CPU:</strong> {cpu}
-                      </div>
-                    )}
-                    {ram && (
-                      <div className="spec-item">
-                        <strong>RAM:</strong> {ram}
-                      </div>
-                    )}
-                    {screen && (
-                      <div className="spec-item">
-                        <strong>Màn hình:</strong> {screen}
-                      </div>
-                    )}
-                    {gpu && (
-                      <div className="spec-item">
-                        <strong>Đồ họa:</strong> {gpu}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="product-card__actions">
-                    <button
-                      className="btn btn--cart"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(p);
-                      }}
-                    >
-                      <span className="cart-icon">🛒</span>
-                      Thêm vào giỏ
-                    </button>
-                    <button
-                      className="btn btn--compare"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: logic so sánh
-                      }}
-                    >
-                      So sánh
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard
+                key={p.id}
+                badge={p.badge || "Sẵn Hàng Tại Showroom"}
+                image={p.image || FALLBACK_IMG}
+                name={p.name}
+                price={p.price || 0}
+                version="1 phiên bản"
+                specifications={getProductSpecifications(p)}
+                isLiked={false}
+                onLike={() => handleLike(p)}
+                onAddToCart={() => handleAddToCart(p)}
+                onCompare={() => handleCompare(p)}
+              />
             );
           })}
         </div>

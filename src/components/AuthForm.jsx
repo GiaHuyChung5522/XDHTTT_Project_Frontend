@@ -166,105 +166,69 @@ const AuthForm = ({ onClose, onSwitchMode, mode: initialMode = "login", onSucces
           return;
         }
 
-        // Đăng ký với API BE
-        const formDataToSend = new FormData();
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('password', formData.password);
-        formDataToSend.append('firstName', formData.firstName);
-        formDataToSend.append('lastName', formData.lastName);
-        formDataToSend.append('gender', formData.gender);
-        
-        if (formData.birth) {
-          // Convert ngày sinh sang ISO string đầy đủ
+        // Đăng ký với authService
+        try {
+          // Đảm bảo birth đúng định dạng ISO 8601 (YYYY-MM-DD)
           let birthDate = formData.birth;
-          if (birthDate.includes('/')) {
-            const parts = birthDate.split('/');
-            if (parts.length === 3) {
-              const day = parts[0].padStart(2, '0');
-              const month = parts[1].padStart(2, '0');
-              const year = parts[2];
-              birthDate = `${year}-${month}-${day}`;
+          if (birthDate) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+              if (birthDate.includes('/')) {
+                const parts = birthDate.split('/');
+                if (parts.length === 3) {
+                  const day = parts[0].padStart(2, '0');
+                  const month = parts[1].padStart(2, '0');
+                  const year = parts[2];
+                  birthDate = `${year}-${month}-${day}`;
+                }
+              }
+            }
+            
+            const dateObj = new Date(birthDate + 'T00:00:00.000Z');
+            if (!isNaN(dateObj.getTime())) {
+              birthDate = dateObj.toISOString().split('T')[0];
+            } else {
+              birthDate = undefined;
             }
           }
+
+          const registerData = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            password: formData.password,
+            gender: formData.gender,
+            birth: birthDate,
+            address: formData.address || undefined,
+            telephone: formData.telephone || undefined
+          };
+
+          console.log("🚀 Gửi request đăng ký:", registerData);
+
+          const result = await register(registerData);
+          console.log("✅ Đăng ký thành công:", result);
           
-          // Convert sang Date object rồi sang ISO string chính xác
-          const dateObj = new Date(birthDate + 'T12:00:00.000Z');
-          if (!isNaN(dateObj.getTime())) {
-            const isoString = dateObj.toISOString().split('T')[0]; // Lấy phần YYYY-MM-DD
-            formDataToSend.append('birth', isoString);
-            console.log("🔧 Converted birth:", birthDate, "→", isoString);
-          } else {
-            console.log("⚠️ Invalid birth date:", birthDate);
-            // Nếu ngày không hợp lệ, không gửi
-          }
-        }
-        
-        if (formData.address) {
-          formDataToSend.append('address', formData.address);
-        }
-        if (formData.telephone) {
-          formDataToSend.append('telephone', formData.telephone);
-        }
-
-        // Debug: Log tất cả values
-        console.log("🔍 Form data values:");
-        console.log("- birth (raw):", formData.birth);
-        console.log("- birth (type):", typeof formData.birth);
-        console.log("- birth (length):", formData.birth ? formData.birth.length : 0);
-        
-        // Debug: Log FormData
-        console.log("🔍 FormData entries:");
-        for (let [key, value] of formDataToSend.entries()) {
-          console.log(`  ${key}: ${value} (${typeof value})`);
-        }
-
-        const requestBody = {
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          gender: formData.gender,
-          birth: formData.birth || undefined,
-          address: formData.address || undefined,
-          telephone: formData.telephone || undefined
-        };
-
-        console.log("🚀 Gửi request đăng ký:", requestBody);
-
-        const response = await fetch("http://localhost:3000/auth/register", {
-          method: "POST",
-          body: formDataToSend
-        });
-
-        console.log("📡 Response status:", response.status);
-        console.log("📡 Response headers:", response.headers);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("✅ Đăng ký thành công:", data);
-        setSuccess("Đăng ký thành công! Đang đăng nhập...");
+          setSuccess("Đăng ký thành công! Đang đăng nhập...");
+          
           // Auto login sau khi đăng ký
           setTimeout(async () => {
             try {
               await login({ email: formData.email, password: formData.password });
-          onSuccess && onSuccess();
-          onClose && onClose();
+              onSuccess && onSuccess();
+              onClose && onClose();
             } catch (err) {
+              console.error("Auto login failed:", err);
               setError("Đăng ký thành công nhưng đăng nhập thất bại. Vui lòng đăng nhập thủ công.");
             }
           }, 1000);
-        } else {
-          const errorData = await response.json();
-          console.log("❌ Lỗi đăng ký:", errorData);
+        } catch (error) {
+          console.log("❌ Lỗi đăng ký:", error);
           
           // Xử lý lỗi validation từ BE
-          if (errorData.message && typeof errorData.message === 'object') {
-            // BE trả về object với lỗi cho từng field
-            console.log("🔍 Field errors:", errorData.message);
-            setFieldErrors(errorData.message);
+          if (error.message && typeof error.message === 'object') {
+            setFieldErrors(error.message);
             setError("Vui lòng kiểm tra và sửa các lỗi bên dưới");
           } else {
-            setError(errorData.message || "Đăng ký thất bại!");
+            setError(error.message || "Đăng ký thất bại!");
           }
         }
       } else if (mode === "forgot") {

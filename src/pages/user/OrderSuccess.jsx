@@ -6,7 +6,8 @@ import {
   ShoppingOutlined,
   PhoneOutlined,
   MailOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
 import { Button, Card, Steps, Divider, Alert } from 'antd';
 import './order-success.css';
@@ -131,7 +132,43 @@ export default function OrderSuccess() {
               />
             </Card>
 
-            {order.paymentMethod === 'bank' && (
+            {/* Payment Status */}
+            {order.paymentStatus === 'paid' ? (
+              <Alert
+                message="Thanh toán thành công"
+                description={
+                  <div>
+                    <p>Đơn hàng của bạn đã được thanh toán thành công!</p>
+                    {order.paymentDetails && (
+                      <div className="payment-details">
+                        {order.paymentMethod === 'card' && (
+                          <>
+                            <p><strong>Phương thức:</strong> Thẻ tín dụng/ghi nợ</p>
+                            <p><strong>Loại thẻ:</strong> {order.paymentDetails.cardType}</p>
+                            <p><strong>Số thẻ:</strong> **** **** **** {order.paymentDetails.cardLast4}</p>
+                            <p><strong>Mã giao dịch:</strong> {order.paymentDetails.transactionId}</p>
+                          </>
+                        )}
+                        {order.paymentMethod === 'bank' && (
+                          <>
+                            <p><strong>Phương thức:</strong> Chuyển khoản ngân hàng</p>
+                            <p><strong>Ngân hàng:</strong> {order.paymentDetails.bankName}</p>
+                            <p><strong>Số tài khoản:</strong> {order.paymentDetails.accountNumber}</p>
+                            <p><strong>Mã giao dịch:</strong> {order.paymentDetails.transactionId}</p>
+                          </>
+                        )}
+                        {order.paymentMethod === 'cash' && (
+                          <p><strong>Phương thức:</strong> Thanh toán khi nhận hàng (COD)</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                }
+                type="success"
+                showIcon
+                className="payment-alert"
+              />
+            ) : order.paymentMethod === 'bank' ? (
               <Alert
                 message="Hướng dẫn thanh toán"
                 description={
@@ -151,7 +188,21 @@ export default function OrderSuccess() {
                 showIcon
                 className="payment-alert"
               />
-            )}
+            ) : order.paymentMethod === 'cash' ? (
+              <Alert
+                message="Thanh toán khi nhận hàng"
+                description={
+                  <div>
+                    <p>Bạn sẽ thanh toán bằng tiền mặt khi nhận hàng.</p>
+                    <p><strong>Số tiền cần thanh toán:</strong> ₫{order.total.toLocaleString()}</p>
+                    <p className="note">Lưu ý: Vui lòng chuẩn bị đúng số tiền để giao dịch được thuận tiện.</p>
+                  </div>
+                }
+                type="info"
+                showIcon
+                className="payment-alert"
+              />
+            ) : null}
           </div>
 
           <div className="success-sidebar">
@@ -197,6 +248,15 @@ export default function OrderSuccess() {
                   onClick={() => navigate('/')}
                 >
                   Về trang chủ
+                </Button>
+                
+                <Button 
+                  size="large" 
+                  block
+                  icon={<EyeOutlined />}
+                  onClick={() => navigate('/orders')}
+                >
+                  Xem đơn hàng của tôi
                 </Button>
                 
                 <Button 

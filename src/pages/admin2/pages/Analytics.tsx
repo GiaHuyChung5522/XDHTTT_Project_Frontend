@@ -1,359 +1,519 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Typography, Space } from 'antd';
+import React, { useState, useEffect } from 'react';
+import {
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Typography,
+  Space,
+  Table,
+  List,
+  Avatar,
+  Progress,
+  Button,
+  DatePicker,
+  Select,
+  Tabs,
+} from 'antd';
+import { Column, Line, Pie, Area } from '@ant-design/charts';
+import { motion, type Variants } from 'framer-motion';
+import CountUp from 'react-countup';
 import { 
-  BarChartOutlined, 
   DollarOutlined, 
   ShoppingCartOutlined, 
   UserOutlined,
+  TagOutlined,
   RiseOutlined,
+  FallOutlined,
+  BarChartOutlined,
   EyeOutlined,
-  HeartOutlined,
-  StarOutlined 
+  ShoppingOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
+  DownloadOutlined,
+  PrinterOutlined,
 } from '@ant-design/icons';
-import { Line, Column, Pie } from '@ant-design/charts';
-import { motion } from 'framer-motion';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
+const { Option } = Select;
+const { TabPane } = Tabs;
+
+// Function to get analytics data from localStorage
+const getAnalyticsData = () => {
+  try {
+    const orders = localStorage.getItem('orders');
+    const orderData = orders ? JSON.parse(orders) : [];
+    
+    const users = localStorage.getItem('users');
+    const userData = users ? JSON.parse(users) : [];
+    
+    const cart = localStorage.getItem('cart');
+    const cartData = cart ? JSON.parse(cart) : [];
+    
+    // Calculate metrics
+    const totalRevenue = orderData
+      .filter((order: any) => order.status === 'delivered')
+      .reduce((sum: number, order: any) => sum + order.total, 0);
+    
+    const totalOrders = orderData.length;
+    const pendingOrders = orderData.filter((order: any) => order.status === 'pending').length;
+    const deliveredOrders = orderData.filter((order: any) => order.status === 'delivered').length;
+    const totalUsers = userData.length;
+    
+    // Revenue by month
+    const revenueByMonth = orderData
+      .filter((order: any) => order.status === 'delivered')
+      .reduce((acc: any, order: any) => {
+        const month = new Date(order.createdAt).toLocaleDateString('vi-VN', { month: 'short' });
+        acc[month] = (acc[month] || 0) + order.total;
+        return acc;
+      }, {});
+    
+    const revenueData = Object.entries(revenueByMonth).map(([month, revenue]) => ({
+      month,
+      revenue: revenue as number,
+    }));
+    
+    // Orders by status
+    const orderStatusData = [
+      { type: 'Hoàn thành', value: deliveredOrders, color: '#10b981' },
+      { type: 'Đang xử lý', value: pendingOrders, color: '#f59e0b' },
+      { type: 'Đang giao', value: orderData.filter((o: any) => o.status === 'shipped').length, color: '#3b82f6' },
+      { type: 'Đã hủy', value: orderData.filter((o: any) => o.status === 'cancelled').length, color: '#ef4444' },
+    ];
+    
+    // Top products
+    const productSales = orderData
+      .filter((order: any) => order.status === 'delivered')
+      .flatMap((order: any) => order.items || [])
+      .reduce((acc: any, item: any) => {
+        acc[item.name] = (acc[item.name] || 0) + item.quantity;
+        return acc;
+      }, {});
+    
+    const topProducts = Object.entries(productSales)
+      .map(([name, sales]) => ({ name, sales: sales as number }))
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 5);
+    
+    // User growth
+    const userGrowth = userData.reduce((acc: any, user: any) => {
+      const month = new Date(user.createdAt).toLocaleDateString('vi-VN', { month: 'short' });
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const userGrowthData = Object.entries(userGrowth).map(([month, count]) => ({
+      month,
+      users: count as number,
+    }));
+    
+    return {
+      totalRevenue,
+      totalOrders,
+      pendingOrders,
+      deliveredOrders,
+      totalUsers,
+      revenueData,
+      orderStatusData,
+      topProducts,
+      userGrowthData,
+    };
+  } catch (error) {
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      pendingOrders: 0,
+      deliveredOrders: 0,
+      totalUsers: 0,
+      revenueData: [],
+      orderStatusData: [],
+      topProducts: [],
+      userGrowthData: [],
+    };
+  }
+};
 
 const Analytics: React.FC = () => {
-  // Mock data for charts
-  const revenueData = [
-    { month: 'T1', revenue: 45000000, orders: 234 },
-    { month: 'T2', revenue: 52000000, orders: 267 },
-    { month: 'T3', revenue: 48000000, orders: 245 },
-    { month: 'T4', revenue: 61000000, orders: 312 },
-    { month: 'T5', revenue: 55000000, orders: 289 },
-    { month: 'T6', revenue: 67000000, orders: 356 },
-    { month: 'T7', revenue: 72000000, orders: 378 },
-    { month: 'T8', revenue: 68000000, orders: 334 },
-    { month: 'T9', revenue: 74000000, orders: 389 },
-    { month: 'T10', revenue: 78000000, orders: 412 },
-    { month: 'T11', revenue: 82000000, orders: 445 },
-    { month: 'T12', revenue: 89000000, orders: 487 },
+  const [analyticsData, setAnalyticsData] = useState(getAnalyticsData());
+  const [dateRange, setDateRange] = useState<any>([dayjs().subtract(30, 'day'), dayjs()]);
+  const [selectedPeriod, setSelectedPeriod] = useState('30days');
+
+  useEffect(() => {
+    setAnalyticsData(getAnalyticsData());
+  }, []);
+
+  const stats = [
+    {
+      title: 'Tổng doanh thu',
+      value: analyticsData.totalRevenue,
+      prefix: '₫',
+      trend: 'up',
+      trendValue: 12.5,
+      icon: <DollarOutlined />,
+      color: '#6366f1',
+      bgColor: '#eef2ff',
+    },
+    {
+      title: 'Tổng đơn hàng',
+      value: analyticsData.totalOrders,
+      trend: 'up',
+      trendValue: 8.3,
+      icon: <ShoppingCartOutlined />,
+      color: '#10b981',
+      bgColor: '#ecfdf5',
+    },
+    {
+      title: 'Đơn hàng hoàn thành',
+      value: analyticsData.deliveredOrders,
+      trend: 'up',
+      trendValue: 15.7,
+      icon: <CheckCircleOutlined />,
+      color: '#8b5cf6',
+      bgColor: '#f5f3ff',
+    },
+    {
+      title: 'Tổng người dùng',
+      value: analyticsData.totalUsers,
+      trend: 'up',
+      trendValue: 20.1,
+      icon: <UserOutlined />,
+      color: '#f59e0b',
+      bgColor: '#fffbeb',
+    },
   ];
 
-  const categoryData = [
-    { category: 'Áo nam', revenue: 25000000 },
-    { category: 'Áo nữ', revenue: 32000000 },
-    { category: 'Quần jeans', revenue: 18000000 },
-    { category: 'Váy đầm', revenue: 15000000 },
-    { category: 'Phụ kiện', revenue: 12000000 },
-    { category: 'Giày dép', revenue: 20000000 },
-  ];
-
-  const trafficData = [
-    { source: 'Tìm kiếm Google', percentage: 45, visitors: 15678 },
-    { source: 'Facebook', percentage: 25, visitors: 8723 },
-    { source: 'Trực tiếp', percentage: 15, visitors: 5234 },
-    { source: 'Email', percentage: 10, visitors: 3489 },
-    { source: 'Khác', percentage: 5, visitors: 1743 },
-  ];
-
-  const revenueConfig = {
-    data: revenueData,
+  // Chart configurations
+  const revenueChartConfig = {
+    data: analyticsData.revenueData,
     xField: 'month',
     yField: 'revenue',
     smooth: true,
-    color: '#3b82f6',
-    point: { size: 4, shape: 'circle' },
+    color: '#6366f1',
     areaStyle: {
-      fill: 'l(270) 0:#ffffff 0.5:#3b82f6 1:#3b82f6',
-      fillOpacity: 0.1,
+      fill: 'linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)',
     },
-  };
-
-  const categoryConfig = {
-    data: categoryData,
-    xField: 'category',
-    yField: 'revenue',
-    color: '#10b981',
+    yAxis: {
     label: {
-      position: 'middle' as const,
-      style: { fill: '#FFFFFF', opacity: 0.8, fontWeight: '500' },
+        formatter: (value: string) => `${(parseInt(value) / 1000000).toFixed(0)}M`,
+      },
     },
   };
 
-  const trafficConfig = {
-    data: trafficData,
-    angleField: 'percentage',
-    colorField: 'source',
+  const orderStatusChartConfig = {
+    data: analyticsData.orderStatusData,
+    angleField: 'value',
+    colorField: 'type',
     radius: 0.8,
-    color: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+    color: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
     label: {
       type: 'outer',
-      content: '{name}: {percentage}%',
+      content: '{name}: {percentage}',
+    },
+  };
+
+  const userGrowthChartConfig = {
+    data: analyticsData.userGrowthData,
+    xField: 'month',
+    yField: 'users',
+    color: '#10b981',
+    point: {
+      size: 5,
+      shape: 'circle',
+    },
+  };
+
+  const topProductsColumns = [
+    {
+      title: 'Sản phẩm',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string) => (
+        <Text strong style={{ color: '#1f2937' }}>{text}</Text>
+      ),
+    },
+    {
+      title: 'Số lượng bán',
+      dataIndex: 'sales',
+      key: 'sales',
+      render: (value: number) => (
+        <Text style={{ color: '#059669', fontWeight: '600' }}>{value}</Text>
+      ),
+    },
+    {
+      title: 'Tỷ lệ',
+      key: 'percentage',
+      render: (record: any) => {
+        const total = analyticsData.topProducts.reduce((sum, item) => sum + item.sales, 0);
+        const percentage = ((record.sales / total) * 100).toFixed(1);
+        return (
+          <Progress 
+            percent={parseFloat(percentage)} 
+            size="small" 
+            strokeColor="#10b981"
+            showInfo={false}
+          />
+        );
+      },
+    },
+  ];
+
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.1,
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 100,
+      },
     },
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh' }}
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* KPI Cards */}
-        <Row gutter={[24, 24]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-              <Statistic
-                title="Doanh thu tháng này"
-                value={89000000}
-                precision={0}
-                prefix="₫"
-                suffix={
-                  <span style={{ color: '#10b981', fontSize: '12px' }}>
-                    <RiseOutlined /> +12.5%
-                  </span>
-                }
-                valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: '700' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-              <Statistic
-                title="Đơn hàng mới"
-                value={487}
-                prefix={<ShoppingCartOutlined style={{ color: '#3b82f6' }} />}
-                suffix={
-                  <span style={{ color: '#10b981', fontSize: '12px' }}>
-                    <RiseOutlined /> +8.3%
-                  </span>
-                }
-                valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: '700' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-              <Statistic
-                title="Lượt truy cập"
-                value={34867}
-                prefix={<EyeOutlined style={{ color: '#8b5cf6' }} />}
-                suffix={
-                  <span style={{ color: '#10b981', fontSize: '12px' }}>
-                    <RiseOutlined /> +15.2%
-                  </span>
-                }
-                valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: '700' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-              <Statistic
-                title="Tỷ lệ chuyển đổi"
-                value={3.4}
-                precision={1}
-                suffix="%"
-                prefix={<StarOutlined style={{ color: '#f59e0b' }} />}
-                valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: '700' }}
-              />
-            </Card>
-          </Col>
-        </Row>
+        {/* Header */}
+        <motion.div variants={itemVariants}>
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <Title level={2} style={{ margin: 0, color: '#1f2937', fontWeight: '700' }}>
+                  Báo cáo & Phân tích
+                </Title>
+                <Text type="secondary" style={{ fontSize: '16px' }}>
+                  Phân tích chi tiết về hoạt động kinh doanh và hiệu suất
+                </Text>
+              </div>
+              <Space>
+                <RangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                  style={{ borderRadius: '8px' }}
+                />
+                <Select
+                  value={selectedPeriod}
+                  onChange={setSelectedPeriod}
+                  style={{ width: 120, borderRadius: '8px' }}
+                >
+                  <Option value="7days">7 ngày</Option>
+                  <Option value="30days">30 ngày</Option>
+                  <Option value="90days">90 ngày</Option>
+                  <Option value="1year">1 năm</Option>
+                </Select>
+                <Button 
+                  icon={<DownloadOutlined />}
+                  style={{ borderRadius: '8px' }}
+                >
+                  Xuất báo cáo
+                </Button>
+                <Button 
+                  icon={<PrinterOutlined />}
+                  style={{ borderRadius: '8px' }}
+                >
+                  In báo cáo
+                </Button>
+                </Space>
+            </div>
+          </div>
+        </motion.div>
 
-        {/* Charts Row 1 */}
+        {/* Stats Cards */}
         <Row gutter={[24, 24]}>
-          <Col xs={24} lg={16}>
+          {stats.map((stat, index) => (
+            <Col xs={24} sm={12} lg={6} key={index}>
+              <motion.div variants={itemVariants}>
             <Card
-              title={
-                <Space>
-                  <BarChartOutlined style={{ color: '#3b82f6' }} />
-                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                    Doanh thu theo tháng
-                  </span>
-                </Space>
-              }
-              style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <Line {...revenueConfig} height={300} />
-            </Card>
-          </Col>
-          <Col xs={24} lg={8}>
-            <Card
-              title={
-                <Space>
-                  <div style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    background: '#f59e0b',
-                  }} />
-                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                    Nguồn traffic
-                  </span>
-                </Space>
-              }
-              style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <Pie {...trafficConfig} height={300} />
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Charts Row 2 */}
-        <Row gutter={[24, 24]}>
-          <Col xs={24} lg={12}>
-            <Card
-              title={
-                <Space>
-                  <DollarOutlined style={{ color: '#10b981' }} />
-                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                    Doanh thu theo danh mục
-                  </span>
-                </Space>
-              }
-              style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <Column {...categoryConfig} height={300} />
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card
-              title={
-                <Space>
-                  <UserOutlined style={{ color: '#8b5cf6' }} />
-                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                    Thống kê khách hàng
-                  </span>
-                </Space>
-              }
-              style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <div style={{ padding: '20px 0' }}>
-                <Row gutter={[16, 24]}>
-                  <Col span={12}>
-                    <div style={{ textAlign: 'center' }}>
+                  style={{
+                    background: '#ffffff',
+                    border: 'none',
+                    borderRadius: '16px',
+                    height: '160px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    overflow: 'hidden',
+                  }}
+                  bodyStyle={{ padding: '24px', height: '100%' }}
+                >
                       <div style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '700', 
-                        color: '#3b82f6',
-                        marginBottom: '8px' 
-                      }}>
-                        5,678
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    justifyContent: 'space-between' 
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1 }}>
+                        <Text style={{ 
+                          color: '#6b7280', 
+                          fontSize: '14px', 
+                          fontWeight: '600',
+                          marginBottom: '12px',
+                          display: 'block',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}>
+                          {stat.title}
+                        </Text>
+                        <div>
+                          <Text style={{ 
+                            color: '#111827', 
+                            fontSize: '28px', 
+                            fontWeight: '800',
+                            lineHeight: 1,
+                          }}>
+                            {stat.prefix}
+                            <CountUp 
+                              end={stat.value} 
+                              duration={2}
+                              separator=","
+                            />
+                          </Text>
+                        </div>
                       </div>
-                      <Text type="secondary">Tổng khách hàng</Text>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div style={{ textAlign: 'center' }}>
                       <div style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '700', 
-                        color: '#10b981',
-                        marginBottom: '8px' 
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '12px',
+                        background: stat.bgColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `2px solid ${stat.color}20`,
                       }}>
-                        234
+                        <div style={{ fontSize: '20px', color: stat.color }}>
+                          {stat.icon}
+                        </div>
                       </div>
-                      <Text type="secondary">Khách hàng mới</Text>
                     </div>
-                  </Col>
-                  <Col span={12}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '700', 
-                        color: '#f59e0b',
-                        marginBottom: '8px' 
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}>
+                      {stat.trend === 'up' ? (
+                        <RiseOutlined style={{ 
+                          color: '#10b981', 
+                          marginRight: 8, 
+                          fontSize: '16px' 
+                        }} />
+                      ) : (
+                        <FallOutlined style={{ 
+                          color: '#ef4444', 
+                          marginRight: 8, 
+                          fontSize: '16px' 
+                        }} />
+                      )}
+                      <Text style={{ 
+                        color: stat.trend === 'up' ? '#10b981' : '#ef4444', 
+                        fontSize: '14px', 
+                        fontWeight: '600' 
                       }}>
-                        1,456
-                      </div>
-                      <Text type="secondary">Khách VIP</Text>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '700', 
-                        color: '#8b5cf6',
-                        marginBottom: '8px' 
+                        {Math.abs(stat.trendValue)}%
+                      </Text>
+                      <Text style={{ 
+                        color: '#6b7280', 
+                        fontSize: '13px',
+                        marginLeft: '6px',
                       }}>
-                        67%
-                      </div>
-                      <Text type="secondary">Tỷ lệ quay lại</Text>
+                        so với kỳ trước
+                      </Text>
                     </div>
-                  </Col>
-                </Row>
               </div>
             </Card>
+              </motion.div>
           </Col>
+          ))}
         </Row>
 
-        {/* Performance Metrics */}
+        {/* Charts */}
+        <Tabs defaultActiveKey="revenue" style={{ background: 'white', borderRadius: '16px', padding: '24px' }}>
+          <TabPane tab="Doanh thu" key="revenue">
         <Row gutter={[24, 24]}>
-          <Col span={24}>
+              <Col xs={24} lg={16}>
             <Card
               title={
-                <Space>
-                  <RiseOutlined style={{ color: '#3b82f6' }} />
-                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
-                    Chỉ số hiệu suất
-                  </span>
-                </Space>
-              }
-              style={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <Row gutter={[24, 24]}>
-                <Col xs={24} sm={12} lg={6}>
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <HeartOutlined style={{ fontSize: '24px', color: '#ef4444', marginBottom: '12px' }} />
-                    <Title level={4} style={{ margin: '8px 0 4px', color: '#111827' }}>2.3M</Title>
-                    <Text type="secondary">Tổng lượt thích</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Text style={{ color: '#10b981', fontSize: '12px' }}>
-                        <RiseOutlined /> +18.5%
-                      </Text>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <BarChartOutlined style={{ marginRight: 8, color: '#6366f1' }} />
+                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Doanh thu theo tháng</span>
                     </div>
-                  </div>
+                  }
+                  style={{ border: 'none', boxShadow: 'none' }}
+                  bodyStyle={{ padding: 0 }}
+                >
+                  <Area {...revenueChartConfig} height={300} />
+                </Card>
                 </Col>
-                <Col xs={24} sm={12} lg={6}>
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <EyeOutlined style={{ fontSize: '24px', color: '#3b82f6', marginBottom: '12px' }} />
-                    <Title level={4} style={{ margin: '8px 0 4px', color: '#111827' }}>156K</Title>
-                    <Text type="secondary">Pageviews</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Text style={{ color: '#10b981', fontSize: '12px' }}>
-                        <RiseOutlined /> +12.3%
-                      </Text>
+              <Col xs={24} lg={8}>
+                <Card
+                  title={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <ShoppingOutlined style={{ marginRight: 8, color: '#10b981' }} />
+                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Trạng thái đơn hàng</span>
                     </div>
-                  </div>
+                  }
+                  style={{ border: 'none', boxShadow: 'none' }}
+                  bodyStyle={{ padding: 0 }}
+                >
+                  <Pie {...orderStatusChartConfig} height={300} />
+                </Card>
                 </Col>
-                <Col xs={24} sm={12} lg={6}>
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <StarOutlined style={{ fontSize: '24px', color: '#f59e0b', marginBottom: '12px' }} />
-                    <Title level={4} style={{ margin: '8px 0 4px', color: '#111827' }}>4.8</Title>
-                    <Text type="secondary">Đánh giá trung bình</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Text style={{ color: '#10b981', fontSize: '12px' }}>
-                        <RiseOutlined /> +0.3
-                      </Text>
+            </Row>
+          </TabPane>
+          
+          <TabPane tab="Người dùng" key="users">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}>
+                <Card
+                  title={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <UserOutlined style={{ marginRight: 8, color: '#10b981' }} />
+                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Tăng trưởng người dùng</span>
                     </div>
-                  </div>
+                  }
+                  style={{ border: 'none', boxShadow: 'none' }}
+                  bodyStyle={{ padding: 0 }}
+                >
+                  <Line {...userGrowthChartConfig} height={300} />
+                </Card>
                 </Col>
-                <Col xs={24} sm={12} lg={6}>
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <ShoppingCartOutlined style={{ fontSize: '24px', color: '#8b5cf6', marginBottom: '12px' }} />
-                    <Title level={4} style={{ margin: '8px 0 4px', color: '#111827' }}>₫2.1M</Title>
-                    <Text type="secondary">Giá trị đơn TB</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Text style={{ color: '#10b981', fontSize: '12px' }}>
-                        <RiseOutlined /> +5.7%
-                      </Text>
+              <Col xs={24} lg={8}>
+                <Card
+                  title={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <TagOutlined style={{ marginRight: 8, color: '#8b5cf6' }} />
+                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Sản phẩm bán chạy</span>
                     </div>
-                  </div>
-                </Col>
-              </Row>
+                  }
+                  style={{ border: 'none', boxShadow: 'none' }}
+                  bodyStyle={{ padding: 0 }}
+                >
+                  <Table
+                    columns={topProductsColumns}
+                    dataSource={analyticsData.topProducts}
+                    pagination={false}
+                    size="small"
+                    showHeader={false}
+                  />
             </Card>
           </Col>
         </Row>
+          </TabPane>
+        </Tabs>
       </Space>
     </motion.div>
   );

@@ -153,7 +153,7 @@ const Posts: React.FC = () => {
       likes: editingPost?.likes || 0,
       createdAt: editingPost?.createdAt || dayjs().format('YYYY-MM-DD'),
       updatedAt: dayjs().format('YYYY-MM-DD'),
-      slug: values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+      slug: (values.title || '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
     };
 
     if (editingPost) {
