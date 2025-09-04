@@ -1,5 +1,12 @@
-# 🛍️ 7Gr Fashion Store - Frontendcd FE_web && git add README.md
 
+
+
+# 💻 Demo Cửa Hàng Bán Laptop - Nhóm 7
+
+**Trường:** Đại học Tài nguyên và Môi trường TP.HCM (UTH)  
+**Môn:** Xây Dựng Hệ Thống Thông Tin  
+**Nhóm:** 7  
+**Đề tài:** Demo cửa hàng bán laptop  
 
 ## 🚀 Cách chạy nhanh
 
@@ -18,14 +25,15 @@ npm run dev
 http://localhost:5173
 ```
 
-## 📱 Tính năng chính
+## 📱 Tính năng demo
 
-- **🏠 Trang chủ:** Hiển thị sản phẩm nổi bật
-- **🛒 Giỏ hàng:** Thêm/xóa sản phẩm, thanh toán
-- **❤️ Yêu thích:** Lưu sản phẩm yêu thích
+- **🏠 Trang chủ:** Hiển thị laptop nổi bật
+- **🛒 Giỏ hàng:** Thêm/xóa laptop, thanh toán
+- **❤️ Yêu thích:** Lưu laptop yêu thích
 - **👤 Tài khoản:** Đăng nhập, đăng ký, quản lý profile
-- **🔍 Tìm kiếm:** Tìm kiếm sản phẩm theo tên, giá
+- **🔍 Tìm kiếm:** Tìm kiếm laptop theo tên, giá
 - **📱 Responsive:** Tương thích mọi thiết bị
+- **👨‍💻 Admin:** Quản lý sản phẩm, đơn hàng, khách hàng
 
 ## 🎨 Giao diện
 
@@ -73,11 +81,17 @@ src/
 2. **API không kết nối:** Kiểm tra backend đang chạy
 3. **Dependencies lỗi:** Xóa `node_modules` và chạy lại `npm install`
 
-## 📞 Hỗ trợ
+## 👥 Thành viên nhóm 7
 
-- **Email:** support@7grfashion.com
-- **Hotline:** 1900-xxxx
-- **Zalo:** 7Gr Fashion Store
+- **Trưởng nhóm:** [Tên trưởng nhóm]
+- **Thành viên:** [Danh sách thành viên]
+- **GVHD:** [Tên giảng viên hướng dẫn]
+
+## 📞 Liên hệ
+
+- **Email:** [email nhóm]
+- **GitHub:** [link repository]
+- **Trường:** Đại học Tài nguyên và Môi trường TP.HCM
 
 ---
-**© 2024 7Gr Fashion Store. All rights reserved.**
+**© 2024 Nhóm 7 - UTH - Môn Xây Dựng Hệ Thống Thông Tin**
