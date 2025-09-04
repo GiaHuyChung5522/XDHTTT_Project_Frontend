@@ -1,80 +1,83 @@
-## Cấu hình môi trường (admin2)
+# 🛍️ 7Gr Fashion Store - Frontendcd FE_web && git add README.md
 
-Tạo file `.env` ở root dự án dựa trên mẫu sau:
+
+## 🚀 Cách chạy nhanh
+
+### 1. Cài đặt dependencies
+```bash
+npm install
+```
+
+### 2. Chạy ứng dụng
+```bash
+npm run dev
+```
+
+### 3. Mở trình duyệt
+```
+http://localhost:5173
+```
+
+## 📱 Tính năng chính
+
+- **🏠 Trang chủ:** Hiển thị sản phẩm nổi bật
+- **🛒 Giỏ hàng:** Thêm/xóa sản phẩm, thanh toán
+- **❤️ Yêu thích:** Lưu sản phẩm yêu thích
+- **👤 Tài khoản:** Đăng nhập, đăng ký, quản lý profile
+- **🔍 Tìm kiếm:** Tìm kiếm sản phẩm theo tên, giá
+- **📱 Responsive:** Tương thích mọi thiết bị
+
+## 🎨 Giao diện
+
+- **ProductCard:** Hover hiển thị nút "Thêm vào giỏ hàng"
+- **Header:** Giỏ hàng, yêu thích, địa chỉ cửa hàng
+- **Floating buttons:** Liên hệ nhanh (Call, Zalo, Messenger)
+- **Notification:** Thông báo real-time
+
+## 🔧 Công nghệ
+
+- **React 18** + **Vite**
+- **React Router** - Điều hướng
+- **Ant Design** - UI Components
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animation
+- **Context API** - State Management
+
+## 📁 Cấu trúc thư mục
 
 ```
-VITE_API_URL=http://localhost:3000
+src/
+├── components/     # Components tái sử dụng
+├── pages/         # Trang chính
+├── context/       # State management
+├── services/      # API calls
+├── assets/        # Hình ảnh, CSS
+└── utils/         # Utilities
 ```
 
-Sau khi thay đổi `.env`, hãy khởi động lại server dev để Vite nạp lại biến môi trường.
+## 🌐 API Backend
 
-# FE_web
+- **Base URL:** `http://localhost:3000`
+- **Proxy:** Vite tự động proxy `/api/*` → `http://localhost:3000/*`
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 👨‍💻 Admin Panel
 
-## Available Scripts
+- **URL:** `http://localhost:5173/admin/login`
+- **Tính năng:** Quản lý sản phẩm, đơn hàng, khách hàng
+- **Chi tiết:** Xem `ADMIN_SYSTEM_GUIDE.md`
 
-In the project directory, you can run:
+## 🐛 Troubleshooting
 
-### `npm start`
+### Lỗi thường gặp:
+1. **Port 5173 đã được sử dụng:** Đổi port trong `vite.config.ts`
+2. **API không kết nối:** Kiểm tra backend đang chạy
+3. **Dependencies lỗi:** Xóa `node_modules` và chạy lại `npm install`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 📞 Hỗ trợ
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Email:** support@7grfashion.com
+- **Hotline:** 1900-xxxx
+- **Zalo:** 7Gr Fashion Store
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+**© 2024 7Gr Fashion Store. All rights reserved.**
