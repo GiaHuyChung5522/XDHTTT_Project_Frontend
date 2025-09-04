@@ -1,25 +1,48 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 import "../assets/ProductCard.css";
 
 const ProductCard = ({ 
+  id,
   badge, 
   image, 
   name, 
   price, 
   version = "1 phiên bản",
   specifications = {},
-  isLiked = false,
-  onLike,
-  onAddToCart,
   onCompare
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { addToCart, addToWishlist, isInWishlist } = useCart();
+  const navigate = useNavigate();
+  
+  const isLiked = isInWishlist(id);
+
+  const handleLike = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const product = { id, name, price, image, badge, version, specifications };
+    addToWishlist(product);
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const product = { id, name, price, image, badge, version, specifications };
+    addToCart(product);
+  };
+
+  const handleCardClick = () => {
+    navigate(`/products/${id}`);
+  };
 
   return (
     <div 
       className="product-card"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Badge */}
       {badge && <div className="product-badge">{badge}</div>}
@@ -38,7 +61,7 @@ const ProductCard = ({
           <span className="version">{version}</span>
           <button 
             className={`wishlist-btn ${isLiked ? 'liked' : ''}`}
-            onClick={onLike}
+            onClick={handleLike}
           >
             <span className="heart-icon">♡</span>
             <span>Yêu thích</span>
@@ -46,58 +69,21 @@ const ProductCard = ({
         </div>
       </div>
 
-      {/* Specifications Overlay (shown on hover) */}
+      {/* Action Button (shown on hover) */}
       {isHovered && (
-        <div className="specifications-overlay">
-          <div className="specifications-content">
-            {specifications.cpu && (
-              <div className="spec-item">
-                <span className="spec-label">CPU:</span>
-                <span className="spec-value">{specifications.cpu}</span>
-              </div>
-            )}
-            {specifications.ram && (
-              <div className="spec-item">
-                <span className="spec-label">RAM:</span>
-                <span className="spec-value">{specifications.ram}</span>
-              </div>
-            )}
-            {specifications.screen && (
-              <div className="spec-item">
-                <span className="spec-label">Màn hình:</span>
-                <span className="spec-value">{specifications.screen}</span>
-              </div>
-            )}
-            {specifications.graphics && (
-              <div className="spec-item">
-                <span className="spec-label">Đồ họa:</span>
-                <span className="spec-value">{specifications.graphics}</span>
-              </div>
-            )}
+        <div className="action-extension">
+          <div className="action-buttons">
+            <button 
+              className="action-btn add-to-cart-btn"
+              onClick={handleAddToCart}
+              title="Thêm vào giỏ hàng"
+            >
+              🛒 Thêm vào giỏ hàng
+            </button>
           </div>
         </div>
       )}
 
-      {/* Action Buttons (shown on hover) */}
-      {isHovered && (
-        <div className="action-buttons">
-          <button 
-            className="action-btn add-to-cart-btn"
-            onClick={onAddToCart}
-            title="Thêm vào giỏ hàng"
-          >
-            🛒
-          </button>
-          <button 
-            className="action-btn compare-btn"
-            onClick={onCompare}
-            title="So sánh"
-          >
-            ⚖️
-            <span>So sánh</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 };

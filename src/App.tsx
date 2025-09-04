@@ -3,6 +3,8 @@ import { QueryProvider, RouterProvider } from './pages/admin2/pages/providers';
 import { ThemeProvider, LanguageProvider } from './pages/admin2/contexts';
 import AuthProvider from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import NotificationSystem from './components/NotificationSystem';
+import FloatingContactButtons from './components/FloatingContactButtons';
 
 // Error Boundary Component
 interface ErrorBoundaryState {
@@ -68,6 +70,8 @@ const App: React.FC = () => {
             <LanguageProvider>
               <QueryProvider>
                 <RouterProvider />
+                <NotificationSystem />
+                <FloatingContactButtons />
               </QueryProvider>
             </LanguageProvider>
           </ThemeProvider>

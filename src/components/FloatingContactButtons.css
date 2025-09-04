@@ -1,0 +1,203 @@
+.floating-contact-buttons {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.contact-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contact-buttons.expanded {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.contact-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.contact-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.contact-btn svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.contact-btn:hover svg {
+  transform: scale(1.1);
+}
+
+/* Call Button */
+.call-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  animation-delay: 0.1s;
+}
+
+.call-btn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+}
+
+/* Zalo Button */
+.zalo-btn {
+  background: linear-gradient(135deg, #0068FF 0%, #0052CC 100%);
+  animation-delay: 0.2s;
+}
+
+.zalo-btn:hover {
+  background: linear-gradient(135deg, #0052CC 0%, #003d99 100%);
+}
+
+/* Messenger Button */
+.messenger-btn {
+  background: linear-gradient(135deg, #0084FF 0%, #0066CC 100%);
+  animation-delay: 0.3s;
+}
+
+.messenger-btn:hover {
+  background: linear-gradient(135deg, #0066CC 0%, #004d99 100%);
+}
+
+/* Toggle Button */
+.toggle-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1001;
+}
+
+.toggle-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.toggle-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.toggle-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Ripple Effect */
+.contact-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.contact-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+  }
+}
+
+.toggle-btn {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .floating-contact-buttons {
+    right: 15px;
+    bottom: 15px;
+  }
+  
+  .contact-btn,
+  .toggle-btn {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .contact-btn svg,
+  .toggle-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-contact-buttons {
+    right: 10px;
+    bottom: 10px;
+  }
+  
+  .contact-btn,
+  .toggle-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .contact-btn svg,
+  .toggle-icon {
+    width: 18px;
+    height: 18px;
+  }
+}

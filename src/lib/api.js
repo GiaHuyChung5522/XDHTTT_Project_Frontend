@@ -70,6 +70,12 @@ async function json(res) {
     
     if (!text) return null;
     
+    // Kiểm tra nếu response là text thay vì JSON
+    if (text.startsWith('This action returns') || !text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+      console.warn('Backend trả về text thay vì JSON, sử dụng mock data');
+      throw new Error('Backend response is not JSON format');
+    }
+    
     return JSON.parse(text);
   } catch (error) {
     console.error('JSON parse error:', error);

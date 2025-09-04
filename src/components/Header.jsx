@@ -11,15 +11,16 @@ import AuthForm from "./AuthForm";
 
 import logoPhone from "../assets/img/logoCongTy.png";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import { Roles } from "../constants/roles";
 
 const Header = () => {
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [authMode, setAuthMode] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showAddressTooltip, setShowAddressTooltip] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth();
+  const { getTotalItems, wishlistItems, addToWishlist, isInWishlist } = useCart();
 
   const isAdmin = user?.role === Roles.ADMIN;
   const isStaff = user?.role === Roles.STAFF;
@@ -27,8 +28,9 @@ const Header = () => {
 
   const navigate = useNavigate();
 
-  const addToCart = () => setCartCount((n) => n + 1);
-  const addToWishlist = () => setWishlistCount((n) => n + 1);
+  // Lấy số lượng thực tế từ context
+  const cartCount = getTotalItems();
+  const wishlistCount = wishlistItems.length;
 
   const openLogin = () => setAuthMode("login");
   const openRegister = () => setAuthMode("register");
@@ -107,28 +109,45 @@ const Header = () => {
         <div className="site-header__actions">
           {/* Địa chỉ cửa hàng */}
           <div className="site-header__action-item">
-            <Link to="/store-location" className="site-header__action-link">
+            <div 
+              className="site-header__action-link address-link"
+              onMouseEnter={() => setShowAddressTooltip(true)}
+              onMouseLeave={() => setShowAddressTooltip(false)}
+            >
               <FaMapMarkerAlt className="site-header__action-icon" />
               <span className="site-header__action-label">ĐỊA CHỈ CỬA HÀNG</span>
-            </Link>
+              
+              {/* Tooltip hiển thị địa chỉ */}
+              {showAddressTooltip && (
+                <div className="address-tooltip">
+                  <div className="tooltip-content">
+                    <h4>🏪 7Gr xin Chao</h4>
+                    <p>📍 123 Đường ABC, Quận 1, TP.HCM</p>
+                    <p>📞 Hotline: 1900 123 456</p>
+                    <p>🕒 Giờ mở cửa: 8:00 - 22:00</p>
+                    <p>🚗 Có chỗ đậu xe miễn phí</p>
+                  </div>
+                  <div className="tooltip-arrow"></div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Yêu thích */}
           <div className="site-header__action-item">
-            <button 
-              type="button" 
+            <Link 
+              to="/wishlist" 
               className="site-header__action-btn" 
-              onClick={addToWishlist} 
-              aria-label="Thêm vào yêu thích"
+              aria-label="Danh sách yêu thích"
             >
               <FaHeart className="site-header__action-icon" />
               <span className="site-header__badge" aria-live="polite">{wishlistCount}</span>
-            </button>
+            </Link>
           </div>
 
           {/* Giỏ hàng */}
           <div className="site-header__action-item">
-            <Link to="/cart" className="site-header__action-btn" aria-label="Giỏ hàng" onClick={addToCart}>
+            <Link to="/cart" className="site-header__action-btn" aria-label="Giỏ hàng">
               <FaShoppingCart className="site-header__action-icon" />
               <span className="site-header__badge" aria-live="polite">{cartCount}</span>
             </Link>

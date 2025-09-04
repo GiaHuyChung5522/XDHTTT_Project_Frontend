@@ -120,12 +120,12 @@ const mainRoutes = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "products",
-        element: <ProductList />,
-      },
-      {
         path: "products/:id",
         element: <ProductDetail />,
+      },
+      {
+        path: "products",
+        element: <ProductList />,
       },
       {
         path: "cart",

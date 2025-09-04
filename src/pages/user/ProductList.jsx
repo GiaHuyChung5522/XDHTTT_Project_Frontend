@@ -91,25 +91,37 @@ const ProductList = ({
   const getProductSpecifications = (product) => {
     // Tạo thông số mẫu dựa trên tên sản phẩm
     const specs = {
-      cpu: "AMD Ryzen 7 H 255",
-      ram: "24GB DDR5 4800MHz",
-      screen: "14\" 2.8K (2880x1800) OLED",
-      graphics: "AMD Radeon™ 780M"
+      cpu: "Intel Core Ultra 5 225H",
+      ram: "32GB LPDDR5x 8533MHz, onboard",
+      screen: "14.5\" 3K (3072x1920), ~500nits",
+      graphics: "Intel® Arc™ 130T GPU (onboard)"
     };
 
     // Tùy chỉnh theo tên sản phẩm
     const productName = getSafeString(product.name).toLowerCase();
     if (productName.includes('lenovo')) {
-      specs.cpu = "AMD Ryzen 7 H 255";
-      specs.ram = "24GB DDR5 4800MHz";
+      specs.cpu = "Intel Core Ultra 5 225H";
+      specs.ram = "32GB LPDDR5x 8533MHz, onboard";
+      specs.screen = "14.5\" 3K (3072x1920), ~500nits";
+      specs.graphics = "Intel® Arc™ 130T GPU (onboard)";
     } else if (productName.includes('gigabyte')) {
       specs.cpu = "Intel Core i7-12700H";
       specs.ram = "16GB DDR4 3200MHz";
+      specs.screen = "15.6\" FHD (1920x1080) IPS";
+      specs.graphics = "NVIDIA GeForce RTX 4060";
     } else if (productName.includes('acer')) {
       specs.cpu = "AMD Ryzen 7 8745H";
       specs.ram = "16GB DDR5 4800MHz";
+      specs.screen = "15.6\" FHD (1920x1080) IPS";
+      specs.graphics = "AMD Radeon™ 780M";
+    } else if (productName.includes('dell')) {
+      specs.cpu = "Intel Core i5-1235U";
+      specs.ram = "8GB DDR4 3200MHz";
+      specs.screen = "15.6\" FHD (1920x1080) IPS";
+      specs.graphics = "Intel Iris Xe Graphics";
     }
 
+    // Luôn trả về specs (không bao giờ trống)
     return specs;
   };
 
@@ -171,15 +183,13 @@ const ProductList = ({
             return (
               <ProductCard
                 key={p.id}
+                id={p.id}
                 badge={p.badge || "Sẵn Hàng Tại Showroom"}
                 image={p.image || FALLBACK_IMG}
                 name={p.name}
                 price={p.price || 0}
                 version="1 phiên bản"
                 specifications={getProductSpecifications(p)}
-                isLiked={false}
-                onLike={() => handleLike(p)}
-                onAddToCart={() => handleAddToCart(p)}
                 onCompare={() => handleCompare(p)}
               />
             );
