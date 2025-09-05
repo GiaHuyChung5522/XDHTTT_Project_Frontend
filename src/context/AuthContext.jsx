@@ -41,12 +41,35 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (form) => {
-    const { user, token } = await authSvc.register(form);
-    const normalizedUser = { ...user, role: String(user.role || '').toLowerCase() };
-    setUser(normalizedUser); setToken(token);
-    localStorage.setItem('token', token);
+    const result = await authSvc.register(form);
+    const normalizedUser = { ...result.user, role: String(result.user.role || '').toLowerCase() };
+    setUser(normalizedUser);
+    
+    // Nếu có token từ register, lưu vào state
+    if (result.token) {
+      setToken(result.token);
+      localStorage.setItem('token', result.token);
+    }
+    
     localStorage.setItem('user', JSON.stringify(normalizedUser));
-    return user;
+    return result.user;
+  };
+
+  const refreshToken = async () => {
+    try {
+      const { user, token } = await authSvc.refreshToken();
+      const normalizedUser = { ...user, role: String(user.role || '').toLowerCase() };
+      setUser(normalizedUser);
+      setToken(token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      return { user: normalizedUser, token };
+    } catch (error) {
+      console.error("Refresh token failed:", error);
+      // Nếu refresh thất bại, logout user
+      await logout();
+      throw error;
+    }
   };
 
   const logout = async () => {
@@ -61,7 +84,7 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     user, token, loading, isAuthenticated, hasRole,
-    login, register, logout, Roles,
+    login, register, logout, refreshToken, Roles,
   }), [user, token, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -11,7 +11,7 @@ export default function Login() {
   const onSuccess = () => {
     const stored = localStorage.getItem('user');
     const nextUser = stored ? JSON.parse(stored) : user;
-    if (nextUser?.role === Roles.ADMIN) navigate("/admin2", { replace: true });
+    if (nextUser?.role === Roles.ADMIN) navigate("/admin", { replace: true });
     else if (nextUser?.role === Roles.STAFF) navigate("/staff", { replace: true });
     else navigate("/", { replace: true }); // Redirect về trang chủ thay vì /account
   };
@@ -31,7 +31,7 @@ export default function Login() {
         <button
           type="button"
           className="btn btn-outline-secondary"
-          onClick={() => navigate('/admin2/login')} 
+          onClick={() => navigate('/admin/login')} 
         >
           Admin Login
         </button>

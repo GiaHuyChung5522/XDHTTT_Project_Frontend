@@ -18,7 +18,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (authService.isAuthenticated()) {
-      const from = (location.state as any)?.from?.pathname || '/admin2';
+      const from = (location.state as any)?.from?.pathname || '/admin';
       navigate(from, { replace: true });
     }
   }, [navigate, location]);
@@ -28,7 +28,7 @@ const Login: React.FC = () => {
     try {
       await authService.login(values);
       message.success(t('login.success'));
-      const from = (location.state as any)?.from?.pathname || '/admin2';
+      const from = (location.state as any)?.from?.pathname || '/admin';
       navigate(from, { replace: true });
     } catch (error) {
       message.error(error instanceof Error ? error.message : t('login.error'));

@@ -10,10 +10,10 @@ export default function ProtectedRoute(
   const isAdmin = authService.isAdmin();
 
   if (!isAuthed) {
-    return <Navigate to="/admin2/login" replace state={{ from: location }} />;
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/admin2/login" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
   return <>{children}</>;
 }

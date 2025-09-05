@@ -63,7 +63,7 @@ const AdminLogin = () => {
             </motion.div>
             
             <Title level={2} className="mb-2">
-              7N Fashion Admin
+              Gr7 UTH Admin
             </Title>
             
             <Text type="secondary" style={{ 

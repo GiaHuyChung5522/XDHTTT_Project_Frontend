@@ -30,22 +30,22 @@ const AdminLayout: React.FC = () => {
   const handleLogout = () => {
     authService.logout();
     message.success('Đăng xuất thành công!');
-    navigate('/admin2/login');
+    navigate('/admin/login');
   };
 
   const menuItems = [
-    { key: '/admin2', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/admin2/analytics', icon: <BarChartOutlined />, label: 'Thống kê' },
-    { key: '/admin2/categories', icon: <AppstoreOutlined />, label: 'Danh mục' },
-    { key: '/admin2/products', icon: <ShopOutlined />, label: 'Sản phẩm' },
-    { key: '/admin2/orders', icon: <ShoppingCartOutlined />, label: 'Đơn hàng' },
-    { key: '/admin2/customers', icon: <UserOutlined />, label: 'Khách hàng' },
-    { key: '/admin2/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
+    { key: '/admin', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/admin/analytics', icon: <BarChartOutlined />, label: 'Thống kê' },
+    { key: '/admin/categories', icon: <AppstoreOutlined />, label: 'Danh mục' },
+    { key: '/admin/products', icon: <ShopOutlined />, label: 'Sản phẩm' },
+    { key: '/admin/orders', icon: <ShoppingCartOutlined />, label: 'Đơn hàng' },
+    { key: '/admin/customers', icon: <UserOutlined />, label: 'Khách hàng' },
+    { key: '/admin/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
   ];
 
   const userMenuItems = [
-    { key: 'profile', icon: <ProfileOutlined />, label: 'Profile', onClick: () => navigate('/admin2/profile') },
-    { key: 'settings', icon: <SettingOutlined />, label: 'Settings', onClick: () => navigate('/admin2/settings') },
+    { key: 'profile', icon: <ProfileOutlined />, label: 'Profile', onClick: () => navigate('/admin/profile') },
+    { key: 'settings', icon: <SettingOutlined />, label: 'Settings', onClick: () => navigate('/admin/settings') },
     { type: 'divider' as const },
     { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout },
   ];
@@ -93,7 +93,7 @@ const AdminLayout: React.FC = () => {
             {!collapsed && (
               <div>
                 <Title level={4} style={{ margin: 0, color: 'white', fontWeight: '700' }}>
-                  7N Fashion
+                  7N Fas
                 </Title>
                 <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px', fontWeight: '500' }}>
                   ADMIN DASHBOARD

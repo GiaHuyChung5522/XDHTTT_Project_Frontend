@@ -10,9 +10,9 @@ import {
 import Settings from '../pages/Settings';
 
 export const routes = createBrowserRouter([
-  { path: '/admin2/login', element: <Login /> },
+  { path: '/admin/login', element: <Login /> },
   {
-    path: '/admin2',
+    path: '/admin',
     element: (
       <ProtectedRoute requireAdmin>
         <AdminLayout />

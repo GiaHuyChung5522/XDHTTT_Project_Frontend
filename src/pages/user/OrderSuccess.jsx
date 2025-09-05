@@ -61,7 +61,7 @@ export default function OrderSuccess() {
             <CheckCircleOutlined />
           </div>
           <h1>Đặt hàng thành công!</h1>
-          <p>Cảm ơn bạn đã mua sắm tại 7N Fashion</p>
+          <p>Cảm ơn bạn đã mua sắm tại Gr7 UTH</p>
         </div>
 
         <div className="success-content">

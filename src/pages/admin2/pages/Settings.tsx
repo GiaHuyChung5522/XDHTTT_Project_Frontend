@@ -104,7 +104,7 @@ const Settings: React.FC = () => {
 
   const [settings, setSettings] = useState<SystemSettings>({
     general: {
-      siteName: '7N Fashion',
+      siteName: 'Gr7 UTH',
       siteDescription: 'Cửa hàng thời trang trực tuyến hàng đầu Việt Nam',
       adminEmail: 'admin@7nfashion.com',
       timezone: 'Asia/Ho_Chi_Minh',
@@ -131,7 +131,7 @@ const Settings: React.FC = () => {
       smtpPassword: '••••••••',
       smtpEncryption: 'TLS',
       fromEmail: 'noreply@7nfashion.com',
-      fromName: '7N Fashion',
+      fromName: 'Gr7 UTH',
     },
     notifications: {
       emailNotifications: true,
@@ -493,7 +493,7 @@ const Settings: React.FC = () => {
             name="fromName"
             rules={[{ required: true, message: 'Vui lòng nhập tên người gửi!' }]}
           >
-            <Input placeholder="7N Fashion" />
+            <Input placeholder="Gr7 UTH" />
           </Form.Item>
         </Col>
 

@@ -11,7 +11,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.ordersToShip.subtext,
       icon: '🚚',
       intent: 'primary',
-              onClick: () => window.location.href = '/admin2/orders/processing?filter=to_ship',
+              onClick: () => window.location.href = '/admin/orders/processing?filter=to_ship',
       action: 'In nhãn'
     },
     {
@@ -21,7 +21,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.returns.subtext,
       icon: '↩️',
       intent: 'warning',
-              onClick: () => window.location.href = '/admin2/orders/returns?filter=pending',
+              onClick: () => window.location.href = '/admin/orders/returns?filter=pending',
       action: 'Xử lý'
     },
     {
@@ -31,7 +31,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.rejectedProducts.subtext,
       icon: '❌',
       intent: 'danger',
-              onClick: () => window.location.href = '/admin2/products/rejected',
+              onClick: () => window.location.href = '/admin/products/rejected',
       action: 'Duyệt'
     },
     {
@@ -41,7 +41,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.lowStock.subtext,
       icon: '⚠️',
       intent: 'warning',
-              onClick: () => window.location.href = '/admin2/products/inventory?filter=low_stock',
+              onClick: () => window.location.href = '/admin/products/inventory?filter=low_stock',
       action: 'Nhập hàng'
     },
     {
@@ -51,7 +51,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.negativeReviews.subtext,
       icon: '😞',
       intent: 'danger',
-              onClick: () => window.location.href = '/admin2/orders/disputes',
+              onClick: () => window.location.href = '/admin/orders/disputes',
       action: 'Xử lý'
     },
     {
@@ -61,7 +61,7 @@ const StatusHero = ({ metrics }) => {
       subtext: metrics.pendingOrders.subtext,
       icon: '⏳',
       intent: 'info',
-              onClick: () => window.location.href = '/admin2/orders/pending',
+              onClick: () => window.location.href = '/admin/orders/pending',
       action: 'Xác nhận'
     }
   ];

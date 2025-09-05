@@ -432,14 +432,14 @@ const Dashboard: React.FC = () => {
                 <Button 
                   type="primary" 
                   icon={<PlusOutlined />}
-                  onClick={() => navigate('/admin2/products')}
+                  onClick={() => navigate('/admin/products')}
                   style={{ borderRadius: '8px' }}
                 >
                   Thêm sản phẩm
                 </Button>
                 <Button 
                   icon={<SettingOutlined />}
-                  onClick={() => navigate('/admin2/settings')}
+                  onClick={() => navigate('/admin/settings')}
                   style={{ borderRadius: '8px' }}
                 >
                   Cài đặt
@@ -462,7 +462,7 @@ const Dashboard: React.FC = () => {
                   <Button 
                     type="text" 
                     icon={<TeamOutlined />}
-                    onClick={() => navigate('/admin2/customers')}
+                    onClick={() => navigate('/admin/customers')}
                     style={{ 
                       color: 'white', 
                       border: '1px solid rgba(255,255,255,0.3)',
@@ -483,7 +483,7 @@ const Dashboard: React.FC = () => {
                   <Button 
                     type="text" 
                     icon={<ShoppingCartOutlined />}
-                    onClick={() => navigate('/admin2/orders')}
+                    onClick={() => navigate('/admin/orders')}
                     style={{ 
                       color: 'white', 
                       border: '1px solid rgba(255,255,255,0.3)',
@@ -504,7 +504,7 @@ const Dashboard: React.FC = () => {
                   <Button 
                     type="text" 
                     icon={<TagOutlined />}
-                    onClick={() => navigate('/admin2/products')}
+                    onClick={() => navigate('/admin/products')}
                     style={{ 
                       color: 'white', 
                       border: '1px solid rgba(255,255,255,0.3)',
@@ -525,7 +525,7 @@ const Dashboard: React.FC = () => {
                   <Button 
                     type="text" 
                     icon={<FileTextOutlined />}
-                    onClick={() => navigate('/admin2/analytics')}
+                    onClick={() => navigate('/admin/analytics')}
                     style={{ 
                       color: 'white', 
                       border: '1px solid rgba(255,255,255,0.3)',

@@ -1,16 +1,35 @@
 // src/lib/api.js
 const baseURL = '/api';
 
-// Lấy Bearer token từ localStorage.auth (nếu có)
+// Lấy Bearer token từ localStorage (nếu có)
 function getAuthHeader() {
   try {
-    const raw = localStorage.getItem('auth');
-    if (!raw) return {};
-    const { token, accessToken } = JSON.parse(raw);
-    const bearer = token || accessToken;
-    return bearer ? { Authorization: `Bearer ${bearer}` } : {};
+    // Thử lấy từ localStorage.auth trước
+    const authRaw = localStorage.getItem('auth');
+    if (authRaw) {
+      const { token, accessToken } = JSON.parse(authRaw);
+      const bearer = token || accessToken;
+      return bearer ? { Authorization: `Bearer ${bearer}` } : {};
+    }
+    
+    // Fallback: lấy từ localStorage.token
+    const token = localStorage.getItem('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
   } catch {
     return {};
+  }
+}
+
+// Refresh token khi gặp lỗi 401
+async function handleTokenRefresh() {
+  try {
+    // Import dynamic để tránh circular dependency
+    const { refreshToken } = await import('../services/authService');
+    await refreshToken();
+    return true;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    return false;
   }
 }
 
@@ -27,7 +46,7 @@ function buildQuery(params) {
   return qp ? `?${new URLSearchParams(qp).toString()}` : '';
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, retryCount = 0) {
   // Gộp headers: JSON + Auth + headers truyền vào
   const mergedHeaders = {
     'Content-Type': 'application/json',
@@ -53,6 +72,20 @@ async function request(path, options = {}) {
   });
 
   if (timer) clearTimeout(timer);
+
+  // Xử lý lỗi 401 - Unauthorized
+  if (res.status === 401 && retryCount === 0) {
+    console.log('Token expired, attempting refresh...');
+    const refreshed = await handleTokenRefresh();
+    if (refreshed) {
+      // Retry request với token mới
+      return request(path, options, retryCount + 1);
+    } else {
+      // Refresh thất bại, redirect to login
+      window.location.href = '/login';
+      return;
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');

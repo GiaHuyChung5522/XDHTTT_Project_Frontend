@@ -3,7 +3,7 @@
 ## 🎯 TỔNG QUAN HỆ THỐNG
 
 ### **Mục đích:**
-- Hệ thống admin quản lý toàn bộ website 7N Fashion
+- Hệ thống admin quản lý toàn bộ website Gr7 UTH
 - Phân quyền rõ ràng giữa User thường và Admin
 - Bảo mật cao, chỉ admin được ủy quyền mới truy cập được
 
@@ -53,7 +53,7 @@
     "user": {
       "id": "admin_001",
       "email": "admin@gmail.com",
-      "name": "Admin 7N Fashion",
+      "name": "Admin Gr7 UTH",
       "role": "admin",
       "permissions": ["read", "write", "delete", "manage_users"],
       "avatar": "https://example.com/avatar.jpg",

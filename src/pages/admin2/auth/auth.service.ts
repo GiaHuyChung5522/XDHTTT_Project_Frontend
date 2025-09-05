@@ -27,7 +27,7 @@ class AuthService {
     user: {
       id: '1',
       email: 'admin@gmail.com',
-      name: 'Admin 7N Fashion',
+      name: 'Admin Gr7 UTH',
       role: 'admin' as const,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
     }

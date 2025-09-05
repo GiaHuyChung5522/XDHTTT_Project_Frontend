@@ -28,7 +28,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.profile': 'Thông tin cá nhân',
     
     // Login
-    'login.title': '7N Fashion Admin',
+    'login.title': 'Gr7 UTH Admin',
     'login.subtitle': 'Đăng nhập vào hệ thống quản trị',
     'login.email': 'Email',
     'login.password': 'Mật khẩu',
@@ -45,7 +45,7 @@ const translations: Record<Language, Record<string, string>> = {
     'login.validation.password.min': 'Mật khẩu phải có ít nhất 6 ký tự!',
     
     // Common
-    'common.copyright': '© 2024 7N Fashion. Tất cả quyền được bảo lưu.',
+    'common.copyright': '© 2024 Gr7 UTH. Tất cả quyền được bảo lưu.',
     'common.save': 'Lưu',
     'common.cancel': 'Hủy',
     'common.edit': 'Sửa',
@@ -93,7 +93,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.profile': 'Profile',
     
     // Login
-    'login.title': '7N Fashion Admin',
+    'login.title': 'Gr7 UTH Admin',
     'login.subtitle': 'Sign in to admin dashboard',
     'login.email': 'Email',
     'login.password': 'Password',
@@ -110,7 +110,7 @@ const translations: Record<Language, Record<string, string>> = {
     'login.validation.password.min': 'Password must be at least 6 characters!',
     
     // Common
-    'common.copyright': '© 2024 7N Fashion. All rights reserved.',
+    'common.copyright': '© 2024 Gr7 UTH. All rights reserved.',
     'common.save': 'Save',
     'common.cancel': 'Cancel',
     'common.edit': 'Edit',
