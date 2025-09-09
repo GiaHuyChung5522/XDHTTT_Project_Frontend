@@ -19,6 +19,10 @@ import { QueryProvider } from './pages/providers';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { useTheme } from './contexts/ThemeContext';
+import AuthProvider from '../../context/AuthContext';
+import { CartProvider } from '../../context/CartContext';
+import NotificationSystem from '../../components/NotificationSystem';
+import FloatingContactButtons from '../../components/FloatingContactButtons';
 import './App.css';
 
 // Configure dayjs plugins
@@ -179,9 +183,15 @@ const AppContent: React.FC = () => {
       locale={getAntdLocale()}
       theme={customTheme}
     >
-      <QueryProvider>
-        <RouterProvider />
-      </QueryProvider>
+      <AuthProvider>
+        <CartProvider>
+          <QueryProvider>
+            <RouterProvider />
+            <NotificationSystem />
+            <FloatingContactButtons />
+          </QueryProvider>
+        </CartProvider>
+      </AuthProvider>
     </ConfigProvider>
   );
 };

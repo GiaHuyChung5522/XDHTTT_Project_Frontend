@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray } from '../../../utils/initData';
+import { adminService } from '../../../services/adminService';
 import {
   Table,
   Button,
@@ -17,6 +18,8 @@ import {
   Descriptions,
   List,
   message,
+  Spin,
+  Pagination,
 } from 'antd';
 import {
   SearchOutlined,
@@ -42,17 +45,24 @@ interface CustomerOrder {
 interface Customer {
   key: string;
   id: string;
-  name: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
   phone: string;
   address: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  status: 'active' | 'inactive';
-  joinDate: string;
+  role: string;
+  gender: string;
+  birth?: Date;
   avatar?: string;
-  orders: CustomerOrder[];
+  createdAt: string;
+  updatedAt: string;
+  status: 'active' | 'inactive';
+  // Computed fields for display
+  totalOrders?: number;
+  totalSpent?: number;
+  lastOrderDate?: string;
+  orders?: CustomerOrder[];
 }
 
 // Function to get real customers from localStorage
@@ -110,15 +120,20 @@ const mockCustomers: Customer[] = [
   {
     key: '1',
     id: 'CUST-001',
-    name: 'Nguyễn Văn A',
     email: 'nguyenvana@email.com',
+    firstName: 'Nguyễn Văn',
+    lastName: 'A',
+    fullName: 'Nguyễn Văn A',
     phone: '0123456789',
     address: '123 Đường ABC, Quận 1, TP.HCM',
+    role: 'USER',
+    gender: 'MALE',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+    status: 'active' as const,
     totalOrders: 15,
     totalSpent: 12500000,
     lastOrderDate: '2024-12-09',
-    status: 'active',
-    joinDate: '2024-01-15',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nguyen',
     orders: [
       { id: 'ORD-001', date: '2024-12-09', total: 878000, status: 'confirmed' },
@@ -129,15 +144,20 @@ const mockCustomers: Customer[] = [
   {
     key: '2',
     id: 'CUST-002',
-    name: 'Trần Thị B',
     email: 'tranthib@email.com',
+    firstName: 'Trần Thị',
+    lastName: 'B',
+    fullName: 'Trần Thị B',
     phone: '0987654321',
     address: '456 Đường XYZ, Quận 2, TP.HCM',
+    role: 'USER',
+    gender: 'FEMALE',
+    createdAt: '2024-03-20',
+    updatedAt: '2024-03-20',
+    status: 'active' as const,
     totalOrders: 8,
     totalSpent: 6800000,
     lastOrderDate: '2024-12-08',
-    status: 'active',
-    joinDate: '2024-03-20',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tran',
     orders: [
       { id: 'ORD-002', date: '2024-12-08', total: 1049000, status: 'shipping' },
@@ -147,15 +167,20 @@ const mockCustomers: Customer[] = [
   {
     key: '3',
     id: 'CUST-003',
-    name: 'Lê Văn C',
     email: 'levanc@email.com',
+    firstName: 'Lê Văn',
+    lastName: 'C',
+    fullName: 'Lê Văn C',
     phone: '0369852147',
     address: '789 Đường DEF, Quận 3, TP.HCM',
+    role: 'USER',
+    gender: 'MALE',
+    createdAt: '2024-10-05',
+    updatedAt: '2024-10-05',
+    status: 'active' as const,
     totalOrders: 3,
     totalSpent: 1950000,
     lastOrderDate: '2024-12-09',
-    status: 'active',
-    joinDate: '2024-10-05',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=le',
     orders: [
       { id: 'ORD-003', date: '2024-12-09', total: 680000, status: 'pending' },
@@ -165,15 +190,20 @@ const mockCustomers: Customer[] = [
   {
     key: '4',
     id: 'CUST-004',
-    name: 'Phạm Thị D',
     email: 'phamthid@email.com',
+    firstName: 'Phạm Thị',
+    lastName: 'D',
+    fullName: 'Phạm Thị D',
     phone: '0741852963',
     address: '321 Đường GHI, Quận 4, TP.HCM',
+    role: 'USER',
+    gender: 'FEMALE',
+    createdAt: '2023-11-10',
+    updatedAt: '2023-11-10',
+    status: 'active' as const,
     totalOrders: 22,
     totalSpent: 18750000,
     lastOrderDate: '2024-12-07',
-    status: 'active',
-    joinDate: '2023-11-10',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pham',
     orders: [
       { id: 'ORD-004', date: '2024-12-07', total: 570000, status: 'delivered' },
@@ -184,15 +214,20 @@ const mockCustomers: Customer[] = [
   {
     key: '5',
     id: 'CUST-005',
-    name: 'Hoàng Văn E',
     email: 'hoangvane@email.com',
+    firstName: 'Hoàng Văn',
+    lastName: 'E',
+    fullName: 'Hoàng Văn E',
     phone: '0456789123',
     address: '654 Đường JKL, Quận 5, TP.HCM',
+    role: 'USER',
+    gender: 'MALE',
+    createdAt: '2024-09-10',
+    updatedAt: '2024-09-10',
+    status: 'inactive' as const,
     totalOrders: 1,
     totalSpent: 320000,
     lastOrderDate: '2024-09-15',
-    status: 'inactive',
-    joinDate: '2024-09-10',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hoang',
     orders: [
       { id: 'ORD-040', date: '2024-09-15', total: 320000, status: 'delivered' },
@@ -201,57 +236,95 @@ const mockCustomers: Customer[] = [
 ];
 
 const Customers: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>(() => {
-    const realCustomers = getRealCustomers();
-    return realCustomers.length > 0 ? realCustomers : mockCustomers;
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
   });
-
-  useEffect(() => {
-    // Initialize localStorage data on component mount
-    initializeLocalStorageData();
-  }, []);
-  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>(mockCustomers);
-  const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [filters, setFilters] = useState({
+    search: '',
+    role: '',
+    status: '',
+  });
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  // Filter customers
-  const handleFilter = () => {
-    let filtered = customers;
+  // Load customers from API
+  const loadCustomers = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const result = await adminService.getUsers({
+        page,
+        limit: pageSize,
+        search: filters.search,
+        role: filters.role,
+        status: filters.status,
+      });
 
-    if (searchText) {
-      filtered = filtered.filter(customer =>
-        getSafeString(customer.name).toLowerCase().includes(searchText.toLowerCase()) ||
-        getSafeString(customer.email).toLowerCase().includes(searchText.toLowerCase()) ||
-        getSafeString(customer.phone).includes(searchText) ||
-        getSafeString(customer.id).toLowerCase().includes(searchText.toLowerCase())
-      );
+      if (result.success) {
+        // Add computed fields for display
+        const customersWithStats = result.data.users.map(customer => ({
+          ...customer,
+          totalOrders: Math.floor(Math.random() * 20) + 1, // Mock data for now
+          totalSpent: Math.floor(Math.random() * 10000000) + 1000000, // Mock data for now
+          lastOrderDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN'),
+          orders: [], // Mock empty orders for now
+          status: customer.status as 'active' | 'inactive',
+        }));
+        
+        setCustomers(customersWithStats);
+        setPagination({
+          current: result.data.pagination.page,
+          pageSize: result.data.pagination.limit,
+          total: result.data.pagination.total,
+        });
+      } else {
+        message.error('Không thể tải danh sách khách hàng');
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+      message.error('Lỗi khi tải danh sách khách hàng');
+    } finally {
+      setLoading(false);
     }
-
-    if (selectedStatus) {
-      filtered = filtered.filter(customer => customer.status === selectedStatus);
-    }
-
-    setFilteredCustomers(filtered);
   };
 
-  React.useEffect(() => {
-    handleFilter();
-  }, [searchText, selectedStatus, customers]);
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  useEffect(() => {
+    loadCustomers(pagination.current, pagination.pageSize);
+  }, [filters]);
 
   const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setIsDetailModalVisible(true);
   };
 
-  const handleUpdateStatus = (customerId: string, newStatus: string) => {
-    setCustomers(customers.map(customer =>
-      customer.id === customerId
-        ? { ...customer, status: newStatus as any }
-        : customer
-    ));
-    message.success('Đã cập nhật trạng thái khách hàng');
+  const handleUpdateStatus = async (customerId: string, newStatus: string) => {
+    try {
+      const result = await adminService.updateUser(customerId, { status: newStatus });
+      if (result.success) {
+        message.success('Đã cập nhật trạng thái khách hàng');
+        loadCustomers(pagination.current, pagination.pageSize);
+      } else {
+        message.error('Không thể cập nhật trạng thái');
+      }
+    } catch (error) {
+      console.error('Error updating customer status:', error);
+      message.error('Lỗi khi cập nhật trạng thái');
+    }
+  };
+
+  const handleTableChange = (pagination: any) => {
+    loadCustomers(pagination.current, pagination.pageSize);
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const getStatusColor = (status: string) => {
@@ -296,7 +369,7 @@ const Customers: React.FC = () => {
             style={{ marginRight: 12 }} 
           />
           <div>
-            <Text strong>{name}</Text>
+            <Text strong>{record.fullName}</Text>
             <br />
             <Text type="secondary" style={{ fontSize: 12 }}>
               {record.id}
@@ -443,17 +516,29 @@ const Customers: React.FC = () => {
               <Input
                 placeholder="Tìm kiếm theo tên, email, điện thoại hoặc mã khách hàng"
                 prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
               />
+            </Col>
+            <Col xs={24} sm={6}>
+              <Select
+                placeholder="Vai trò"
+                style={{ width: '100%' }}
+                allowClear
+                value={filters.role}
+                onChange={(value) => handleFilterChange('role', value)}
+              >
+                <Option value="USER">Người dùng</Option>
+                <Option value="ADMIN">Quản trị viên</Option>
+              </Select>
             </Col>
             <Col xs={24} sm={6}>
               <Select
                 placeholder="Trạng thái"
                 style={{ width: '100%' }}
                 allowClear
-                value={selectedStatus}
-                onChange={setSelectedStatus}
+                value={filters.status}
+                onChange={(value) => handleFilterChange('status', value)}
               >
                 <Option value="active">Hoạt động</Option>
                 <Option value="inactive">Không hoạt động</Option>
@@ -461,23 +546,27 @@ const Customers: React.FC = () => {
             </Col>
           </Row>
 
-          <Table
-            columns={columns}
-            dataSource={filteredCustomers}
-            pagination={{
-              total: filteredCustomers.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} khách hàng`,
-            }}
-            scroll={{ x: 900 }}
-          />
+          <Spin spinning={loading}>
+            <Table
+              columns={columns}
+              dataSource={customers}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} của ${total} khách hàng`,
+                onChange: handleTableChange,
+              }}
+              scroll={{ x: 900 }}
+            />
+          </Spin>
         </Card>
 
         <Modal
-          title={`Chi tiết khách hàng ${selectedCustomer?.name}`}
+          title={`Chi tiết khách hàng ${selectedCustomer?.fullName}`}
           open={isDetailModalVisible}
           onCancel={() => setIsDetailModalVisible(false)}
           footer={[
@@ -500,12 +589,12 @@ const Customers: React.FC = () => {
                     />
                     <div>
                       <Title level={4} style={{ margin: 0 }}>
-                        {selectedCustomer.name}
+                        {selectedCustomer.fullName}
                       </Title>
                       <Text type="secondary">{selectedCustomer.id}</Text>
                       <br />
-                      <Tag color={getCustomerLevel(selectedCustomer.totalSpent).color} style={{ marginTop: 8 }}>
-                        {getCustomerLevel(selectedCustomer.totalSpent).level}
+                      <Tag color={getCustomerLevel(selectedCustomer.totalSpent || 0).color} style={{ marginTop: 8 }}>
+                        {getCustomerLevel(selectedCustomer.totalSpent || 0).level}
                       </Tag>
                     </div>
                   </div>
@@ -516,14 +605,14 @@ const Customers: React.FC = () => {
                     <Col span={8}>
                       <Statistic
                         title="Tổng đơn hàng"
-                        value={selectedCustomer.totalOrders}
+                        value={selectedCustomer.totalOrders || 0}
                         prefix={<ShoppingCartOutlined />}
                       />
                     </Col>
                     <Col span={8}>
                       <Statistic
                         title="Tổng chi tiêu"
-                        value={selectedCustomer.totalSpent}
+                        value={selectedCustomer.totalSpent || 0}
                         formatter={(value) => `₫${Number(value).toLocaleString()}`}
                         valueStyle={{ color: '#3f8600' }}
                       />
@@ -531,7 +620,7 @@ const Customers: React.FC = () => {
                     <Col span={8}>
                       <Statistic
                         title="Trung bình/đơn"
-                        value={selectedCustomer.totalSpent / selectedCustomer.totalOrders}
+                        value={selectedCustomer.totalOrders ? (selectedCustomer.totalSpent || 0) / selectedCustomer.totalOrders : 0}
                         formatter={(value) => `₫${Number(value).toLocaleString()}`}
                         precision={0}
                       />
@@ -547,8 +636,14 @@ const Customers: React.FC = () => {
                       <Descriptions.Item label="Email">{selectedCustomer.email}</Descriptions.Item>
                       <Descriptions.Item label="Điện thoại">{selectedCustomer.phone}</Descriptions.Item>
                       <Descriptions.Item label="Địa chỉ">{selectedCustomer.address}</Descriptions.Item>
-                      <Descriptions.Item label="Ngày tham gia">{selectedCustomer.joinDate}</Descriptions.Item>
-                      <Descriptions.Item label="Đơn hàng cuối">{selectedCustomer.lastOrderDate}</Descriptions.Item>
+                      <Descriptions.Item label="Vai trò">
+                        <Tag color={selectedCustomer.role === 'ADMIN' ? 'red' : 'blue'}>
+                          {selectedCustomer.role === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'}
+                        </Tag>
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Giới tính">{selectedCustomer.gender}</Descriptions.Item>
+                      <Descriptions.Item label="Ngày tham gia">{new Date(selectedCustomer.createdAt).toLocaleDateString('vi-VN')}</Descriptions.Item>
+                      <Descriptions.Item label="Đơn hàng cuối">{selectedCustomer.lastOrderDate || 'Chưa có'}</Descriptions.Item>
                       <Descriptions.Item label="Trạng thái">
                         <Tag color={getStatusColor(selectedCustomer.status)}>
                           {getStatusText(selectedCustomer.status)}
@@ -560,32 +655,38 @@ const Customers: React.FC = () => {
 
                 <Col span={12}>
                   <Card size="small" title="Lịch sử đơn hàng gần đây">
-                    <List
-                      size="small"
-                      dataSource={selectedCustomer.orders}
-                      renderItem={(order) => (
-                        <List.Item>
-                          <List.Item.Meta
-                            title={
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text strong>{order.id}</Text>
-                                <Tag color={getOrderStatusColor(order.status)} style={{ fontSize: 12, lineHeight: '16px', padding: '0 6px' }}>
-                                  {getOrderStatusText(order.status)}
-                                </Tag>
-                              </div>
-                            }
-                            description={
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Text type="secondary" style={{ fontSize: 12 }}>{order.date}</Text>
-                                <Text strong style={{ color: '#3f8600' }}>
-                                  ₫{order.total.toLocaleString()}
-                                </Text>
-                              </div>
-                            }
-                          />
-                        </List.Item>
-                      )}
-                    />
+                    {selectedCustomer.orders && selectedCustomer.orders.length > 0 ? (
+                      <List
+                        size="small"
+                        dataSource={selectedCustomer.orders}
+                        renderItem={(order) => (
+                          <List.Item>
+                            <List.Item.Meta
+                              title={
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Text strong>{order.id}</Text>
+                                  <Tag color={getOrderStatusColor(order.status)} style={{ fontSize: 12, lineHeight: '16px', padding: '0 6px' }}>
+                                    {getOrderStatusText(order.status)}
+                                  </Tag>
+                                </div>
+                              }
+                              description={
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>{order.date}</Text>
+                                  <Text strong style={{ color: '#3f8600' }}>
+                                    ₫{order.total.toLocaleString()}
+                                  </Text>
+                                </div>
+                              }
+                            />
+                          </List.Item>
+                        )}
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
+                        <Text type="secondary">Chưa có đơn hàng nào</Text>
+                      </div>
+                    )}
                   </Card>
                 </Col>
               </Row>

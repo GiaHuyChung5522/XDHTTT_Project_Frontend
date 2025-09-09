@@ -196,6 +196,7 @@ const AuthForm = ({ onClose, onSwitchMode, mode: initialMode = "login", onSucces
             lastName: formData.lastName,
             email: formData.email,
             password: formData.password,
+            confirmPassword: formData.confirmPassword, // ✅ Thêm confirmPassword
             gender: formData.gender,
             birth: birthDate,
             address: formData.address || undefined,

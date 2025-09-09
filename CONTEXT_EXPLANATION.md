@@ -1,8 +1,6 @@
 # 📚 Giải Thích Context System cho Backend
 
-## 🤔 **Context là gì?**
 
-Context trong React giống như một **"kho chung"** để lưu trữ dữ liệu mà tất cả component trong app đều có thể truy cập được.
 
 ### **Ví dụ đơn giản:**
 ```javascript

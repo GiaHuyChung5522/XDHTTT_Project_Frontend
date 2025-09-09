@@ -1,5 +1,5 @@
 // src/lib/api.js
-const baseURL = '/api';
+const baseURL = 'http://localhost:3000/api';
 
 // Lấy Bearer token từ localStorage (nếu có)
 function getAuthHeader() {

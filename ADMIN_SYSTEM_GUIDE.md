@@ -440,6 +440,7 @@ CREATE TABLE admin_users (
   is_active BOOLEAN DEFAULT true,
   last_login_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW(),
+  
   updated_at TIMESTAMP DEFAULT NOW()
 );
 

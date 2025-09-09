@@ -36,6 +36,7 @@
     "json-server-auth": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
+    "node-fetch": "^3.3.2",
     "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-countup": "^6.5.3",

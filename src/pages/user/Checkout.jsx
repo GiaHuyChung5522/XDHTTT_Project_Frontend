@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { orderService } from '../../services/orderService';
 import { 
   UserOutlined, 
   PhoneOutlined, 
@@ -132,20 +133,17 @@ export default function Checkout() {
         } : null
       };
 
-      // Save to localStorage
-      localStorage.setItem('lastOrder', JSON.stringify(orderData));
+      // ✅ Gọi API tạo đơn hàng thật
+      const createdOrder = await orderService.createOrder(orderData);
       
-      // Add to orders list for admin
-      const existingOrders = localStorage.getItem('orders');
-      const orders = existingOrders ? JSON.parse(existingOrders) : [];
-      orders.unshift(orderData);
-      localStorage.setItem('orders', JSON.stringify(orders));
+      // Save to localStorage for backup
+      localStorage.setItem('lastOrder', JSON.stringify(createdOrder));
       
       // Clear cart after successful order
       cartItems.forEach(item => removeFromCart(item.id));
       
       message.success('Đặt hàng thành công!');
-      navigate('/order-success', { state: { order: orderData } });
+      navigate('/order-success', { state: { order: createdOrder } });
       
     } catch (error) {
       message.destroy();

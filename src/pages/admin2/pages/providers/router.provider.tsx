@@ -38,6 +38,7 @@ import OrderSuccess from "../../../../pages/user/OrderSuccess";
 import UserOrders from "../../../../pages/user/UserOrders";
 import UserProfile from "../../../../pages/user/UserProfile";
 import TestAuth from "../../../../pages/TestAuth";
+import TestApiIntegration from "../../../../pages/TestApiIntegration";
 import NotFound from "../../../../pages/NotFound";
 
 // Tạo router chính kết nối cả ecommerce và admin
@@ -190,6 +191,10 @@ const mainRoutes = createBrowserRouter([
       {
         path: "test-auth",
         element: <TestAuth />,
+      },
+      {
+        path: "api-test",
+        element: <TestApiIntegration />,
       },
     ],
   },

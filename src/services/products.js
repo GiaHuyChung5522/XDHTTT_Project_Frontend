@@ -1,3 +1,5 @@
+
+
 // services/products.js
 import { api } from '../lib/api';
 
@@ -115,10 +117,13 @@ function filterAndPaginateProducts(products, { page = 1, limit = 20, q = '', sor
   };
 }
 
+// SECTION: Get Products - Lấy danh sách sản phẩm từ Backend
 /**
- * Hỗ trợ cả 2 kiểu API:
- * - json-server style: trả mảng + header X-Total-Count
- * - custom style: trả { data, meta }
+ * ✅ Tích hợp với Backend API:
+ * - GET /product - Lấy tất cả sản phẩm
+ * - GET /product/filter - Lọc theo brand, category, pagination
+ * - GET /product/categories - Lấy danh mục
+ * - GET /product/brands - Lấy thương hiệu
  */
 export async function getProducts({
   page = 1,
@@ -126,27 +131,67 @@ export async function getProducts({
   q = '',
   sort = 'id',
   order = 'asc',
+  brand = '',
+  category = ''
 } = {}) {
   try {
-    // Thử gọi API thật trước
-    const params = { _page: page, _limit: limit, _sort: sort, _order: order };
-    if (q) params.q = q;
-
-    const { data, headers } = await api.getWithHeaders('/product', params);
-
-    const items =
-      Array.isArray(data) ? data
-      : Array.isArray(data?.data) ? data.data
-      : [];
-
-    const total = Number(
-      headers.get('x-total-count') ??
-      (Array.isArray(data) ? data.length : data?.meta?.total ?? 0)
-    );
-
-    return { items, page, limit, total };
+    // ✅ Nếu có filter (brand/category), dùng endpoint /product/filter
+    if (brand || category) {
+      const params = { page, limit };
+      if (brand) params.brand = brand;
+      if (category) params.category = category;
+      
+      const response = await api.get('/product/filter', params);
+      
+      // ✅ Backend trả về: { data, total, page, limit, totalPages }
+      return {
+        items: response.data || [],
+        total: response.total || 0,
+        page: response.page || page,
+        limit: response.limit || limit,
+        totalPages: response.totalPages || 0
+      };
+    }
+    
+    // ✅ Nếu không có filter, dùng endpoint /product (lấy tất cả)
+    const response = await api.get('/product');
+    
+    // ✅ Backend trả về mảng sản phẩm trực tiếp
+    const items = Array.isArray(response) ? response : [];
+    
+    // ✅ Nếu không có sản phẩm từ Backend, dùng mock data
+    if (items.length === 0) {
+      console.log("🔄 Backend trả về array rỗng, sử dụng mock data");
+      return filterAndPaginateProducts(mockProducts, { page, limit, q, sort, order });
+    }
+    
+    console.log("✅ Sử dụng dữ liệu thật từ Backend:", items.length, "sản phẩm");
+    console.log("🔍 Cấu trúc sản phẩm đầu tiên:", items[0]);
+    
+    // ✅ Filter local nếu có search query
+    let filteredItems = items;
+    if (q) {
+      const searchTerm = q.toLowerCase();
+      filteredItems = items.filter(product => 
+        (product.name || '').toLowerCase().includes(searchTerm) ||
+        (product.description || '').toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // ✅ Pagination local
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+    
+    return {
+      items: paginatedItems,
+      total: filteredItems.length,
+      page,
+      limit,
+      totalPages: Math.ceil(filteredItems.length / limit)
+    };
   } catch (error) {
-    console.warn('API không khả dụng, sử dụng mock data:', error.message);
+    console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
     
     // Fallback to mock data
     return filterAndPaginateProducts(mockProducts, { page, limit, q, sort, order });
@@ -206,5 +251,39 @@ export async function deleteProduct(id) {
     console.warn('API không khả dụng:', error.message);
     // Mock response
     return { success: true };
+  }
+}
+
+// SECTION: Categories & Brands - Lấy danh mục và thương hiệu từ Backend
+/**
+ * ✅ Lấy danh sách categories từ Backend
+ * GET /product/categories
+ */
+export async function getCategories() {
+  try {
+    const response = await api.get('/product/categories');
+    // ✅ Backend trả về mảng categories trực tiếp
+    return Array.isArray(response) ? response : [];
+  } catch (error) {
+    console.warn('Backend API không khả dụng, sử dụng mock categories:', error.message);
+    // Mock categories fallback
+    return ['Laptop', 'Desktop', 'Accessories', 'Gaming'];
+  }
+}
+
+/**
+ * ✅ Lấy danh sách brands từ Backend
+ * GET /product/brands
+ */
+export async function getBrands(category = '') {
+  try {
+    const params = category ? { category } : {};
+    const response = await api.get('/product/brands', params);
+    // ✅ Backend trả về mảng brands trực tiếp
+    return Array.isArray(response) ? response : [];
+  } catch (error) {
+    console.warn('Backend API không khả dụng, sử dụng mock brands:', error.message);
+    // Mock brands fallback
+    return ['Lenovo', 'ASUS', 'MSI', 'Dell', 'HP', 'Acer'];
   }
 }

@@ -81,12 +81,28 @@ export default function ProductDetail() {
     setLoading(true);
     setErr("");
     
-    // Simulate API call
-    setTimeout(() => {
-      if (!alive) return;
-      setProduct(mockProduct);
-      setLoading(false);
-    }, 1000);
+    console.log("🔍 ProductDetail - ID từ URL:", id);
+    
+    // Gọi API thật thay vì dùng mock data
+    (async () => {
+      try {
+        if (!id || id === 'undefined') {
+          throw new Error('ID sản phẩm không hợp lệ');
+        }
+        
+        const productData = await getProductById(id);
+        console.log("🔍 ProductDetail - Dữ liệu từ API:", productData);
+        
+        if (!alive) return;
+        setProduct(productData);
+        setLoading(false);
+      } catch (error) {
+        console.error("❌ Lỗi khi tải sản phẩm:", error);
+        if (!alive) return;
+        setErr(error.message);
+        setLoading(false);
+      }
+    })();
 
     return () => {
       alive = false;
@@ -185,14 +201,14 @@ export default function ProductDetail() {
         <div className="product-images">
           <div className="main-image">
             <img 
-              src={product.images[selectedImage]} 
+              src={product.images?.[selectedImage] || product.imageUrl || product.image || FALLBACK_IMG} 
               alt={product.name}
               onError={(e) => { e.target.src = FALLBACK_IMG; }}
             />
           </div>
           
           <div className="thumbnail-gallery">
-            {product.images.map((img, index) => (
+            {(product.images || [product.imageUrl || product.image || FALLBACK_IMG]).map((img, index) => (
               <div 
                 key={index}
                 className={`thumbnail ${selectedImage === index ? 'active' : ''}`}

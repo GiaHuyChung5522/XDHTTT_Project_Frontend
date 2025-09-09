@@ -37,12 +37,12 @@ export async function login({ email, password }) {
     throw new Error("Invalid response from server");
   } catch (error) {
     console.error("Login API failed:", error);
-    throw new Error("Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.");
+      throw new Error("Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.");
   }
 }
 
-export async function register({ firstName, lastName, email, password, gender, birth, address, telephone }) {
-  console.log("Attempting register with", { firstName, lastName, email, password, gender, birth, address, telephone });
+export async function register({ firstName, lastName, email, password, confirmPassword, gender, birth, address, telephone }) {
+  console.log("Attempting register with", { firstName, lastName, email, password, confirmPassword, gender, birth, address, telephone });
   
   try {
     const response = await api.post("/auth/register", { 
@@ -50,6 +50,7 @@ export async function register({ firstName, lastName, email, password, gender, b
       lastName, 
       email, 
       password, 
+      confirmPassword,  // ✅ Backend yêu cầu confirmPassword
       gender, 
       birth, 
       address, 
@@ -57,45 +58,26 @@ export async function register({ firstName, lastName, email, password, gender, b
     });
     console.log("Register response:", response);
     
-    // API có thể trả về: { accessToken, refreshToken, role } hoặc { statusCode, message, data }
+    // ✅ Backend Register API chỉ trả về user info (không có token)
+    // Format: { firstName, lastName, email, gender, birth, address, telephone, _id, createdAt, updatedAt }
     let registerData = response;
     
     if (response?.data && response?.statusCode) {
       registerData = response.data;
     }
     
-    // Nếu có accessToken, tạo user object
-    if (registerData?.accessToken) {
-      const user = {
-        id: Date.now(),
-        email: email,
-        role: registerData.role || 'user',
-        name: `${firstName} ${lastName}`,
-        firstName: firstName,
-        lastName: lastName,
-        gender: gender,
-        birth: birth,
-        address: address,
-        telephone: telephone,
-        refreshToken: registerData.refreshToken
-      };
-      
-      setAuth({ token: registerData.accessToken, user: user });
-      return { token: registerData.accessToken, user: user };
-    }
-    
-    // Nếu không có accessToken, chỉ trả về user info
+    // ✅ Tạo user object từ response
     const user = {
-      id: Date.now(),
-      email: email,
-      role: 'user',
-      name: `${firstName} ${lastName}`,
-      firstName: firstName,
-      lastName: lastName,
-      gender: gender,
-      birth: birth,
-      address: address,
-      telephone: telephone
+      id: registerData._id || Date.now(),
+      email: registerData.email || email,
+      role: 'user', // ✅ Mặc định là user
+      name: `${registerData.firstName || firstName} ${registerData.lastName || lastName}`,
+      firstName: registerData.firstName || firstName,
+      lastName: registerData.lastName || lastName,
+      gender: registerData.gender || gender,
+      birth: registerData.birth || birth,
+      address: registerData.address || address,
+      telephone: registerData.telephone || telephone
     };
     
     return { user: user };
@@ -116,6 +98,7 @@ export async function getProfile() {
   }
 }
 
+// SECTION: Refresh Token - Làm mới token khi hết hạn
 export async function refreshToken() {
   try {
     const auth = getAuth();
@@ -123,8 +106,9 @@ export async function refreshToken() {
       throw new Error("No refresh token available");
     }
     
-    const response = await api.post("/auth/refresh", { 
-      refreshToken: auth.user.refreshToken 
+    // ✅ Gọi đúng endpoint Backend: /auth/refresh-token
+    const response = await api.post("/auth/refresh-token", { 
+      token: auth.user.refreshToken  // ✅ Backend expect field "token"
     });
     
     let refreshData = response;

@@ -172,9 +172,10 @@ const ProductList = ({
       ) : (
         <div className={`product-showcase__products ${fade ? "fade-out" : "fade-in"}`}>
           {items.map((p) => {
+            console.log("🔍 ProductList - Sản phẩm:", p);
             if (itemRenderer) {
               return (
-                <div key={p.id} className="product-card">
+                <div key={p._id || p.id} className="product-card">
                   {itemRenderer(p)}
                 </div>
               );
@@ -182,10 +183,10 @@ const ProductList = ({
 
             return (
               <ProductCard
-                key={p.id}
-                id={p.id}
+                key={p._id || p.id}
+                id={p._id || p.id}
                 badge={p.badge || "Sẵn Hàng Tại Showroom"}
-                image={p.image || FALLBACK_IMG}
+                image={p.imageUrl || p.image || FALLBACK_IMG}
                 name={p.name}
                 price={p.price || 0}
                 version="1 phiên bản"

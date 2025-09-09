@@ -9,25 +9,41 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
+    
   },
   server: {
     proxy: {
+      // ✅ Proxy tất cả API calls đến Backend (Backend có global prefix 'api')
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        secure: false,
+        ws: true
       },
+      // ✅ Proxy trực tiếp các endpoints (Backend có global prefix 'api')
       '/product': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       },
       '/auth': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       },
       '/user': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
+      '/order': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       }
     }
   }

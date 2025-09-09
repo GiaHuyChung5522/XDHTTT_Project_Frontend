@@ -63,17 +63,17 @@ export const CartProvider = ({ children }) => {
   // Thêm sản phẩm vào giỏ hàng
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item.id === (product._id || product.id));
       if (existing) {
         const updated = prev.map((item) =>
-          item.id === product.id
+          item.id === (product._id || product.id)
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
         addNotification(`Đã cập nhật số lượng "${product.name}" trong giỏ hàng`, 'success');
         return updated;
       }
-      const newItem = { ...product, quantity, addedAt: new Date().toISOString() };
+      const newItem = { ...product, id: product._id || product.id, quantity, addedAt: new Date().toISOString() };
       addNotification(`Đã thêm "${product.name}" vào giỏ hàng`, 'success');
       return [...prev, newItem];
     });
@@ -113,12 +113,12 @@ export const CartProvider = ({ children }) => {
   // Thêm vào yêu thích
   const addToWishlist = (product) => {
     setWishlistItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item.id === (product._id || product.id));
       if (existing) {
         addNotification(`"${product.name}" đã có trong danh sách yêu thích`, 'warning');
         return prev;
       }
-      const newItem = { ...product, addedAt: new Date().toISOString() };
+      const newItem = { ...product, id: product._id || product.id, addedAt: new Date().toISOString() };
       addNotification(`Đã thêm "${product.name}" vào yêu thích`, 'success');
       return [...prev, newItem];
     });

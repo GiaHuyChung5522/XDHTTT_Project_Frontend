@@ -17,6 +17,7 @@ import {
   Tooltip,
   Popconfirm
 } from 'antd';
+import { orderService } from '../../../services/orderService';
 import { 
   EyeOutlined, 
   EditOutlined, 
@@ -156,13 +157,8 @@ export default function Orders() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Lấy từ localStorage nếu có
-      const savedOrders = localStorage.getItem('orders');
-      const allOrders = savedOrders ? JSON.parse(savedOrders) : mockOrders;
-      
+      // ✅ Gọi API thật để lấy danh sách đơn hàng
+      const allOrders = await orderService.getOrders();
       setOrders(allOrders);
     } catch (error) {
       message.error('Không thể tải danh sách đơn hàng');
@@ -173,14 +169,11 @@ export default function Orders() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const updatedOrders = orders.map(order => 
-        order.id === orderId 
-          ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
-          : order
-      );
+      // ✅ Gọi API cập nhật trạng thái đơn hàng
+      await orderService.updateOrderStatus(orderId, newStatus);
       
-      setOrders(updatedOrders);
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // Reload danh sách đơn hàng
+      await loadOrders();
       message.success(`Cập nhật trạng thái đơn hàng ${orderId} thành công`);
     } catch (error) {
       message.error('Không thể cập nhật trạng thái đơn hàng');
@@ -189,9 +182,11 @@ export default function Orders() {
 
   const deleteOrder = async (orderId) => {
     try {
-      const updatedOrders = orders.filter(order => order.id !== orderId);
-      setOrders(updatedOrders);
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // ✅ Gọi API xóa đơn hàng
+      await orderService.deleteOrder(orderId);
+      
+      // Reload danh sách đơn hàng
+      await loadOrders();
       message.success('Xóa đơn hàng thành công');
     } catch (error) {
       message.error('Không thể xóa đơn hàng');

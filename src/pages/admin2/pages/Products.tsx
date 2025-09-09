@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray } from '../../../utils/initData';
+import { adminService } from '../../../services/adminService';
 import {
   Table,
   Button,
@@ -18,6 +19,8 @@ import {
   Upload,
   Switch,
   message,
+  Pagination,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
@@ -41,9 +44,11 @@ interface Product {
   salePrice?: number;
   stock: number;
   status: 'active' | 'inactive' | 'out_of_stock';
-  image: string;
+  image?: string;
+  imageUrl?: string;
   description: string;
   createdAt: string;
+  brand?: string;
 }
 
 // Function to get real products from localStorage
@@ -61,7 +66,7 @@ const getRealProducts = (): Product[] => {
       salePrice: getSafeNumber(product.salePrice),
       stock: getSafeNumber(product.stock),
       status: getSafeNumber(product.stock) > 0 ? 'active' : 'out_of_stock',
-      image: getSafeString(product.image) || 'https://via.placeholder.com/100x100?text=No+Image',
+      image: getSafeString(product.imageUrl || product.image) || 'https://via.placeholder.com/100x100?text=No+Image',
       description: getSafeString(product.description) || 'Không có mô tả',
       createdAt: getSafeString(product.createdAt) || new Date().toISOString(),
     }));
@@ -146,48 +151,124 @@ const mockCategories = [
 ];
 
 const Products: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(() => {
-    const realProducts = getRealProducts();
-    return realProducts.length > 0 ? realProducts : mockProducts;
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
   });
-
-  useEffect(() => {
-    // Initialize localStorage data on component mount
-    initializeLocalStorageData();
-  }, []);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(mockProducts);
-  const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [filters, setFilters] = useState({
+    search: '',
+    category: '',
+    brand: '',
+    status: '',
+  });
+  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form] = Form.useForm();
 
-  // Filter products
-  const handleFilter = () => {
-    let filtered = products;
+  // Load products from API
+  const loadProducts = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const result = await adminService.getProducts({
+        page,
+        limit: pageSize,
+        q: filters.search,
+        category: filters.category,
+        brand: filters.brand,
+      });
 
-    if (searchText) {
-      filtered = filtered.filter(product =>
-        getSafeString(product.name).toLowerCase().includes(searchText.toLowerCase()) ||
-        getSafeString(product.id).toLowerCase().includes(searchText.toLowerCase())
-      );
+      if (result.success) {
+        console.log('🔍 Raw products data from backend:', result.data.products);
+        
+        // Transform backend data to match our Product interface
+        const transformedProducts = result.data.products.map((product: any, index: number) => {
+          console.log(`📦 Product ${index}:`, {
+            id: product._id || product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            image: product.image,
+            category: product.categories || product.category,
+            brand: product.brand
+          });
+          
+          return {
+            key: product._id || product.id || index.toString(),
+            id: product._id || product.id || index.toString(),
+            name: product.name || 'Sản phẩm không tên',
+            category: product.categories || product.category || 'Không phân loại',
+            price: product.price || 0,
+            salePrice: product.salePrice,
+            stock: product.stock || 0,
+            status: product.stock > 0 ? 'active' : 'out_of_stock',
+            image: product.imageUrl || product.image || 'https://via.placeholder.com/100x100?text=No+Image',
+            imageUrl: product.imageUrl || product.image,
+            description: product.description || 'Không có mô tả',
+            createdAt: product.createdAt || new Date().toISOString(),
+            brand: product.brand || '',
+          };
+        });
+        
+        console.log('✅ Transformed products:', transformedProducts);
+        
+        setProducts(transformedProducts);
+        setPagination({
+          current: result.data.pagination.page,
+          pageSize: result.data.pagination.limit,
+          total: result.data.pagination.total,
+        });
+      } else {
+        message.error('Không thể tải danh sách sản phẩm');
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+      message.error('Lỗi khi tải danh sách sản phẩm');
+    } finally {
+      setLoading(false);
     }
-
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    if (selectedStatus) {
-      filtered = filtered.filter(product => product.status === selectedStatus);
-    }
-
-    setFilteredProducts(filtered);
   };
 
-  React.useEffect(() => {
-    handleFilter();
-  }, [searchText, selectedCategory, selectedStatus, products]);
+  // Load categories and brands
+  const loadCategoriesAndBrands = async () => {
+    try {
+      const [categoriesResult, brandsResult] = await Promise.all([
+        adminService.getProductCategories(),
+        adminService.getProductBrands(),
+      ]);
+
+      if (categoriesResult.success) {
+        const categoriesData = categoriesResult.data || [];
+        // Handle both array of strings and array of objects
+        const categoryNames = Array.isArray(categoriesData) 
+          ? categoriesData.map(cat => typeof cat === 'string' ? cat : (cat.name || String(cat)))
+          : [];
+        setCategories(categoryNames.filter((cat): cat is string => typeof cat === 'string'));
+      }
+      if (brandsResult.success) {
+        const brandsData = brandsResult.data || [];
+        // Handle both array of strings and array of objects
+        const brandNames = Array.isArray(brandsData) 
+          ? brandsData.map(brand => typeof brand === 'string' ? brand : (brand.name || String(brand)))
+          : [];
+        setBrands(brandNames.filter((brand): brand is string => typeof brand === 'string'));
+      }
+    } catch (error) {
+      console.error('Error loading categories/brands:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+    loadCategoriesAndBrands();
+  }, []);
+
+  useEffect(() => {
+    loadProducts(pagination.current, pagination.pageSize);
+  }, [filters]);
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -201,42 +282,58 @@ const Products: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     Modal.confirm({
       title: 'Xác nhận xóa sản phẩm',
       content: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
       okText: 'Xóa',
       cancelText: 'Hủy',
       okType: 'danger',
-      onOk: () => {
-        setProducts(products.filter(p => p.id !== productId));
-        message.success('Đã xóa sản phẩm thành công');
+      onOk: async () => {
+        try {
+          const result = await adminService.deleteProduct(productId);
+          if (result.success) {
+            message.success('Đã xóa sản phẩm thành công');
+            loadProducts(pagination.current, pagination.pageSize);
+          } else {
+            message.error('Không thể xóa sản phẩm');
+          }
+        } catch (error) {
+          console.error('Error deleting product:', error);
+          message.error('Lỗi khi xóa sản phẩm');
+        }
       },
     });
   };
 
-  const handleSubmit = (values: any) => {
-    if (editingProduct) {
-      // Update product
-      setProducts(products.map(p => 
-        p.id === editingProduct.id 
-          ? { ...p, ...values }
-          : p
-      ));
-      message.success('Đã cập nhật sản phẩm thành công');
-    } else {
-      // Add new product
-      const newProduct: Product = {
-        ...values,
-        key: Date.now().toString(),
-        id: `PRD-${Date.now()}`,
-        createdAt: new Date().toISOString().split('T')[0],
-        image: 'https://via.placeholder.com/100x100?text=New',
-      };
-      setProducts([...products, newProduct]);
-      message.success('Đã thêm sản phẩm thành công');
+  const handleSubmit = async (values: any) => {
+    try {
+      let result;
+      if (editingProduct) {
+        result = await adminService.updateProduct(editingProduct.id, values);
+      } else {
+        result = await adminService.createProduct(values);
+      }
+
+      if (result.success) {
+        message.success(editingProduct ? 'Đã cập nhật sản phẩm thành công' : 'Đã thêm sản phẩm thành công');
+        setIsModalVisible(false);
+        loadProducts(pagination.current, pagination.pageSize);
+      } else {
+        message.error('Không thể lưu sản phẩm');
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      message.error('Lỗi khi lưu sản phẩm');
     }
-    setIsModalVisible(false);
+  };
+
+  const handleTableChange = (pagination: any) => {
+    loadProducts(pagination.current, pagination.pageSize);
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const getStatusColor = (status: string) => {
@@ -271,15 +368,23 @@ const Products: React.FC = () => {
       dataIndex: 'image',
       key: 'image',
       width: 80,
-      render: (image: string) => (
-        <Image
-          src={image}
-          alt="Product"
-          width={60}
-          height={60}
-          style={{ objectFit: 'cover', borderRadius: 4 }}
-        />
-      ),
+      render: (image: string, record: Product) => {
+        const imageUrl = image || record.imageUrl || 'https://via.placeholder.com/100x100?text=No+Image';
+        return (
+          <Image
+            src={imageUrl}
+            alt="Product"
+            width={60}
+            height={60}
+            style={{ objectFit: 'cover', borderRadius: 4 }}
+            fallback="https://via.placeholder.com/100x100?text=No+Image"
+            onError={(e) => {
+              console.log('Image load error:', imageUrl);
+              e.currentTarget.src = 'https://via.placeholder.com/100x100?text=No+Image';
+            }}
+          />
+        );
+      },
     },
     {
       title: 'Mã SP',
@@ -392,8 +497,8 @@ const Products: React.FC = () => {
               <Input
                 placeholder="Tìm kiếm theo tên hoặc mã sản phẩm"
                 prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </Col>
             <Col xs={24} sm={6}>
@@ -401,25 +506,25 @@ const Products: React.FC = () => {
                 placeholder="Chọn danh mục"
                 style={{ width: '100%' }}
                 allowClear
-                value={selectedCategory}
-                onChange={setSelectedCategory}
+                value={filters.category}
+                onChange={(value) => handleFilterChange('category', value)}
               >
-                {mockCategories.map(category => (
+                {categories.map(category => (
                   <Option key={category} value={category}>{category}</Option>
                 ))}
               </Select>
             </Col>
             <Col xs={24} sm={6}>
               <Select
-                placeholder="Chọn trạng thái"
+                placeholder="Chọn thương hiệu"
                 style={{ width: '100%' }}
                 allowClear
-                value={selectedStatus}
-                onChange={setSelectedStatus}
+                value={filters.brand}
+                onChange={(value) => handleFilterChange('brand', value)}
               >
-                <Option value="active">Đang bán</Option>
-                <Option value="inactive">Tạm dừng</Option>
-                <Option value="out_of_stock">Hết hàng</Option>
+                {brands.map(brand => (
+                  <Option key={brand} value={brand}>{brand}</Option>
+                ))}
               </Select>
             </Col>
             <Col xs={24} sm={4}>
@@ -434,19 +539,23 @@ const Products: React.FC = () => {
             </Col>
           </Row>
 
-          <Table
-            columns={columns}
-            dataSource={filteredProducts}
-            pagination={{
-              total: filteredProducts.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} sản phẩm`,
-            }}
-            scroll={{ x: 800 }}
-          />
+          <Spin spinning={loading}>
+            <Table
+              columns={columns}
+              dataSource={products}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} của ${total} sản phẩm`,
+                onChange: handleTableChange,
+              }}
+              scroll={{ x: 800 }}
+            />
+          </Spin>
         </Card>
 
         <Modal
@@ -478,7 +587,7 @@ const Products: React.FC = () => {
                   rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
                 >
                   <Select placeholder="Chọn danh mục">
-                    {mockCategories.map(category => (
+                    {categories.map(category => (
                       <Option key={category} value={category}>{category}</Option>
                     ))}
                   </Select>

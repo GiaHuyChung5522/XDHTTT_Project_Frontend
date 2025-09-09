@@ -17,10 +17,10 @@ export const useCartStore = create(
           items[idx] = { ...items[idx], qty: clampQty((items[idx].qty || 1) + n) };
         } else {
           items.push({
-            id: product.id,
+            id: product._id || product.id,
             name: product.name,
             price: Number(product.price || 0),
-            image: product.image || "/src/assets/img/sanpham1.jpg",
+            image: product.imageUrl || product.image || "/src/assets/img/sanpham1.jpg",
             qty: n,
           });
         }

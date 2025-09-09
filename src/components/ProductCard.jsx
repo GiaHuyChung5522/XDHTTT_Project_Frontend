@@ -34,6 +34,11 @@ const ProductCard = ({
   };
 
   const handleCardClick = () => {
+    console.log("🔍 ProductCard - ID:", id, "Type:", typeof id);
+    if (!id || id === 'undefined') {
+      console.error("❌ ProductCard - ID không hợp lệ:", id);
+      return;
+    }
     navigate(`/products/${id}`);
   };
 

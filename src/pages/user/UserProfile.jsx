@@ -58,8 +58,8 @@ const UserProfile = () => {
 
       console.log('Updating user profile:', updateData);
       
-      // Gọi API cập nhật user (cần implement endpoint này trong BE)
-      // const response = await api.patch(`/user/${user.id}`, updateData);
+      // ✅ Gọi API cập nhật user thật
+      const response = await api.patch(`/user/update/${user.id}`, updateData);
       
       // Tạm thời cập nhật local state
       const updatedUser = {
