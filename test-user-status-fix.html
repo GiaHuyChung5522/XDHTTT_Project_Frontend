@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test User Status Update Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; }
+        .user-item { margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Test User Status Update Issue</h1>
+    
+    <div class="test-section">
+        <h3>🔍 Problem Analysis</h3>
+        <p><strong>Issue:</strong> When updating one user's status, all users change to the same status.</p>
+        <p><strong>Root Cause:</strong> Select components were sharing state because they lacked unique keys.</p>
+        <p><strong>Solution:</strong> Added unique keys to each Select component.</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Fixes Applied</h3>
+        <ul>
+            <li>✅ Added <code>key={`status-${record.id}`}</code> to Customer Select components</li>
+            <li>✅ Added <code>key={`order-status-${record.id}`}</code> to Order status Select components</li>
+            <li>✅ Added <code>key={`payment-status-${record.id}`}</code> to Payment status Select components</li>
+            <li>✅ Removed shared <code>loading={updating}</code> state</li>
+            <li>✅ Removed unused <code>updating</code> state</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧪 Test Instructions</h3>
+        <ol>
+            <li><strong>Open Customers page:</strong> <code>http://localhost:5173/admin/customers</code></li>
+            <li><strong>Check initial state:</strong> Each user should show their individual status</li>
+            <li><strong>Change one user's status:</strong> Click on a Select dropdown for one user</li>
+            <li><strong>Verify isolation:</strong> Only that specific user should change, others should remain unchanged</li>
+            <li><strong>Test multiple users:</strong> Change different users to different statuses</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Expected Behavior</h3>
+        <div class="user-item">
+            <strong>User 1:</strong> <span style="color: green;">Hoạt động</span> → Change to <span style="color: orange;">Tạm khóa</span>
+        </div>
+        <div class="user-item">
+            <strong>User 2:</strong> <span style="color: green;">Hoạt động</span> → Should remain <span style="color: green;">Hoạt động</span>
+        </div>
+        <div class="user-item">
+            <strong>User 3:</strong> <span style="color: green;">Hoạt động</span> → Should remain <span style="color: green;">Hoạt động</span>
+        </div>
+        <p><strong>Result:</strong> Each user maintains their own independent status.</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔍 Debug Information</h3>
+        <p>Check browser console for these logs:</p>
+        <pre>🔄 Updating customer status: [USER_ID] [NEW_STATUS] -> [BACKEND_STATUS]
+✅ User updated successfully: [USER_DATA]
+🔄 Loading customers...
+✅ Loaded [COUNT] customers</pre>
+        
+        <p><strong>Key Points:</strong></p>
+        <ul>
+            <li>Each log should show a different <code>USER_ID</code></li>
+            <li>Only the specific user being updated should appear in logs</li>
+            <li>After update, all users should reload with their individual statuses</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>🚨 If Issue Persists</h3>
+        <p>If users still change together, check:</p>
+        <ol>
+            <li><strong>React DevTools:</strong> Inspect Select components to verify unique keys</li>
+            <li><strong>Console Logs:</strong> Check if multiple users are being updated simultaneously</li>
+            <li><strong>Network Tab:</strong> Verify only one API call is made per status change</li>
+            <li><strong>State Management:</strong> Check if there's shared state in parent components</li>
+        </ol>
+    </div>
+    
+    <script>
+        console.log('🔧 User Status Update Test Page Loaded');
+        console.log('📋 Instructions:');
+        console.log('1. Open http://localhost:5173/admin/customers');
+        console.log('2. Try changing different users to different statuses');
+        console.log('3. Verify each user maintains independent status');
+        console.log('4. Check console logs for proper API calls');
+    </script>
+</body>
+</html>

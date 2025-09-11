@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orders Fix Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; }
+        .fix-item { margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>✅ Orders Fix Verification</h1>
+    
+    <div class="test-section">
+        <h3>🔧 Issues Fixed</h3>
+        <div class="fix-item">
+            <strong>✅ React Key Warning:</strong> Added <code>rowKey="id"</code> to Table component
+        </div>
+        <div class="fix-item">
+            <strong>✅ API Response Structure:</strong> Handle both <code>result.data.orders</code> and <code>result.data</code> formats
+        </div>
+        <div class="fix-item">
+            <strong>✅ TypeScript Errors:</strong> Added proper type assertions for API response
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Expected Console Logs</h3>
+        <pre>🔄 Loading orders from API...
+📦 Orders response: {orders: Array(4), pagination: {...}}
+📦 Orders data to transform: Array(4)
+🔄 Transforming order: {_id: "68c332abdcd0bef68b7a27dd", status: "Chờ xác nhận", ...}
+🔍 Order status from API: Chờ xác nhận
+🔍 Order paymentStatus from API: undefined
+✅ Mapped status: Chờ xác nhận -> pending
+✅ Mapped paymentStatus: undefined -> pending
+✅ Loaded 4 orders</pre>
+    </div>
+    
+    <div class="test-section">
+        <h3>🎯 Expected Results</h3>
+        <div class="fix-item">
+            <strong>✅ No React Warnings:</strong> Console should not show "Each child in a list should have a unique key prop"
+        </div>
+        <div class="fix-item">
+            <strong>✅ Orders Display:</strong> All 4 orders should be visible in the table
+        </div>
+        <div class="fix-item">
+            <strong>✅ Status Mapping:</strong> Orders should show "Chờ xác nhận" status correctly
+        </div>
+        <div class="fix-item">
+            <strong>✅ Customer Names:</strong> Should show actual customer names (Van A, User Test, Hoàng Nguyễn)
+        </div>
+        <div class="fix-item">
+            <strong>✅ Payment Methods:</strong> Should show "Tiền mặt", "VnPay", "Chuyển khoản"
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧪 Test Instructions</h3>
+        <ol>
+            <li><strong>Open Orders page:</strong> <code>http://localhost:5173/admin/orders</code></li>
+            <li><strong>Check console:</strong> Should see transformation logs without React warnings</li>
+            <li><strong>Verify table:</strong> All 4 orders should be displayed</li>
+            <li><strong>Check customer names:</strong> Should show actual names, not "N/A"</li>
+            <li><strong>Test status updates:</strong> Try changing order status via dropdown</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>📋 Sample Data from API</h3>
+        <pre>Order 1: Van A - ₫42.000.000 - Tiền mặt - Chờ xác nhận
+Order 2: User Test - ₫29.000.000 - VnPay - Chờ xác nhận  
+Order 3: Hoàng Nguyễn - ₫25.000.000 - Chuyển khoản - Chờ xác nhận
+Order 4: Product order - ₫9.290.000 - Tiền mặt - Chờ xác nhận</pre>
+    </div>
+    
+    <div class="test-section">
+        <h3>🚨 If Issues Persist</h3>
+        <ol>
+            <li><strong>Check API Response:</strong> Verify backend returns correct structure</li>
+            <li><strong>Check Transform Logs:</strong> Look for transformation errors</li>
+            <li><strong>Check Table Rendering:</strong> Verify all orders are in filteredOrders</li>
+            <li><strong>Check Customer Data:</strong> Verify userId mapping is working</li>
+        </ol>
+    </div>
+    
+    <script>
+        console.log('✅ Orders Fix Verification Complete');
+        console.log('📋 Key Fixes Applied:');
+        console.log('1. Added rowKey="id" to Table component');
+        console.log('2. Handle API response structure: result.data.orders || result.data');
+        console.log('3. Added type assertions for TypeScript');
+        console.log('4. Enhanced transformation logging');
+        console.log('');
+        console.log('🎯 Expected Results:');
+        console.log('- No React key warnings');
+        console.log('- All 4 orders displayed');
+        console.log('- Correct customer names');
+        console.log('- Proper status mapping');
+    </script>
+</body>
+</html>

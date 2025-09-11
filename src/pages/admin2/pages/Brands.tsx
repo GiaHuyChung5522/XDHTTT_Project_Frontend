@@ -132,6 +132,7 @@ const mockBrands: Brand[] = [
 const Brands: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
@@ -191,11 +192,22 @@ const Brands: React.FC = () => {
   };
 
   const handleAddBrand = () => {
-    message.info('Chức năng thêm thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
+    setEditingBrand(null);
+    setModalVisible(true);
+    form.resetFields();
   };
 
   const handleEditBrand = (brand: Brand) => {
-    message.info('Chức năng chỉnh sửa thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
+    setEditingBrand(brand);
+    setModalVisible(true);
+    form.setFieldsValue({
+      name: brand.name,
+      description: brand.description,
+      country: brand.country,
+      website: brand.website,
+      status: brand.status === 'active',
+      featured: brand.featured,
+    });
   };
 
   const handleViewBrand = (brand: Brand) => {
@@ -203,14 +215,58 @@ const Brands: React.FC = () => {
     setViewModalVisible(true);
   };
 
-  const handleDeleteBrand = (brandId: string) => {
-    message.info('Chức năng xóa thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
+  const handleDeleteBrand = async (brandId: string) => {
+    try {
+      console.log('🔄 Deleting brand:', brandId);
+      const result = await adminService.deleteBrand(brandId);
+      
+      if (result.success) {
+        message.success('Xóa thương hiệu thành công!');
+        await loadBrands(); // Reload brands
+      } else {
+        message.error(`Không thể xóa thương hiệu: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('❌ Error deleting brand:', error);
+      message.error('Không thể xóa thương hiệu');
+    }
   };
 
-  const handleSubmit = (values: any) => {
-    message.info('Chức năng tạo/cập nhật thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
-    setModalVisible(false);
-    form.resetFields();
+  const handleSubmit = async (values: any) => {
+    setSubmitting(true);
+    try {
+      const brandData = {
+        name: values.name?.trim() || 'Thương hiệu',
+        description: values.description || '',
+        country: values.country || 'Việt Nam',
+        website: values.website || '',
+        status: values.status ? 'active' : 'inactive',
+        featured: values.featured || false,
+      };
+
+      console.log('🔄 Submitting brand:', brandData);
+
+      let result;
+      if (editingBrand) {
+        result = await adminService.updateBrand(editingBrand.id, brandData);
+      } else {
+        result = await adminService.createBrand(brandData);
+      }
+
+      if (result.success) {
+        message.success(editingBrand ? 'Cập nhật thương hiệu thành công!' : 'Tạo thương hiệu thành công!');
+        setModalVisible(false);
+        form.resetFields();
+        await loadBrands(); // Reload brands
+      } else {
+        message.error(`Không thể ${editingBrand ? 'cập nhật' : 'tạo'} thương hiệu: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('❌ Error submitting brand:', error);
+      message.error(`Không thể ${editingBrand ? 'cập nhật' : 'tạo'} thương hiệu`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const columns: ColumnsType<Brand> = [
@@ -538,7 +594,7 @@ const Brands: React.FC = () => {
                 <Button onClick={() => setModalVisible(false)}>
                   Hủy
                 </Button>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={submitting}>
                   {editingBrand ? 'Cập nhật' : 'Thêm mới'}
                 </Button>
               </Space>

@@ -122,7 +122,7 @@ const Analytics: React.FC = () => {
     radius: 0.8,
     color: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
     label: {
-      type: 'spider',
+      type: 'outer',
       content: (item: any) => `${item.type}: ${item.value}%`,
     },
   };
@@ -134,7 +134,7 @@ const Analytics: React.FC = () => {
     radius: 0.8,
     color: ['#6366f1', '#10b981'],
     label: {
-      type: 'spider',
+      type: 'outer',
       content: (item: any) => `${item.type}: ${item.value}%`,
     },
   };

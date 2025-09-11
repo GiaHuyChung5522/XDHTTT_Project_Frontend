@@ -262,7 +262,7 @@ export const getProductById = async (id) => {
     }
     
     // Fallback: Use public filter API to get product by ID
-    const response = await api.get(`/api/public/product/filter?page=1&limit=1000`);
+    const response = await api.get('/api/public/product/filter', { params: { page: 1, limit: 1000 } });
     console.log('📦 Product response:', response);
     
     const productsData = handleApiResponse(response);

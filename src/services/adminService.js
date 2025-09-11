@@ -7,13 +7,28 @@ export const adminService = {
     try {
       console.log('🔄 Loading dashboard stats from backend...');
       
-      // ✅ Gọi API dashboard tổng hợp mới
-      const response = await api.get('/api/dashboard/stats');
-      console.log('📊 Dashboard stats response:', response);
+      // Gọi các API dashboard riêng lẻ
+      const [revenue, totalOrders, totalUsers, totalProducts, pendingOrders] = await Promise.all([
+        api.get('/api/dashboard/revenue').catch(() => ({ data: 0 })),
+        api.get('/api/dashboard/total-orders').catch(() => ({ data: 0 })),
+        api.get('/api/dashboard/total-users').catch(() => ({ data: 0 })),
+        api.get('/api/dashboard/total-products').catch(() => ({ data: 0 })),
+        api.get('/api/dashboard/pending-orders').catch(() => ({ data: 0 }))
+      ]);
+      
+      const stats = {
+        revenue: revenue.data || 0,
+        totalOrders: totalOrders.data || 0,
+        totalUsers: totalUsers.data || 0,
+        totalProducts: totalProducts.data || 0,
+        pendingOrders: pendingOrders.data || 0
+      };
+      
+      console.log('📊 Dashboard stats response:', stats);
       
       return {
         success: true,
-        data: response
+        data: stats
       };
     } catch (error) {
       console.error('❌ Error loading dashboard stats:', error);
@@ -144,93 +159,51 @@ export const adminService = {
     order = 'asc'
   } = {}) {
     try {
-      // ✅ Nếu có filter (brand/category), dùng endpoint /product/filter
-      if (brand || category) {
-        const params = { page, limit };
-        if (brand) params.brand = brand;
-        if (category) params.categoryId = category;
-        if (q) params.q = q;
-        
-        console.log('🔄 Loading filtered products from backend...', params);
-        const response = await api.get('/api/product/filter', { params });
-        
-        if (response && response.data) {
-          console.log('📦 Filtered products response:', response.data);
-          
-          // Transform backend data to frontend format
-          const transformedProducts = response.data.map((product, index) => ({
-            key: product._id || product.id || index.toString(),
-            id: product._id || product.id || index.toString(),
-            name: product.name || 'Unnamed Product',
-            category: product.categoryId || 'Unknown',
-            price: product.price || 0,
-            stock: product.stock || 0,
-            imageUrl: product.imageUrl || product.image || '/laptop-fallback.png',
-            status: product.isActive !== false ? 'active' : 'inactive',
-            description: product.description || '',
-            createdAt: product.createdAt || new Date().toISOString(),
-            brand: product.brand || '',
-            model: product.model || '',
-            isActive: product.isActive !== false,
-            isOnPromotion: product.isOnPromotion || false,
-          }));
+      console.log('🔄 Loading products from backend...', { page, limit, brand, category });
       
-      return {
-        success: true,
-        data: {
-              products: transformedProducts,
-          pagination: {
-            page,
-            limit,
-                total: transformedProducts.length,
-                totalPages: Math.ceil(transformedProducts.length / limit)
-              }
-            }
-          };
-        } else {
-          throw new Error('Invalid response format');
-        }
-      } else {
-        // ✅ Không có filter, dùng endpoint /product
-        console.log('🔄 Loading all products from backend...');
-        const response = await api.get(`/api/product?page=${page}&limit=${limit}`);
+      // Sử dụng public API endpoint
+      const params = { page, limit };
+      if (brand) params.brand = brand;
+      if (category) params.category = category;
+      if (q) params.q = q;
+      
+      const response = await api.get('/api/public/product/filter', { params });
+      
+      if (response && response.data) {
+        console.log('📦 Products response:', response.data);
         
-        if (response && response.data) {
-          console.log('📦 Products response:', response.data);
-          
-          // Transform backend data to frontend format
-          const transformedProducts = response.data.map((product, index) => ({
-            key: product._id || product.id || index.toString(),
-            id: product._id || product.id || index.toString(),
-            name: product.name || 'Unnamed Product',
-            category: product.categoryId || 'Unknown',
-            price: product.price || 0,
-            stock: product.stock || 0,
-            imageUrl: product.imageUrl || product.image || '/laptop-fallback.png',
-            status: product.isActive !== false ? 'active' : 'inactive',
-            description: product.description || '',
-            createdAt: product.createdAt || new Date().toISOString(),
-            brand: product.brand || '',
-            model: product.model || '',
-            isActive: product.isActive !== false,
-            isOnPromotion: product.isOnPromotion || false,
-          }));
+        // Transform backend data to frontend format
+        const transformedProducts = response.data.map((product, index) => ({
+          key: product._id || product.id || index.toString(),
+          id: product._id || product.id || index.toString(),
+          name: product.name || 'Unnamed Product',
+          category: product.categoryId || 'Unknown',
+          price: product.price || 0,
+          stock: product.stock || 0,
+          imageUrl: product.imageUrl || product.image || '/laptop-fallback.png',
+          status: product.isActive !== false ? 'active' : 'inactive',
+          description: product.description || '',
+          createdAt: product.createdAt || new Date().toISOString(),
+          brand: product.brand || '',
+          model: product.model || '',
+          isActive: product.isActive !== false,
+          isOnPromotion: product.isOnPromotion || false,
+        }));
 
-      return {
-        success: true,
-        data: {
-              products: transformedProducts,
-          pagination: {
-            page,
-            limit,
-                total: transformedProducts.length,
-                totalPages: Math.ceil(transformedProducts.length / limit)
-              }
+        return {
+          success: true,
+          data: {
+            products: transformedProducts,
+            pagination: {
+              page,
+              limit,
+              total: transformedProducts.length,
+              totalPages: Math.ceil(transformedProducts.length / limit)
             }
-          };
-        } else {
-          throw new Error('Invalid response format');
-        }
+          }
+        };
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('❌ Error loading products:', error);
@@ -243,14 +216,51 @@ export const adminService = {
     try {
       console.log('🔄 Creating product:', productData);
       
-      const response = await api.post('/api/product', productData);
-      console.log('✅ Product created successfully:', response);
-      
-      return {
-        success: true,
-        message: "Sản phẩm đã được tạo thành công",
-        data: response
-      };
+      // Check if productData is FormData (for image upload)
+      if (productData instanceof FormData) {
+        console.log('📤 Uploading product with FormData (includes images)');
+        
+        const response = await api.post('/api/product', productData);
+        console.log('✅ Product created successfully:', response);
+        
+        return {
+          success: true,
+          message: "Sản phẩm đã được tạo thành công",
+          data: response
+        };
+      } else {
+        // Regular JSON data (no images)
+        console.log('📝 Creating product with JSON data');
+        
+        // Map frontend fields to backend fields
+        const backendData = {
+          name: productData.name,
+          brand: productData.brand,
+          model: productData.model,
+          price: productData.price,
+          stock: productData.stock,
+          description: productData.description,
+          isActive: productData.isActive,
+          isOnPromotion: productData.isOnPromotion,
+          // Map categories to category (backend expects singular)
+          category: productData.categories,
+          // Add salePrice if exists
+          ...(productData.salePrice && { salePrice: productData.salePrice }),
+          // Add discountPercentage if exists
+          ...(productData.discountPercentage && { discountPercentage: productData.discountPercentage })
+        };
+        
+        console.log('🔄 Mapped backend data:', backendData);
+        
+        const response = await api.post('/api/product', backendData);
+        console.log('✅ Product created successfully:', response);
+        
+        return {
+          success: true,
+          message: "Sản phẩm đã được tạo thành công",
+          data: response
+        };
+      }
     } catch (error) {
       console.error('❌ Error creating product:', error);
       throw new Error(`Không thể tạo sản phẩm: ${error.message}`);
@@ -261,14 +271,51 @@ export const adminService = {
     try {
       console.log('🔄 Updating product:', id, productData);
       
-      const response = await api.put(`/api/product/${id}`, productData);
-      console.log('✅ Product updated successfully:', response);
-      
-      return {
-        success: true,
-        message: "Sản phẩm đã được cập nhật thành công",
-        data: response
-      };
+      // Check if productData is FormData (for image upload)
+      if (productData instanceof FormData) {
+        console.log('📤 Updating product with FormData (includes images)');
+        
+        const response = await api.patch(`/api/product/${id}`, productData);
+        console.log('✅ Product updated successfully:', response);
+        
+        return {
+          success: true,
+          message: "Sản phẩm đã được cập nhật thành công",
+          data: response
+        };
+      } else {
+        // Regular JSON data (no images)
+        console.log('📝 Updating product with JSON data');
+        
+        // Map frontend fields to backend fields
+        const backendData = {
+          name: productData.name,
+          brand: productData.brand,
+          model: productData.model,
+          price: productData.price,
+          stock: productData.stock,
+          description: productData.description,
+          isActive: productData.isActive,
+          isOnPromotion: productData.isOnPromotion,
+          // Map categories to category (backend expects singular)
+          category: productData.categories,
+          // Add salePrice if exists
+          ...(productData.salePrice && { salePrice: productData.salePrice }),
+          // Add discountPercentage if exists
+          ...(productData.discountPercentage && { discountPercentage: productData.discountPercentage })
+        };
+        
+        console.log('🔄 Mapped backend data:', backendData);
+        
+        const response = await api.patch(`/api/product/${id}`, backendData);
+        console.log('✅ Product updated successfully:', response);
+        
+        return {
+          success: true,
+          message: "Sản phẩm đã được cập nhật thành công",
+          data: response
+        };
+      }
     } catch (error) {
       console.error('❌ Error updating product:', error);
       throw new Error(`Không thể cập nhật sản phẩm: ${error.message}`);
@@ -282,14 +329,50 @@ export const adminService = {
       const response = await api.delete(`/api/product/${id}`);
       console.log('✅ Product deleted successfully:', response);
 
-    return {
-      success: true,
+      return {
+        success: true,
         message: "Sản phẩm đã được xóa thành công",
         data: response
       };
     } catch (error) {
       console.error('❌ Error deleting product:', error);
       throw new Error(`Không thể xóa sản phẩm: ${error.message}`);
+    }
+  },
+
+  // SECTION: Product Stock Management - Quản lý tồn kho
+  async updateProductStock(id, stockData) {
+    try {
+      console.log('🔄 Updating product stock:', id, stockData);
+      
+      const response = await api.patch(`/api/product/${id}/stock`, stockData);
+      console.log('✅ Product stock updated successfully:', response);
+      
+      return {
+        success: true,
+        message: "Tồn kho sản phẩm đã được cập nhật thành công",
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error updating product stock:', error);
+      throw new Error(`Không thể cập nhật tồn kho: ${error.message}`);
+    }
+  },
+
+  async getProductById(id) {
+    try {
+      console.log('🔄 Getting product by ID:', id);
+      
+      const response = await api.get(`/api/public/product/${id}`);
+      console.log('✅ Product retrieved successfully:', response);
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error getting product:', error);
+      throw new Error(`Không thể lấy thông tin sản phẩm: ${error.message}`);
     }
   },
 
@@ -368,7 +451,7 @@ export const adminService = {
   async getBrands() {
     try {
       console.log('🔄 Loading brands from backend...');
-      const response = await api.get('/api/brand');
+      const response = await api.get('/api/product/brands');
       console.log('📦 Brands response:', response);
       
       return {
@@ -385,7 +468,17 @@ export const adminService = {
     try {
       console.log('🔄 Creating brand:', brandData);
       
-      const response = await api.post('/api/brand', brandData);
+      // Note: Backend không có brand controller riêng, brands được quản lý qua products
+      // Tạo một sản phẩm mẫu để thêm brand mới
+      const response = await api.post('/api/product', {
+        name: `Brand: ${brandData.name}`,
+        brand: brandData.name,
+        price: 0,
+        stock: 0,
+        description: brandData.description || `Thương hiệu ${brandData.name}`,
+        isActive: false // Brand không phải sản phẩm thực
+      });
+      
       console.log('✅ Brand created successfully:', response);
       
       return {
@@ -403,7 +496,12 @@ export const adminService = {
     try {
       console.log('🔄 Updating brand:', id, brandData);
       
-      const response = await api.put(`/api/brand/${id}`, brandData);
+      // Note: Brands được cập nhật thông qua việc cập nhật products có brand đó
+      const response = await api.put(`/api/product/${id}`, {
+        brand: brandData.name,
+        description: brandData.description
+      });
+      
       console.log('✅ Brand updated successfully:', response);
       
       return {
@@ -421,7 +519,9 @@ export const adminService = {
     try {
       console.log('🔄 Deleting brand:', id);
       
-      const response = await api.delete(`/api/brand/${id}`);
+      // Note: Xóa brand bằng cách xóa sản phẩm đại diện cho brand
+      const response = await api.delete(`/api/product/${id}`);
+      
       console.log('✅ Brand deleted successfully:', response);
       
       return {
@@ -463,7 +563,7 @@ export const adminService = {
     try {
       console.log('🔄 Updating user:', id, userData);
       
-      const response = await api.put(`/api/user/${id}`, userData);
+      const response = await api.patch(`/api/user/update/${id}`, userData);
       console.log('✅ User updated successfully:', response);
       
       return {
@@ -512,6 +612,59 @@ export const adminService = {
     }
   },
 
+  async getOrderById(orderId) {
+    try {
+      console.log('🔄 Getting order by ID:', orderId);
+      
+      const response = await api.get(`/api/order/${orderId}`);
+      console.log('✅ Order retrieved successfully:', response);
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error getting order:', error);
+      throw new Error(`Không thể lấy thông tin đơn hàng: ${error.message}`);
+    }
+  },
+
+  async createOrder(orderData) {
+    try {
+      console.log('🔄 Creating order:', orderData);
+      
+      const response = await api.post('/api/order', orderData);
+      console.log('✅ Order created successfully:', response);
+      
+      return {
+        success: true,
+        message: "Đơn hàng đã được tạo thành công",
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error creating order:', error);
+      throw new Error(`Không thể tạo đơn hàng: ${error.message}`);
+    }
+  },
+
+  async updateOrder(orderId, orderData) {
+    try {
+      console.log('🔄 Updating order:', orderId, orderData);
+      
+      const response = await api.put(`/api/order/${orderId}`, orderData);
+      console.log('✅ Order updated successfully:', response);
+      
+      return {
+        success: true,
+        message: "Đơn hàng đã được cập nhật thành công",
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error updating order:', error);
+      throw new Error(`Không thể cập nhật đơn hàng: ${error.message}`);
+    }
+  },
+
   async updateOrderStatus(orderId, status) {
     try {
       console.log('🔄 Updating order status:', orderId, status);
@@ -537,11 +690,11 @@ export const adminService = {
       const response = await api.delete(`/api/order/${orderId}`);
       console.log('✅ Order deleted successfully:', response);
       
-    return {
-      success: true,
+      return {
+        success: true,
         message: "Đơn hàng đã được xóa thành công",
         data: response
-    };
+      };
     } catch (error) {
       console.error('❌ Error deleting order:', error);
       throw new Error(`Không thể xóa đơn hàng: ${error.message}`);

@@ -85,7 +85,7 @@ const Categories: React.FC = () => {
           parentId: cat.parentId || undefined,
           parentName: cat.parentName || undefined,
           productCount: cat.productCount || Math.floor(Math.random() * 50) + 1,
-          status: cat.status === 'ACTIVE' ? 'active' : 'inactive',
+          status: cat.status === 'Hoạt động' ? 'active' : 'inactive',
           sortOrder: cat.sortOrder || index + 1,
           createdAt: cat.createdAt || new Date().toISOString(),
           updatedAt: cat.updatedAt || new Date().toISOString(),
@@ -158,7 +158,7 @@ const Categories: React.FC = () => {
         name: baseName,
         slug: newSlug,
         description: values.description || '',
-        status: values.status ? 'ACTIVE' : 'INACTIVE',
+        status: values.status ? 'Hoạt động' : 'Không hoạt động',
         sortOrder: values.sortOrder || 1,
       };
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Product</title>
+</head>
+<body>
+    <h1>Test Delete Product</h1>
+    <button onclick="testDelete()">Test Delete Product</button>
+    <div id="result"></div>
+
+    <script>
+        async function testDelete() {
+            const productId = '68b3f0a82382d64fce172d3a';
+            const adminToken = localStorage.getItem('adminToken');
+            
+            console.log('Admin Token:', adminToken);
+            
+            if (!adminToken) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">No admin token found! Please login first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:3000/api/product/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<p style="color: green;">Delete successful!</p>';
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -52,9 +52,9 @@ interface Order {
   subtotal: number;
   shippingFee: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled' | 'Chờ xác nhận' | 'Đã xác nhận' | 'Đang giao hàng' | 'Giao hàng thành công' | 'Đã huỷ';
   paymentMethod: string;
-  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'Chờ thanh toán' | 'Đã thanh toán' | 'Thanh toán thất bại';
   createdAt: string;
   updatedAt: string;
   notes: string;
@@ -85,26 +85,67 @@ const Orders: React.FC = () => {
       if (result.success && result.data) {
         console.log('📦 Orders response:', result.data);
         
+        // Handle different API response structures
+        const ordersData = (result.data as any).orders || result.data;
+        console.log('📦 Orders data to transform:', ordersData);
+        
         // Transform backend data to frontend format
-        const transformedOrders = result.data.map((order: any, index: number) => ({
-          key: order._id || order.id || index.toString(),
-          id: order._id || order.id || index.toString(),
-          customerName: order.customerName || order.customer?.name || 'Khách hàng',
-          customerEmail: order.customerEmail || order.customer?.email || 'N/A',
-          customerPhone: order.customerPhone || order.customer?.phone || 'N/A',
-          shippingAddress: order.shippingAddress || order.customer?.address || 'N/A',
-          items: order.items || [],
-          subtotal: order.subtotal || 0,
-          shippingFee: order.shippingFee || 0,
-          total: order.total || order.totalAmount || 0,
-          paymentMethod: order.paymentMethod || 'cash',
-          paymentStatus: order.paymentStatus || (order.paymentMethod === 'cash' ? 'pending' : 'paid'),
-          status: order.status || 'pending',
-          createdAt: order.createdAt || new Date().toISOString(),
-          updatedAt: order.updatedAt || new Date().toISOString(),
-          notes: order.notes || '',
-          paymentDetails: order.paymentDetails || null
-        }));
+        const transformedOrders = ordersData.map((order: any, index: number) => {
+          console.log('🔄 Transforming order:', order);
+          console.log('🔍 Order status from API:', order.status);
+          console.log('🔍 Order paymentStatus from API:', order.paymentStatus);
+          
+          // Map backend status to frontend status
+          const mapBackendToFrontendStatus = (backendStatus: string) => {
+            const statusMap: { [key: string]: string } = {
+              'Chờ xác nhận': 'pending',
+              'Đã xác nhận': 'confirmed',
+              'Đang giao hàng': 'shipping',
+              'Giao hàng thành công': 'delivered',
+              'Đã huỷ': 'cancelled',
+              'Chờ thanh toán': 'pending',
+              'Đã thanh toán': 'paid',
+              'Thanh toán thất bại': 'failed'
+            };
+            return statusMap[backendStatus] || backendStatus || 'pending';
+          };
+          
+          // Map backend payment status to frontend payment status
+          const mapBackendToFrontendPaymentStatus = (backendPaymentStatus: string) => {
+            const paymentStatusMap: { [key: string]: string } = {
+              'Chờ thanh toán': 'pending',
+              'Đã thanh toán': 'paid',
+              'Thanh toán thất bại': 'failed'
+            };
+            return paymentStatusMap[backendPaymentStatus] || backendPaymentStatus || 'pending';
+          };
+          
+          const frontendStatus = mapBackendToFrontendStatus(order.status) as Order['status'];
+          const frontendPaymentStatus = mapBackendToFrontendPaymentStatus(order.paymentStatus) as Order['paymentStatus'];
+          
+          console.log('✅ Mapped status:', order.status, '->', frontendStatus);
+          console.log('✅ Mapped paymentStatus:', order.paymentStatus, '->', frontendPaymentStatus);
+          
+          return {
+            key: order._id || order.id || index.toString(),
+            id: order._id || order.id || index.toString(),
+            customerName: order.customerName || order.customer?.name || 'Khách hàng',
+            customerEmail: order.customerEmail || order.customer?.email || 'N/A',
+            customerPhone: order.customerPhone || order.customer?.phone || 'N/A',
+            shippingAddress: order.shippingAddress || order.customer?.address || 'N/A',
+            items: order.items || [],
+            subtotal: order.subtotal || 0,
+            shippingFee: order.shippingFee || 0,
+            total: order.total || order.totalAmount || 0,
+            paymentMethod: order.paymentMethod || 'Tiền mặt',
+            paymentStatus: frontendPaymentStatus,
+            status: frontendStatus,
+            createdAt: order.createdAt || new Date().toISOString(),
+            updatedAt: order.updatedAt || new Date().toISOString(),
+            notes: order.notes || '',
+            paymentDetails: order.paymentDetails || null
+          } as Order;
+        });
         
         setOrders(transformedOrders);
         setFilteredOrders(transformedOrders);
@@ -153,41 +194,77 @@ const Orders: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'orange';
-      case 'confirmed': return 'blue';
-      case 'shipping': return 'purple';
-      case 'delivered': return 'green';
-      case 'cancelled': return 'red';
-      default: return 'default';
+      case 'pending':
+      case 'Chờ xác nhận':
+        return 'orange';
+      case 'confirmed':
+      case 'Đã xác nhận':
+        return 'blue';
+      case 'shipping':
+      case 'Đang giao hàng':
+        return 'purple';
+      case 'delivered':
+      case 'Giao hàng thành công':
+        return 'green';
+      case 'cancelled':
+      case 'Đã huỷ':
+        return 'red';
+      default:
+        return 'default';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'pending': return 'Chờ xác nhận';
-      case 'confirmed': return 'Đã xác nhận';
-      case 'shipping': return 'Đang giao';
-      case 'delivered': return 'Đã giao';
-      case 'cancelled': return 'Đã hủy';
-      default: return status;
+      case 'pending':
+      case 'Chờ xác nhận':
+        return 'Chờ xác nhận';
+      case 'confirmed':
+      case 'Đã xác nhận':
+        return 'Đã xác nhận';
+      case 'shipping':
+      case 'Đang giao hàng':
+        return 'Đang giao hàng';
+      case 'delivered':
+      case 'Giao hàng thành công':
+        return 'Đã giao hàng';
+      case 'cancelled':
+      case 'Đã huỷ':
+        return 'Đã hủy';
+      default:
+        return status;
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'orange';
-      case 'paid': return 'green';
-      case 'failed': return 'red';
-      default: return 'default';
+      case 'pending':
+      case 'Chờ thanh toán':
+        return 'orange';
+      case 'paid':
+      case 'Đã thanh toán':
+        return 'green';
+      case 'failed':
+      case 'Thanh toán thất bại':
+        return 'red';
+      default:
+        return 'default';
     }
   };
 
   const getPaymentStatusText = (status: string) => {
     switch (status) {
-      case 'pending': return 'Chờ thanh toán';
-      case 'paid': return 'Đã thanh toán';
-      case 'failed': return 'Thanh toán thất bại';
-      default: return status;
+      case 'pending':
+      case 'Chờ thanh toán':
+        return 'Chờ thanh toán';
+      case 'paid':
+      case 'Đã thanh toán':
+        return 'Đã thanh toán';
+      case 'failed':
+      case 'Thanh toán thất bại':
+        return 'Thanh toán thất bại';
+      default:
+        return status || 'Không xác định';
     }
   };
 
@@ -199,9 +276,26 @@ const Orders: React.FC = () => {
   // Handle update order status
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {
-      console.log('🔄 Updating order status:', { orderId, newStatus });
+      // Map frontend status to backend enum values
+      const statusMap: { [key: string]: string } = {
+        'pending': 'Chờ xác nhận',
+        'confirmed': 'Đã xác nhận',
+        'shipping': 'Đang giao hàng',
+        'delivered': 'Giao hàng thành công',
+        'cancelled': 'Đã huỷ',
+        'waiting_payment': 'Chờ thanh toán',
+        'paid': 'Đã thanh toán',
+        'failed': 'Thanh toán thất bại',
+        'delivery_processing': 'Đang chuẩn bị hàng',
+        'delivery_shipping': 'Đang giao hàng',
+        'delivery_completed': 'Giao hàng thành công',
+        'delivery_failed': 'Giao hàng thất bại'
+      };
       
-      const result = await adminService.updateOrderStatus(orderId, newStatus);
+      const backendStatus = statusMap[newStatus] || newStatus;
+      console.log('🔄 Updating order status:', { orderId, newStatus, backendStatus });
+      
+      const result = await adminService.updateOrderStatus(orderId, backendStatus);
       
       if (result.success) {
         message.success('Cập nhật trạng thái đơn hàng thành công');
@@ -218,11 +312,26 @@ const Orders: React.FC = () => {
   // Handle update payment status
   const handleUpdatePaymentStatus = async (orderId: string, newPaymentStatus: string) => {
     try {
-      console.log('🔄 Updating payment status:', { orderId, newPaymentStatus });
+      // Map frontend payment status to backend enum values
+      const paymentStatusMap: { [key: string]: string } = {
+        'pending': 'Chờ thanh toán',
+        'paid': 'Đã thanh toán',
+        'failed': 'Thanh toán thất bại'
+      };
       
-      // Mock update for now since adminService doesn't have updatePaymentStatus
-      message.success('Cập nhật trạng thái thanh toán thành công');
-      loadOrders(); // Reload orders
+      const backendPaymentStatus = paymentStatusMap[newPaymentStatus] || newPaymentStatus;
+      console.log('🔄 Updating payment status:', { orderId, newPaymentStatus, backendPaymentStatus });
+      
+      // For now, we'll use the same updateOrderStatus endpoint
+      // In the future, you might want to create a separate updatePaymentStatus endpoint
+      const result = await adminService.updateOrderStatus(orderId, backendPaymentStatus);
+      
+      if (result.success) {
+        message.success('Cập nhật trạng thái thanh toán thành công');
+        loadOrders(); // Reload orders
+      } else {
+        message.error(result.message || 'Không thể cập nhật trạng thái thanh toán');
+      }
     } catch (error) {
       console.error('❌ Error updating payment status:', error);
       message.error('Có lỗi xảy ra khi cập nhật trạng thái thanh toán');
@@ -302,38 +411,76 @@ const Orders: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       width: 150,
-      render: (status: string, record: Order) => (
-        <Select
-          value={status}
-          onChange={(newStatus) => handleUpdateStatus(record.id, newStatus)}
-          style={{ width: '100%' }}
-          size="small"
-        >
-          <Option value="pending">Chờ xác nhận</Option>
-          <Option value="confirmed">Đã xác nhận</Option>
-          <Option value="shipping">Đang giao</Option>
-          <Option value="delivered">Đã giao</Option>
-          <Option value="cancelled">Đã hủy</Option>
-        </Select>
-      ),
+      render: (status: string, record: Order) => {
+        // Map backend status to frontend value for display
+        const statusToValue = (status: string) => {
+          const reverseMap: { [key: string]: string } = {
+            'Chờ xác nhận': 'pending',
+            'Đã xác nhận': 'confirmed',
+            'Đang giao hàng': 'shipping',
+            'Giao hàng thành công': 'delivered',
+            'Đã huỷ': 'cancelled',
+            'Chờ thanh toán': 'waiting_payment',
+            'Đã thanh toán': 'paid',
+            'Thanh toán thất bại': 'failed',
+            'Đang chuẩn bị hàng': 'delivery_processing',
+            'Giao hàng thất bại': 'delivery_failed'
+          };
+          return reverseMap[status] || status;
+        };
+        
+        return (
+          <Select
+            key={`order-status-${record.id}`}
+            value={statusToValue(status)}
+            onChange={(newStatus) => handleUpdateStatus(record.id, newStatus)}
+            style={{ width: '100%' }}
+            size="small"
+          >
+            <Option value="pending">Chờ xác nhận</Option>
+            <Option value="confirmed">Đã xác nhận</Option>
+            <Option value="shipping">Đang giao hàng</Option>
+            <Option value="delivered">Giao hàng thành công</Option>
+            <Option value="cancelled">Đã huỷ</Option>
+            <Option value="waiting_payment">Chờ thanh toán</Option>
+            <Option value="paid">Đã thanh toán</Option>
+            <Option value="failed">Thanh toán thất bại</Option>
+            <Option value="delivery_processing">Đang chuẩn bị hàng</Option>
+            <Option value="delivery_failed">Giao hàng thất bại</Option>
+          </Select>
+        );
+      },
     },
     {
       title: 'Thanh toán',
       dataIndex: 'paymentStatus',
       key: 'paymentStatus',
       width: 150,
-      render: (status: string, record: Order) => (
-        <Select
-          value={status}
-          onChange={(newPaymentStatus) => handleUpdatePaymentStatus(record.id, newPaymentStatus)}
-          style={{ width: '100%' }}
-          size="small"
-        >
-          <Option value="pending">Chờ thanh toán</Option>
-          <Option value="paid">Đã thanh toán</Option>
-          <Option value="failed">Thanh toán thất bại</Option>
-        </Select>
-      ),
+      render: (status: string, record: Order) => {
+        // Map backend payment status to frontend value for display
+        const paymentStatusToValue = (status: string) => {
+          const reverseMap: { [key: string]: string } = {
+            'Chờ thanh toán': 'pending',
+            'Đã thanh toán': 'paid',
+            'Thanh toán thất bại': 'failed'
+          };
+          return reverseMap[status] || status;
+        };
+        
+        return (
+          <Select
+            key={`payment-status-${record.id}`}
+            value={paymentStatusToValue(status)}
+            onChange={(newPaymentStatus) => handleUpdatePaymentStatus(record.id, newPaymentStatus)}
+            style={{ width: '100%' }}
+            size="small"
+          >
+            <Option value="pending">Chờ thanh toán</Option>
+            <Option value="paid">Đã thanh toán</Option>
+            <Option value="failed">Thanh toán thất bại</Option>
+          </Select>
+        );
+      },
     },
     {
       title: 'Ngày tạo',
@@ -370,12 +517,22 @@ const Orders: React.FC = () => {
     },
   ];
 
-  // Calculate statistics
+  // Calculate statistics with proper status mapping
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(order => order.status === 'pending').length;
-  const completedOrders = orders.filter(order => order.status === 'delivered').length;
+  const pendingOrders = orders.filter(order => 
+    order.status === 'pending' || order.status === 'Chờ xác nhận'
+  ).length;
+  const confirmedOrders = orders.filter(order => 
+    order.status === 'confirmed' || order.status === 'Đã xác nhận'
+  ).length;
+  const shippingOrders = orders.filter(order => 
+    order.status === 'shipping' || order.status === 'Đang giao hàng'
+  ).length;
+  const completedOrders = orders.filter(order => 
+    order.status === 'delivered' || order.status === 'Giao hàng thành công'
+  ).length;
   const totalRevenue = orders
-    .filter(order => order.status === 'delivered')
+    .filter(order => order.status === 'delivered' || order.status === 'Giao hàng thành công')
     .reduce((sum, order) => sum + (order.total || 0), 0);
 
   return (
@@ -404,7 +561,7 @@ const Orders: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Đơn chờ xử lý"
+              title="Chờ xác nhận"
               value={pendingOrders}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#faad14' }}
@@ -414,7 +571,27 @@ const Orders: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Đơn hoàn thành"
+              title="Đã xác nhận"
+              value={confirmedOrders}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#1890ff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Đang giao"
+              value={shippingOrders}
+              prefix={<FileTextOutlined />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Đã giao"
               value={completedOrders}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
@@ -518,6 +695,7 @@ const Orders: React.FC = () => {
           columns={columns}
           dataSource={filteredOrders}
           loading={loading}
+          rowKey="id"
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

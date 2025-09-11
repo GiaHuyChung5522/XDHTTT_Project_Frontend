@@ -69,7 +69,7 @@ interface Customer {
   avatar?: string;
   createdAt: string;
   updatedAt: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'Đang hoạt động' | 'Không hoạt động';
   // Computed fields for display
   totalOrders?: number;
   totalSpent?: number;
@@ -201,7 +201,6 @@ const Customers: React.FC = () => {
   // State management with better organization
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
   
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -227,6 +226,7 @@ const Customers: React.FC = () => {
   // Utility function to transform API customer data
   const transformCustomerData = useCallback((customer: any): Customer => {
     console.log('🔄 Transforming customer:', customer);
+    console.log('🔍 Customer status from API:', customer.status);
     
     return {
       key: customer._id || customer.id || Math.random().toString(),
@@ -243,13 +243,15 @@ const Customers: React.FC = () => {
       avatar: customer.avatar,
       createdAt: customer.createdAt || new Date().toISOString(),
       updatedAt: customer.updatedAt || new Date().toISOString(),
-      status: customer.status === 'active' ? 'active' : 'inactive',
+      status: customer.status === 'Đang hoạt động' ? 'active' : 'inactive',
       // Mock computed fields for now - will be replaced with real data
       totalOrders: Math.floor(Math.random() * 20) + 1,
       totalSpent: Math.floor(Math.random() * 10000000) + 1000000,
       lastOrderDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN'),
       orders: [],
     };
+    
+    console.log('✅ Transformed status:', customer.status, '->', customer.status === 'Đang hoạt động' ? 'active' : 'inactive');
   }, []);
 
   // Enhanced load customers function with better error handling
@@ -345,12 +347,13 @@ const Customers: React.FC = () => {
 
   // Enhanced update status function
   const handleUpdateStatus = useCallback(async (customerId: string, newStatus: string) => {
-    setUpdating(true);
     setError(null);
     
     try {
-      console.log('🔄 Updating customer status:', customerId, newStatus);
-      const result = await adminService.updateUser(customerId, { status: newStatus });
+      // Map frontend status to backend enum values
+      const backendStatus = newStatus === 'active' ? 'Đang hoạt động' : 'Không hoạt động';
+      console.log('🔄 Updating customer status:', customerId, newStatus, '->', backendStatus);
+      const result = await adminService.updateUser(customerId, { status: backendStatus });
       
       if (result.success) {
         message.success('Đã cập nhật trạng thái khách hàng thành công');
@@ -365,8 +368,6 @@ const Customers: React.FC = () => {
       console.error('❌ Error updating customer status:', errorMessage);
       setError(errorMessage);
       message.error(`Lỗi khi cập nhật trạng thái: ${errorMessage}`);
-    } finally {
-      setUpdating(false);
     }
   }, [pagination, loadCustomers]);
 
@@ -495,10 +496,10 @@ const Customers: React.FC = () => {
             onClick={() => handleViewCustomer(record)}
           />
           <Select
+            key={`status-${record.id}`}
             size="small"
             value={record.status}
             style={{ width: 80 }}
-            loading={updating}
             onChange={(value) => handleUpdateStatus(record.id, value)}
           >
             <Option value="active">Hoạt động</Option>
@@ -513,8 +514,10 @@ const Customers: React.FC = () => {
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'active':
+      case 'Đang hoạt động':
         return 'green';
       case 'inactive':
+      case 'Không hoạt động':
         return 'orange';
       default:
         return 'default';
@@ -524,8 +527,10 @@ const Customers: React.FC = () => {
   const getStatusText = useCallback((status: string) => {
     switch (status) {
       case 'active':
+      case 'Đang hoạt động':
         return 'Hoạt động';
       case 'inactive':
+      case 'Không hoạt động':
         return 'Không hoạt động';
       default:
         return status;

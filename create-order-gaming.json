@@ -1,0 +1,13 @@
+{
+  "userId": "68c3070a60b6258222d40799",
+  "items": [
+    {
+      "productId": "68b3f0a82382d64fce172d3c",
+      "quantity": 1,
+      "price": 25000000
+    }
+  ],
+  "paymentMethod": "Chuyển khoản",
+  "total": 25000000,
+  "note": "Đơn hàng laptop gaming cao cấp"
+}

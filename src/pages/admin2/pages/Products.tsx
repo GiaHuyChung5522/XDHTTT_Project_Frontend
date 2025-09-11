@@ -22,6 +22,7 @@ import {
   Pagination,
   Spin,
   Alert,
+  Popconfirm,
 } from 'antd';
 import {
   PlusOutlined,
@@ -89,6 +90,7 @@ interface ApiResponse<T = any> {
 const Products: React.FC = () => {
   // State management with better organization
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -203,6 +205,37 @@ const Products: React.FC = () => {
     }
   }, [transformProductData, filters]);
 
+  // Load categories function
+  const loadCategories = useCallback(async () => {
+    try {
+      console.log('🔄 Loading categories...');
+      const result = await adminService.getCategories();
+      
+      if (result.success && result.data) {
+        const categoriesData = result.data.map((cat: any) => ({
+          id: cat._id || cat.id,
+          name: cat.name
+        }));
+        setCategories(categoriesData);
+        console.log('✅ Loaded categories:', categoriesData);
+      } else {
+        console.error('❌ Failed to load categories');
+        // Fallback to hardcoded categories
+        setCategories([
+          { id: 'laptop-van-phong', name: 'Laptop văn phòng' },
+          { id: 'laptop-gaming', name: 'Laptop gaming' }
+        ]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading categories:', error);
+      // Fallback to hardcoded categories
+      setCategories([
+        { id: 'laptop-van-phong', name: 'Laptop văn phòng' },
+        { id: 'laptop-gaming', name: 'Laptop gaming' }
+      ]);
+    }
+  }, []);
+
   // Enhanced edit product function with better data mapping
   const handleEditProduct = useCallback((product: Product) => {
     console.log('✏️ Editing product:', product);
@@ -243,8 +276,26 @@ const Products: React.FC = () => {
   const createFormDataForUpload = useCallback((productData: any, imageFiles: UploadFile[]) => {
     const formData = new FormData();
     
-    // Add all product fields as strings (FormData requires strings)
-    Object.entries(productData).forEach(([key, value]) => {
+    // Map frontend fields to backend fields
+    const backendData = {
+      name: productData.name,
+      brand: productData.brand,
+      model: productData.model,
+      price: productData.price,
+      stock: productData.stock,
+      description: productData.description,
+      isActive: productData.isActive,
+      isOnPromotion: productData.isOnPromotion,
+      // Map categories to category (backend expects singular)
+      category: productData.categories,
+      // Add salePrice if exists
+      ...(productData.salePrice && { salePrice: productData.salePrice }),
+      // Add discountPercentage if exists
+      ...(productData.discountPercentage && { discountPercentage: productData.discountPercentage })
+    };
+    
+    // Add all backend fields as strings (FormData requires strings)
+    Object.entries(backendData).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         formData.append(key, String(value));
       }
@@ -312,13 +363,17 @@ const Products: React.FC = () => {
         for (let [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
         }
+        console.log('📤 Backend data mapping:', {
+          categories: productData.categories,
+          category: productData.categories
+        });
 
         if (editingProduct) {
           console.log('🔄 Updating product with image...');
-          result = await adminService.updateProduct(editingProduct.id, productData);
+          result = await adminService.updateProduct(editingProduct.id, formData);
         } else {
           console.log('➕ Creating product with image...');
-          result = await adminService.createProduct(productData);
+          result = await adminService.createProduct(formData);
         }
       } else {
         // No new image upload, use regular JSON API
@@ -360,47 +415,32 @@ const Products: React.FC = () => {
 
   // Enhanced delete product function with better confirmation
   const handleDeleteProduct = useCallback(async (productId: string) => {
+    console.log('🗑️ Delete confirmed for product:', productId);
     const product = products.find(p => p.id === productId);
     const productName = product?.name || 'sản phẩm này';
     
-    Modal.confirm({
-      title: 'Xác nhận xóa sản phẩm',
-      content: (
-        <div>
-          <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>"{productName}"</strong>?</p>
-          <Alert
-            message="Cảnh báo"
-            description="Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn."
-            type="warning"
-            showIcon
-            icon={<ExclamationCircleOutlined />}
-          />
-        </div>
-      ),
-      okText: 'Xóa',
-      cancelText: 'Hủy',
-      okType: 'danger',
-      onOk: async () => {
-        try {
-          console.log('🗑️ Deleting product:', productId);
-          const result = await adminService.deleteProduct(productId);
-          
-          if (result.success) {
-            message.success(`Đã xóa sản phẩm "${productName}" thành công`);
-            await loadProducts(pagination.current, pagination.pageSize);
-          } else {
-            const errorMessage = result.message || 'Không thể xóa sản phẩm';
-            setError(errorMessage);
-            message.error(errorMessage);
-          }
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
-          console.error('❌ Error deleting product:', errorMessage);
-          setError(errorMessage);
-          message.error(`Lỗi khi xóa sản phẩm: ${errorMessage}`);
-        }
-      },
-    });
+    console.log('📦 Product found:', product);
+    console.log('📝 Product name:', productName);
+    
+    try {
+      console.log('🗑️ Deleting product:', productId);
+      console.log('🔑 Admin token:', localStorage.getItem('adminToken'));
+      const result = await adminService.deleteProduct(productId);
+      
+      if (result.success) {
+        message.success(`Đã xóa sản phẩm "${productName}" thành công`);
+        await loadProducts(pagination.current, pagination.pageSize);
+      } else {
+        const errorMessage = result.message || 'Không thể xóa sản phẩm';
+        setError(errorMessage);
+        message.error(errorMessage);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
+      console.error('❌ Error deleting product:', errorMessage);
+      setError(errorMessage);
+      message.error(`Lỗi khi xóa sản phẩm: ${errorMessage}`);
+    }
   }, [products, pagination, loadProducts]);
 
   // Enhanced add product function
@@ -479,7 +519,8 @@ const Products: React.FC = () => {
   // Load products on component mount
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+    loadCategories(); // Load categories on component mount
+  }, [loadProducts, loadCategories]);
 
   // Reload products when filters change
   useEffect(() => {
@@ -602,15 +643,23 @@ const Products: React.FC = () => {
           >
             Sửa
           </Button>
-          <Button
-            type="primary"
-            danger
-            size="small"
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteProduct(record.id)}
+          <Popconfirm
+            title="Xác nhận xóa sản phẩm"
+            description={`Bạn có chắc chắn muốn xóa sản phẩm "${record.name}"?`}
+            onConfirm={() => handleDeleteProduct(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okType="danger"
           >
-            Xóa
-          </Button>
+            <Button
+              type="primary"
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+            >
+              Xóa
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -796,8 +845,11 @@ const Products: React.FC = () => {
                   rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
                 >
                   <Select placeholder="Chọn danh mục">
-                    <Option value="Laptop văn phòng">Laptop văn phòng</Option>
-                    <Option value="Laptop gaming">Laptop gaming</Option>
+                    {categories.map(category => (
+                      <Option key={category.id} value={category.name}>
+                        {category.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>

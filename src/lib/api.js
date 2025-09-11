@@ -58,8 +58,10 @@ function buildQuery(params) {
 
 async function request(path, options = {}, retryCount = 0) {
   // Gộp headers: JSON + Auth + headers truyền vào
+  // Don't set Content-Type for FormData (browser will set it automatically with boundary)
+  const isFormData = options.body instanceof FormData;
   const mergedHeaders = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...getAuthHeader(),
     ...(options.headers || {}),
   };
@@ -146,12 +148,36 @@ export const api = {
   },
 
   // POST/PUT/PATCH/DELETE
-  post: (path, body, opts) =>
-    request(path, { method: 'POST', body: JSON.stringify(body ?? {}), ...(opts || {}) }).then(json),
-  put: (path, body, opts) =>
-    request(path, { method: 'PUT', body: JSON.stringify(body ?? {}), ...(opts || {}) }).then(json),
-  patch: (path, body, opts) =>
-    request(path, { method: 'PATCH', body: JSON.stringify(body ?? {}), ...(opts || {}) }).then(json),
+  post: (path, body, opts) => {
+    const isFormData = body instanceof FormData;
+    const requestBody = isFormData ? body : JSON.stringify(body ?? {});
+    
+    return request(path, { 
+      method: 'POST', 
+      body: requestBody, 
+      ...(opts || {}) 
+    }).then(json);
+  },
+  put: (path, body, opts) => {
+    const isFormData = body instanceof FormData;
+    const requestBody = isFormData ? body : JSON.stringify(body ?? {});
+    
+    return request(path, { 
+      method: 'PUT', 
+      body: requestBody, 
+      ...(opts || {}) 
+    }).then(json);
+  },
+  patch: (path, body, opts) => {
+    const isFormData = body instanceof FormData;
+    const requestBody = isFormData ? body : JSON.stringify(body ?? {});
+    
+    return request(path, { 
+      method: 'PATCH', 
+      body: requestBody, 
+      ...(opts || {}) 
+    }).then(json);
+  },
   delete: (path, opts) =>
     request(path, { method: 'DELETE', ...(opts || {}) }).then(json),
 };

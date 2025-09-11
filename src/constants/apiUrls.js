@@ -1,4 +1,4 @@
-// API URLs cho Frontend
+// API URLs cho Frontend - Cập nhật theo Backend
 export const API_URLS = {
   // Auth APIs
   AUTH: {
@@ -10,35 +10,41 @@ export const API_URLS = {
     RESET_PASSWORD: '/api/auth/reset-password',
   },
 
-  // Product APIs
+  // Product APIs (Admin & Public)
   PRODUCT: {
-    GET_ALL: '/api/product',
-    GET_BY_ID: '/api/product/:id',
+    // Public APIs
+    GET_ALL: '/api/public/product',
+    GET_BY_ID: '/api/public/product/:id',
+    FILTER: '/api/public/product/filter',
+    CURSOR: '/api/public/product/cursor',
+    
+    // Admin APIs (require auth)
     CREATE: '/api/product',
     UPDATE: '/api/product/:id',
     DELETE: '/api/product/:id',
-    FILTER: '/api/product/filter',
-    CATEGORIES: '/api/product/categories',
-    BRANDS: '/api/product/brands',
-    CURSOR: '/api/product/cursor',
+    UPDATE_STOCK: '/api/product/:id/stock',
+    GET_CATEGORIES: '/api/product/categories',
+    GET_BRANDS: '/api/product/brands',
+    TEST: '/api/product/test',
   },
 
-  // User APIs
+  // Category APIs
+  CATEGORY: {
+    GET_ALL: '/api/category',
+    GET_BY_ID: '/api/category/:id',
+    CREATE: '/api/category',
+    UPDATE: '/api/category/:id',
+    DELETE: '/api/category/:id',
+  },
+
+  // User APIs (Admin)
   USER: {
     GET_ALL: '/api/user',
-    GET_PROFILE: '/api/user/profile/:id',
-    CREATE: '/api/user/create',
-    UPDATE: '/api/user/update/:id',
-    DELETE: '/api/user/delete/:id',
-  },
-
-  // Dashboard APIs (Admin only)
-  DASHBOARD: {
-    REVENUE: '/api/dashboard/revenue',
-    PENDING_ORDERS: '/api/dashboard/pending-orders',
-    TOTAL_ORDERS: '/api/dashboard/total-orders',
-    TOTAL_USERS: '/api/dashboard/total-users',
-    TOTAL_PRODUCTS: '/api/dashboard/total-products',
+    GET_BY_ID: '/api/user/:id',
+    CREATE: '/api/user',
+    UPDATE: '/api/user/:id',
+    DELETE: '/api/user/:id',
+    GET_PROFILE: '/api/user/profile',
   },
 
   // Order APIs
@@ -48,8 +54,17 @@ export const API_URLS = {
     CREATE: '/api/order',
     UPDATE: '/api/order/:id',
     DELETE: '/api/order/:id',
-    GET_USER_ORDERS: '/api/order/user/:userId',
     UPDATE_STATUS: '/api/order/:id/status',
+  },
+
+  // Dashboard APIs (Admin only)
+  DASHBOARD: {
+    STATS: '/api/dashboard/stats',
+    REVENUE: '/api/dashboard/revenue',
+    PENDING_ORDERS: '/api/dashboard/pending-orders',
+    TOTAL_ORDERS: '/api/dashboard/total-orders',
+    TOTAL_USERS: '/api/dashboard/total-users',
+    TOTAL_PRODUCTS: '/api/dashboard/total-products',
   },
 
   // Payment APIs

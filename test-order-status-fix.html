@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Order Status Updates</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; }
+        .order-item { margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>✅ Order Status Update Fix Complete</h1>
+    
+    <div class="test-section">
+        <h3>🔧 Fixes Applied</h3>
+        <ul>
+            <li>✅ <strong>Transform Logic:</strong> Added proper backend-to-frontend status mapping</li>
+            <li>✅ <strong>Debug Logs:</strong> Added console logs to track status transformation</li>
+            <li>✅ <strong>Display Functions:</strong> Updated getStatusText() and getPaymentStatusText()</li>
+            <li>✅ <strong>Color Functions:</strong> Updated getStatusColor() and getPaymentStatusColor()</li>
+            <li>✅ <strong>TypeScript:</strong> Fixed Order interface and type assertions</li>
+            <li>✅ <strong>Default Values:</strong> Fixed payment method default to "Tiền mặt"</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>🎯 Expected Results</h3>
+        <div class="order-item">
+            <strong>✅ Status Display:</strong> Orders should show actual backend status, not always "Chờ xác nhận"
+        </div>
+        <div class="order-item">
+            <strong>✅ Payment Status:</strong> Should show "Đã thanh toán" or "Chờ thanh toán", not "Không xác định"
+        </div>
+        <div class="order-item">
+            <strong>✅ Status Colors:</strong> Should match the actual status (green for delivered, blue for confirmed, etc.)
+        </div>
+        <div class="order-item">
+            <strong>✅ Statistics:</strong> Should count orders correctly by their actual status
+        </div>
+        <div class="order-item">
+            <strong>✅ Console Logs:</strong> Should show transformation logs for each order
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧪 Test Instructions</h3>
+        <ol>
+            <li><strong>Open Orders page:</strong> <code>http://localhost:5173/admin/orders</code></li>
+            <li><strong>Check console logs:</strong> Look for transformation logs like:</li>
+            <pre>🔄 Transforming order: {_id: "...", status: "Đã xác nhận", ...}
+🔍 Order status from API: Đã xác nhận
+🔍 Order paymentStatus from API: Đã thanh toán
+✅ Mapped status: Đã xác nhận -> confirmed
+✅ Mapped paymentStatus: Đã thanh toán -> paid</pre>
+            <li><strong>Verify status display:</strong> Orders should show correct statuses</li>
+            <li><strong>Test status updates:</strong> Change order status via dropdown</li>
+            <li><strong>Verify persistence:</strong> Refresh page to see if changes persist</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Status Mapping Reference</h3>
+        <table border="1" style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <th>Backend Status</th>
+                <th>Frontend Status</th>
+                <th>Display Text</th>
+                <th>Color</th>
+            </tr>
+            <tr>
+                <td>Chờ xác nhận</td>
+                <td>pending</td>
+                <td>Chờ xác nhận</td>
+                <td>orange</td>
+            </tr>
+            <tr>
+                <td>Đã xác nhận</td>
+                <td>confirmed</td>
+                <td>Đã xác nhận</td>
+                <td>blue</td>
+            </tr>
+            <tr>
+                <td>Đang giao hàng</td>
+                <td>shipping</td>
+                <td>Đang giao hàng</td>
+                <td>purple</td>
+            </tr>
+            <tr>
+                <td>Giao hàng thành công</td>
+                <td>delivered</td>
+                <td>Đã giao hàng</td>
+                <td>green</td>
+            </tr>
+            <tr>
+                <td>Đã huỷ</td>
+                <td>cancelled</td>
+                <td>Đã hủy</td>
+                <td>red</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="test-section">
+        <h3>🚨 If Issue Persists</h3>
+        <p>Check these in console:</p>
+        <ol>
+            <li><strong>API Response:</strong> Verify backend is returning correct status values</li>
+            <li><strong>Transform Logs:</strong> Check if mapping is working correctly</li>
+            <li><strong>Display Functions:</strong> Verify getStatusText() returns correct values</li>
+            <li><strong>State Updates:</strong> Check if orders state is updating after changes</li>
+        </ol>
+    </div>
+    
+    <script>
+        console.log('✅ Order Status Update Fix Complete');
+        console.log('📋 Test Instructions:');
+        console.log('1. Open http://localhost:5173/admin/orders');
+        console.log('2. Check console for transformation logs');
+        console.log('3. Verify orders show correct statuses');
+        console.log('4. Test updating order statuses');
+        console.log('5. Refresh to verify persistence');
+        console.log('');
+        console.log('🔧 Key Changes Made:');
+        console.log('- Added proper status mapping in transform function');
+        console.log('- Updated display functions to handle both formats');
+        console.log('- Fixed TypeScript interface and type assertions');
+        console.log('- Added debug logs for troubleshooting');
+    </script>
+</body>
+</html>

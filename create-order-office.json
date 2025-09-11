@@ -1,0 +1,18 @@
+{
+  "userId": "68c29420f8e0da64dad18f06",
+  "items": [
+    {
+      "productId": "68b3f0a82382d64fce172d3d",
+      "quantity": 3,
+      "price": 8000000
+    },
+    {
+      "productId": "68b3f0a82382d64fce172d3e",
+      "quantity": 1,
+      "price": 5000000
+    }
+  ],
+  "paymentMethod": "VnPay",
+  "total": 29000000,
+  "note": "Đơn hàng văn phòng với nhiều sản phẩm"
+}

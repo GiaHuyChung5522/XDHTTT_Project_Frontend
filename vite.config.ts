@@ -20,7 +20,7 @@ export default defineConfig({
         secure: false,
         ws: true
       },
-      // ✅ Proxy trực tiếp các endpoints (Backend có global prefix 'api')
+      // ✅ Proxy các routes cụ thể để đảm bảo tương thích
       '/product': {
         target: 'http://localhost:3000/api',
         changeOrigin: true,
@@ -46,6 +46,24 @@ export default defineConfig({
         ws: true
       },
       '/order': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
+      '/category': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
+      '/dashboard': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
+      '/payment': {
         target: 'http://localhost:3000/api',
         changeOrigin: true,
         secure: false,

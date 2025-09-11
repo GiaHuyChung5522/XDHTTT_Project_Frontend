@@ -1,139 +1,186 @@
-// src/services/authService.js (chuẩn hoá dùng lib/api)
-import { api } from "../lib/api";
-import { setAuth, getAuth, clearAuth } from "../utils/storage";
+// Auth Service - Tích hợp với Backend Auth API
+import { api } from '../lib/api';
 
-export async function login({ email, password }) {
-  console.log("Attempting login with", { email, password });
-  
-  try {
-    const response = await api.post("/api/auth/login", { email, password });
-    console.log("Login response:", response);
-    
-    // API chỉ trả về: { accessToken, refreshToken, role }
-    // hoặc format: { statusCode, message, data: { accessToken, refreshToken, role } }
-    let loginData = response;
-    
-    // Nếu response có cấu trúc { statusCode, message, data }
-    if (response?.data && response?.statusCode) {
-      loginData = response.data;
-    }
-    
-    // Kiểm tra accessToken
-    if (loginData?.accessToken) {
-      // Tạo user object từ thông tin có sẵn
-      const user = {
-        id: Date.now(), // Tạm thời dùng timestamp
-        email: email,
-        role: loginData.role || 'user',
-        name: email.split('@')[0], // Tạm thời dùng email làm tên
-        refreshToken: loginData.refreshToken // Lưu refreshToken
-      };
+export const authService = {
+  // SECTION: Login - Đăng nhập
+  async login(credentials) {
+    try {
+      console.log('🔄 Logging in user...');
       
-      setAuth({ token: loginData.accessToken, user: user });
-      return { token: loginData.accessToken, user: user };
+      const response = await api.post('/api/auth/login', credentials);
+      console.log('✅ Login successful:', response);
+      
+      // Lưu token vào localStorage
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token);
+      }
+      
+      return {
+        success: true,
+        data: response,
+        message: 'Đăng nhập thành công'
+      };
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      throw new Error(`Đăng nhập thất bại: ${error.message}`);
     }
-    
-    console.error("No accessToken in response:", response);
-    throw new Error("Invalid response from server");
-  } catch (error) {
-    console.error("Login API failed:", error);
-      throw new Error("Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.");
-  }
-}
+  },
 
-export async function register({ firstName, lastName, email, password, confirmPassword, gender, birth, address, telephone }) {
-  console.log("Attempting register with", { firstName, lastName, email, password, confirmPassword, gender, birth, address, telephone });
-  
-  try {
-    const response = await api.post("/api/auth/register", { 
-      firstName, 
-      lastName, 
-      email, 
-      password, 
-      confirmPassword,  // ✅ Backend yêu cầu confirmPassword
-      gender, 
-      birth, 
-      address, 
-      telephone 
-    });
-    console.log("Register response:", response);
-    
-    // ✅ Backend Register API chỉ trả về user info (không có token)
-    // Format: { firstName, lastName, email, gender, birth, address, telephone, _id, createdAt, updatedAt }
-    let registerData = response;
-    
-    if (response?.data && response?.statusCode) {
-      registerData = response.data;
+  // SECTION: Register - Đăng ký
+  async register(userData) {
+    try {
+      console.log('🔄 Registering user...');
+      
+      const response = await api.post('/api/auth/register', userData);
+      console.log('✅ Registration successful:', response);
+      
+      return {
+        success: true,
+        data: response,
+        message: 'Đăng ký thành công'
+      };
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      throw new Error(`Đăng ký thất bại: ${error.message}`);
     }
-    
-    // ✅ Tạo user object từ response
-    const user = {
-      id: registerData._id || Date.now(),
-      email: registerData.email || email,
-      role: 'user', // ✅ Mặc định là user
-      name: `${registerData.firstName || firstName} ${registerData.lastName || lastName}`,
-      firstName: registerData.firstName || firstName,
-      lastName: registerData.lastName || lastName,
-      gender: registerData.gender || gender,
-      birth: registerData.birth || birth,
-      address: registerData.address || address,
-      telephone: registerData.telephone || telephone
-    };
-    
-    return { user: user };
-  } catch (error) {
-    console.error("Register API failed:", error.message);
-    throw new Error("Đăng ký thất bại. Vui lòng kiểm tra thông tin.");
-  }
-}
+  },
 
-export async function getProfile() {
-  const auth = getAuth();
-  if (!auth?.user) return null;
-  try {
-    return { token: auth.token, user: auth.user };
-  } catch (error) {
-    console.error("Get profile failed:", error.message);
-    return null;
-  }
-}
+  // SECTION: Refresh Token - Làm mới token
+  async refreshToken() {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        throw new Error('No refresh token found');
+      }
+      
+      console.log('🔄 Refreshing token...');
+      
+      const response = await api.post('/api/auth/refresh-token', { token: refreshToken });
+      console.log('✅ Token refreshed:', response);
+      
+      // Cập nhật token mới
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+      }
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Token refresh error:', error);
+      // Xóa token cũ nếu refresh thất bại
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      throw new Error(`Làm mới token thất bại: ${error.message}`);
+    }
+  },
 
-// SECTION: Refresh Token - Làm mới token khi hết hạn
-export async function refreshToken() {
-  try {
-    const auth = getAuth();
-    if (!auth?.user?.refreshToken) {
-      throw new Error("No refresh token available");
+  // SECTION: Forgot Password - Quên mật khẩu
+  async forgotPassword(email) {
+    try {
+      console.log('🔄 Sending forgot password request...');
+      
+      const response = await api.post('/api/auth/forgot-password', { email });
+      console.log('✅ Forgot password request sent:', response);
+      
+      return {
+        success: true,
+        data: response,
+        message: 'Email khôi phục mật khẩu đã được gửi'
+      };
+    } catch (error) {
+      console.error('❌ Forgot password error:', error);
+      throw new Error(`Gửi email khôi phục thất bại: ${error.message}`);
     }
-    
-    // ✅ Gọi đúng endpoint Backend: /auth/refresh-token
-    const response = await api.post("/api/auth/refresh-token", { 
-      token: auth.user.refreshToken  // ✅ Backend expect field "token"
-    });
-    
-    let refreshData = response;
-    if (response?.data && response?.statusCode) {
-      refreshData = response.data;
-    }
-    
-    if (refreshData?.accessToken) {
-      const updatedUser = { ...auth.user, refreshToken: refreshData.refreshToken };
-      setAuth({ token: refreshData.accessToken, user: updatedUser });
-      return { token: refreshData.accessToken, user: updatedUser };
-    }
-    
-    throw new Error("Invalid refresh response");
-  } catch (error) {
-    console.error("Refresh token failed:", error.message);
-    clearAuth();
-    throw error;
-  }
-}
+  },
 
-export async function logout() {
-  try {
-    clearAuth();
-  } catch (error) {
-    console.error("Logout failed:", error.message);
+  // SECTION: Verify Code - Xác minh mã
+  async verifyCode(userId, code) {
+    try {
+      console.log('🔄 Verifying code...');
+      
+      const response = await api.post('/api/auth/verify-code', { userId, code });
+      console.log('✅ Code verified:', response);
+      
+      return {
+        success: true,
+        data: response,
+        message: 'Mã xác minh hợp lệ'
+      };
+    } catch (error) {
+      console.error('❌ Code verification error:', error);
+      throw new Error(`Xác minh mã thất bại: ${error.message}`);
+    }
+  },
+
+  // SECTION: Reset Password - Đặt lại mật khẩu
+  async resetPassword(resetData) {
+    try {
+      console.log('🔄 Resetting password...');
+      
+      const response = await api.post('/api/auth/reset-password', resetData);
+      console.log('✅ Password reset successful:', response);
+      
+      return {
+        success: true,
+        data: response,
+        message: 'Mật khẩu đã được đặt lại thành công'
+      };
+    } catch (error) {
+      console.error('❌ Password reset error:', error);
+      throw new Error(`Đặt lại mật khẩu thất bại: ${error.message}`);
+    }
+  },
+
+  // SECTION: Logout - Đăng xuất
+  async logout() {
+    try {
+      console.log('🔄 Logging out user...');
+      
+      // Xóa token khỏi localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      
+      return {
+        success: true,
+        message: 'Đăng xuất thành công'
+      };
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      throw new Error(`Đăng xuất thất bại: ${error.message}`);
+    }
+  },
+
+  // SECTION: Get Current User - Lấy thông tin user hiện tại
+  async getCurrentUser() {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No access token found');
+      }
+      
+      console.log('🔄 Getting current user...');
+      
+      // Sử dụng token để lấy thông tin user
+      const response = await api.get('/api/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      console.log('✅ Current user data:', response);
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Get current user error:', error);
+      throw new Error(`Không thể lấy thông tin user: ${error.message}`);
+    }
   }
-}
+};

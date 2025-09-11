@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Update Product</title>
+</head>
+<body>
+    <h1>Test Update Product</h1>
+    <button onclick="testUpdate()">Test Update Product</button>
+    <div id="result"></div>
+
+    <script>
+        async function testUpdate() {
+            const productId = '68b3f0a82382d64fce172d39';
+            const adminToken = localStorage.getItem('adminToken');
+            
+            console.log('Admin Token:', adminToken);
+            
+            if (!adminToken) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">No admin token found!</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:3000/api/product/${productId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: 'Test Update Product'
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<p style="color: green;">Update successful!</p>';
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
