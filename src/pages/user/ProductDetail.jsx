@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById } from "../../services/products";
 import { useCart } from "../../context/CartContext";
@@ -15,8 +15,18 @@ export default function ProductDetail() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { addToCart, addToWishlist, isInWishlist } = useCart();
+
+  // Debounce function to prevent double clicks
+  const debounce = useCallback((func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
+  }, []);
 
   // Mock data cho demo
   const mockProduct = {
@@ -90,10 +100,17 @@ export default function ProductDetail() {
           throw new Error('ID sản phẩm không hợp lệ');
         }
         
+        console.log("🔍 Calling API for product ID:", id);
         const productData = await getProductById(id);
         console.log("🔍 ProductDetail - Dữ liệu từ API:", productData);
         
         if (!alive) return;
+        
+        // Kiểm tra nếu productData có dữ liệu hợp lệ
+        if (!productData || (!productData.name && !productData.id)) {
+          throw new Error('Sản phẩm không tồn tại hoặc dữ liệu không hợp lệ');
+        }
+        
         setProduct(productData);
         setLoading(false);
       } catch (error) {
@@ -109,18 +126,27 @@ export default function ProductDetail() {
     };
   }, [id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(debounce(() => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
     const selectedProduct = selectedConfig === 0 ? product : product.configurations[selectedConfig - 1];
     addToCart({
       ...selectedProduct,
       image: product.images[selectedImage]
     });
-    message.success('Đã thêm sản phẩm vào giỏ hàng!');
-  };
+    
+    setTimeout(() => setIsProcessing(false), 1000);
+  }, 500), [isProcessing, selectedConfig, product, selectedImage, addToCart]);
 
-  const handleAddToWishlist = () => {
+  const handleAddToWishlist = useCallback(debounce(() => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
     addToWishlist(product);
-  };
+    
+    setTimeout(() => setIsProcessing(false), 1000);
+  }, 500), [isProcessing, product, addToWishlist]);
 
   const handleConsultation = () => {
     if (!phoneNumber.trim()) {
@@ -134,15 +160,15 @@ export default function ProductDetail() {
   const handleComboChange = (comboId) => {
     setProduct(prev => ({
       ...prev,
-      combos: prev.combos.map(combo => 
+      combos: (prev.combos || []).map(combo => 
         combo.id === comboId ? { ...combo, checked: !combo.checked } : combo
       )
     }));
   };
 
   const getTotalPrice = () => {
-    const basePrice = selectedConfig === 0 ? product.price : product.configurations[selectedConfig - 1].price;
-    const comboPrice = product.combos
+    const basePrice = selectedConfig === 0 ? product.price : (product.configurations?.[selectedConfig - 1]?.price || product.price);
+    const comboPrice = (product.combos || [])
       .filter(combo => combo.checked)
       .reduce((total, combo) => total + combo.price, 0);
     return basePrice + comboPrice;
@@ -169,7 +195,11 @@ export default function ProductDetail() {
         <div className="error-message">
           <h2>Không tìm thấy sản phẩm</h2>
           <p>{err || "Sản phẩm không tồn tại hoặc đã bị xóa."}</p>
-          <Link to="/" className="btn-primary">Về trang chủ</Link>
+          <p><strong>ID sản phẩm:</strong> {id}</p>
+          <div className="error-actions">
+            <Link to="/" className="btn-primary">Về trang chủ</Link>
+            <Link to="/products" className="btn-secondary">Xem sản phẩm khác</Link>
+          </div>
         </div>
       </div>
     );
@@ -246,8 +276,9 @@ export default function ProductDetail() {
               </svg>
             </button>
             <button 
-              className={`action-btn wishlist ${isInWishlist(product.id) ? 'active' : ''}`}
+              className={`action-btn wishlist ${isInWishlist(product.id) ? 'active' : ''} ${isProcessing ? 'processing' : ''}`}
               onClick={handleAddToWishlist}
+              disabled={isProcessing}
               title="Yêu thích"
             >
               <svg viewBox="0 0 24 24" fill="currentColor">
@@ -316,24 +347,26 @@ export default function ProductDetail() {
           </button>
 
           {/* Configuration Selection */}
-          <div className="configuration-section">
-            <h3>Chọn cấu hình:</h3>
-            <div className="config-options">
-              {product.configurations.map((config, index) => (
-                <div 
-                  key={config.id}
-                  className={`config-option ${selectedConfig === index + 1 ? 'selected' : ''}`}
-                  onClick={() => setSelectedConfig(index + 1)}
-                >
-                  <div className="config-info">
-                    <h4>{config.name}</h4>
-                    <p>{config.condition} - {config.warranty}</p>
+          {product.configurations && product.configurations.length > 0 && (
+            <div className="configuration-section">
+              <h3>Chọn cấu hình:</h3>
+              <div className="config-options">
+                {product.configurations.map((config, index) => (
+                  <div 
+                    key={config.id}
+                    className={`config-option ${selectedConfig === index + 1 ? 'selected' : ''}`}
+                    onClick={() => setSelectedConfig(index + 1)}
+                  >
+                    <div className="config-info">
+                      <h4>{config.name}</h4>
+                      <p>{config.condition} - {config.warranty}</p>
+                    </div>
+                    <div className="config-price">{config.price.toLocaleString()}₫</div>
                   </div>
-                  <div className="config-price">{config.price.toLocaleString()}₫</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Promotional Offers */}
           <div className="promotional-offers">
@@ -359,8 +392,12 @@ export default function ProductDetail() {
 
           {/* Purchase Buttons */}
           <div className="purchase-buttons">
-            <button className="btn-buy-now" onClick={handleAddToCart}>
-              MUA NGAY
+            <button 
+              className={`btn-buy-now ${isProcessing ? 'processing' : ''}`} 
+              onClick={handleAddToCart}
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'ĐANG XỬ LÝ...' : 'MUA NGAY'}
             </button>
             <p className="delivery-info">(Giao tận nơi hoặc nhận tại cửa hàng)</p>
             
@@ -390,24 +427,26 @@ export default function ProductDetail() {
           </div>
 
           {/* Combo Section */}
-          <div className="combo-section">
-            <h3>Mua theo combo</h3>
-            {product.combos.map((combo) => (
-              <div key={combo.id} className="combo-item">
-                <label className="combo-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={combo.checked}
-                    onChange={() => handleComboChange(combo.id)}
-                  />
-                  <span className="combo-name">{combo.name}</span>
-                  {combo.price > 0 && (
-                    <span className="combo-price">{combo.price.toLocaleString()}₫</span>
-                  )}
-                </label>
-              </div>
-            ))}
-          </div>
+          {product.combos && product.combos.length > 0 && (
+            <div className="combo-section">
+              <h3>Mua theo combo</h3>
+              {product.combos.map((combo) => (
+                <div key={combo.id} className="combo-item">
+                  <label className="combo-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={combo.checked}
+                      onChange={() => handleComboChange(combo.id)}
+                    />
+                    <span className="combo-name">{combo.name}</span>
+                    {combo.price > 0 && (
+                      <span className="combo-price">{combo.price.toLocaleString()}₫</span>
+                    )}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Warranty & Delivery */}
           <div className="warranty-delivery">

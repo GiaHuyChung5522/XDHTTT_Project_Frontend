@@ -123,12 +123,23 @@ const getStatusColor = (status) => {
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'pending': return 'Chờ xác nhận';
-    case 'confirmed': return 'Đã xác nhận';
-    case 'shipped': return 'Đang giao';
-    case 'delivered': return 'Đã giao';
-    case 'cancelled': return 'Đã hủy';
-    default: return 'Không xác định';
+    case 'pending': 
+    case 'Chờ xác nhận': 
+      return 'Chờ xác nhận';
+    case 'confirmed': 
+    case 'Đã xác nhận': 
+      return 'Đã xác nhận';
+    case 'shipped': 
+    case 'Đang giao': 
+      return 'Đang giao';
+    case 'delivered': 
+    case 'Đã giao': 
+      return 'Đã giao';
+    case 'cancelled': 
+    case 'Đã hủy': 
+      return 'Đã hủy';
+    default: 
+      return status || 'Không xác định';
   }
 };
 
@@ -158,10 +169,16 @@ export default function Orders() {
     setLoading(true);
     try {
       // ✅ Gọi API thật để lấy danh sách đơn hàng
-      const allOrders = await orderService.getOrders();
-      setOrders(allOrders);
+      const response = await orderService.getOrders();
+      console.log('📦 Orders response:', response);
+      
+      // Extract orders array from response
+      const ordersData = response?.data?.orders || response?.orders || [];
+      setOrders(ordersData);
     } catch (error) {
+      console.error('❌ Error loading orders:', error);
       message.error('Không thể tải danh sách đơn hàng');
+      setOrders([]); // Set empty array as fallback
     } finally {
       setLoading(false);
     }
@@ -199,10 +216,16 @@ export default function Orders() {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = (order.id || '').toLowerCase().includes(searchText.toLowerCase()) ||
+    const matchesStatus = statusFilter === 'all' || 
+                         order.status === statusFilter ||
+                         (statusFilter === 'pending' && order.status === 'Chờ xác nhận') ||
+                         (statusFilter === 'confirmed' && order.status === 'Đã xác nhận') ||
+                         (statusFilter === 'shipped' && order.status === 'Đang giao') ||
+                         (statusFilter === 'delivered' && order.status === 'Đã giao') ||
+                         (statusFilter === 'cancelled' && order.status === 'Đã hủy');
+    const matchesSearch = (order.id || order._id || '').toLowerCase().includes(searchText.toLowerCase()) ||
                          (order.customerName || '').toLowerCase().includes(searchText.toLowerCase()) ||
-                         (order.customerPhone || '').includes(searchText);
+                         (order.customerPhone || order.phone || '').includes(searchText);
     const matchesDate = !dateRange || (
       dayjs(order.createdAt).isAfter(dateRange[0]) && 
       dayjs(order.createdAt).isBefore(dateRange[1])
@@ -213,13 +236,13 @@ export default function Orders() {
 
   const getStatistics = () => {
     const total = orders.length;
-    const pending = orders.filter(o => o.status === 'pending').length;
-    const confirmed = orders.filter(o => o.status === 'confirmed').length;
-    const shipped = orders.filter(o => o.status === 'shipped').length;
-    const delivered = orders.filter(o => o.status === 'delivered').length;
+    const pending = orders.filter(o => o.status === 'pending' || o.status === 'Chờ xác nhận').length;
+    const confirmed = orders.filter(o => o.status === 'confirmed' || o.status === 'Đã xác nhận').length;
+    const shipped = orders.filter(o => o.status === 'shipped' || o.status === 'Đang giao').length;
+    const delivered = orders.filter(o => o.status === 'delivered' || o.status === 'Đã giao').length;
     const totalRevenue = orders
-      .filter(o => o.status === 'delivered')
-      .reduce((sum, o) => sum + o.total, 0);
+      .filter(o => o.status === 'delivered' || o.status === 'Đã giao')
+      .reduce((sum, o) => sum + (o.total || o.price || o.totalAmount || 0), 0);
 
     return { total, pending, confirmed, shipped, delivered, totalRevenue };
   };
@@ -232,7 +255,7 @@ export default function Orders() {
       dataIndex: 'id',
       key: 'id',
       width: 120,
-      render: (id) => <strong>{id}</strong>
+      render: (id, record) => <strong>{id || record._id || 'N/A'}</strong>
     },
     {
       title: 'Khách hàng',
@@ -241,8 +264,10 @@ export default function Orders() {
       width: 150,
       render: (name, record) => (
         <div>
-          <div><strong>{name}</strong></div>
-          <div style={{ fontSize: '12px', color: '#666' }}>{record.customerPhone}</div>
+          <div><strong>{name || record.customerName || 'Khách hàng'}</strong></div>
+          <div style={{ fontSize: '12px', color: '#666' }}>
+            {record.customerPhone || record.phone || 'N/A'}
+          </div>
         </div>
       )
     },
@@ -251,11 +276,14 @@ export default function Orders() {
       dataIndex: 'total',
       key: 'total',
       width: 120,
-      render: (total) => (
-        <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-          ₫{total.toLocaleString()}
-        </span>
-      )
+      render: (total, record) => {
+        const amount = total || record.price || record.totalAmount || 0;
+        return (
+          <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+            ₫{amount.toLocaleString()}
+          </span>
+        );
+      }
     },
     {
       title: 'Thanh toán',

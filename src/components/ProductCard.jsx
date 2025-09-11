@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import "../assets/ProductCard.css";
@@ -14,24 +14,46 @@ const ProductCard = ({
   onCompare
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { addToCart, addToWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
   
   const isLiked = isInWishlist(id);
 
-  const handleLike = (e) => {
+  // Debounce function to prevent double clicks
+  const debounce = useCallback((func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
+  }, []);
+
+  const handleLike = useCallback(debounce((e) => {
+    if (isProcessing) return;
+    
     e.preventDefault();
     e.stopPropagation();
+    setIsProcessing(true);
+    
     const product = { id, name, price, image, badge, version, specifications };
     addToWishlist(product);
-  };
+    
+    setTimeout(() => setIsProcessing(false), 1000);
+  }, 500), [isProcessing, id, name, price, image, badge, version, specifications, addToWishlist]);
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = useCallback(debounce((e) => {
+    if (isProcessing) return;
+    
     e.preventDefault();
     e.stopPropagation();
+    setIsProcessing(true);
+    
     const product = { id, name, price, image, badge, version, specifications };
     addToCart(product);
-  };
+    
+    setTimeout(() => setIsProcessing(false), 1000);
+  }, 500), [isProcessing, id, name, price, image, badge, version, specifications, addToCart]);
 
   const handleCardClick = () => {
     console.log("🔍 ProductCard - ID:", id, "Type:", typeof id);
@@ -65,11 +87,12 @@ const ProductCard = ({
         <div className="product-footer">
           <span className="version">{version}</span>
           <button 
-            className={`wishlist-btn ${isLiked ? 'liked' : ''}`}
+            className={`wishlist-btn ${isLiked ? 'liked' : ''} ${isProcessing ? 'processing' : ''}`}
             onClick={handleLike}
+            disabled={isProcessing}
           >
             <span className="heart-icon">♡</span>
-            <span>Yêu thích</span>
+            <span>{isProcessing ? 'Đang xử lý...' : 'Yêu thích'}</span>
           </button>
         </div>
       </div>
@@ -79,11 +102,12 @@ const ProductCard = ({
         <div className="action-extension">
           <div className="action-buttons">
             <button 
-              className="action-btn add-to-cart-btn"
+              className={`action-btn add-to-cart-btn ${isProcessing ? 'processing' : ''}`}
               onClick={handleAddToCart}
+              disabled={isProcessing}
               title="Thêm vào giỏ hàng"
             >
-              🛒 Thêm vào giỏ hàng
+              🛒 {isProcessing ? 'Đang xử lý...' : 'Thêm vào giỏ hàng'}
             </button>
           </div>
         </div>

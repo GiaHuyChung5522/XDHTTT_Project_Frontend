@@ -139,9 +139,17 @@ export async function getProducts({
     if (brand || category) {
       const params = { page, limit };
       if (brand) params.brand = brand;
-      if (category) params.category = category;
+      if (category) {
+        // Map category name to category ID
+        const categoryMap = {
+          'Laptop văn phòng': 'CAT-001',
+          'Laptop gaming': 'CAT-002',
+          'Laptop đồ họa': 'CAT-003'
+        };
+        params.category = categoryMap[category] || category;
+      }
       
-      const response = await api.get('/product/filter', params);
+      const response = await api.get('/api/product/filter', params);
       
       // ✅ Backend trả về: { data, total, page, limit, totalPages }
       return {
@@ -154,7 +162,7 @@ export async function getProducts({
     }
     
     // ✅ Nếu không có filter, dùng endpoint /product (lấy tất cả)
-    const response = await api.get('/product');
+    const response = await api.get('/api/product');
     
     // ✅ Backend trả về mảng sản phẩm trực tiếp
     const items = Array.isArray(response) ? response : [];
@@ -191,32 +199,31 @@ export async function getProducts({
       totalPages: Math.ceil(filteredItems.length / limit)
     };
   } catch (error) {
-    console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
+    console.warn('Backend API không khả dụng:', error.message);
     
-    // Fallback to mock data
-    return filterAndPaginateProducts(mockProducts, { page, limit, q, sort, order });
+    // Hiển thị thông báo lỗi thay vì sử dụng mock data
+    throw new Error(`Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc đăng nhập lại. Chi tiết: ${error.message}`);
   }
 }
 
 export async function getProductById(id) {
   try {
-    return await api.get(`/product/${id}`);
+    console.log('🔍 Fetching product with ID:', id);
+    const response = await api.get(`/api/product/${id}`);
+    console.log('✅ Product found:', response);
+    return response;
   } catch (error) {
-    console.warn('API không khả dụng, sử dụng mock data:', error.message);
+    console.warn('API không khả dụng:', error.message);
     
-    // Fallback to mock data
-    const product = mockProducts.find(p => p.id === parseInt(id));
-    if (!product) {
-      throw new Error('Sản phẩm không tồn tại');
-    }
-    return product;
+    // Hiển thị thông báo lỗi thay vì sử dụng mock data
+    throw new Error(`Không thể tải thông tin sản phẩm. Vui lòng kiểm tra kết nối mạng hoặc đăng nhập lại. Chi tiết: ${error.message}`);
   }
 }
 
 // CRUD cho Admin (api.* trả body trực tiếp, KHÔNG có .data)
 export async function createProduct(payload) {
   try {
-    return await api.post('/product', payload);
+    return await api.post('/api/product', payload);
   } catch (error) {
     console.warn('API không khả dụng:', error.message);
     // Mock response
@@ -226,7 +233,7 @@ export async function createProduct(payload) {
 
 export async function updateProduct(id, payload) {
   try {
-    return await api.put(`/product/${id}`, payload);
+    return await api.put(`/api/product/${id}`, payload);
   } catch (error) {
     console.warn('API không khả dụng:', error.message);
     // Mock response
@@ -236,7 +243,7 @@ export async function updateProduct(id, payload) {
 
 export async function patchProduct(id, payload) {
   try {
-    return await api.patch(`/product/${id}`, payload);
+    return await api.patch(`/api/product/${id}`, payload);
   } catch (error) {
     console.warn('API không khả dụng:', error.message);
     // Mock response
@@ -246,7 +253,7 @@ export async function patchProduct(id, payload) {
 
 export async function deleteProduct(id) {
   try {
-    return await api.delete(`/product/${id}`);
+    return await api.delete(`/api/product/${id}`);
   } catch (error) {
     console.warn('API không khả dụng:', error.message);
     // Mock response
@@ -261,7 +268,7 @@ export async function deleteProduct(id) {
  */
 export async function getCategories() {
   try {
-    const response = await api.get('/product/categories');
+    const response = await api.get('/api/product/categories');
     // ✅ Backend trả về mảng categories trực tiếp
     return Array.isArray(response) ? response : [];
   } catch (error) {
@@ -278,7 +285,7 @@ export async function getCategories() {
 export async function getBrands(category = '') {
   try {
     const params = category ? { category } : {};
-    const response = await api.get('/product/brands', params);
+    const response = await api.get('/api/product/brands', params);
     // ✅ Backend trả về mảng brands trực tiếp
     return Array.isArray(response) ? response : [];
   } catch (error) {

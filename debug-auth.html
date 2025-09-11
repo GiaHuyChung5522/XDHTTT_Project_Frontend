@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentication</title>
+</head>
+<body>
+    <h1>Debug Authentication</h1>
+    <div id="debug-info"></div>
+    <button onclick="testAPI()">Test API</button>
+    <button onclick="loginTest()">Login Test</button>
+    
+    <script>
+        function showDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            const auth = localStorage.getItem('auth');
+            const token = localStorage.getItem('token');
+            
+            debugDiv.innerHTML = `
+                <h3>LocalStorage Debug:</h3>
+                <p><strong>auth:</strong> ${auth || 'null'}</p>
+                <p><strong>token:</strong> ${token || 'null'}</p>
+                <p><strong>All localStorage keys:</strong> ${Object.keys(localStorage).join(', ')}</p>
+            `;
+        }
+        
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:3000/api/product', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || 'no-token'}`
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                alert(`API Response: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                console.error('API Error:', error);
+                alert(`API Error: ${error.message}`);
+            }
+        }
+        
+        async function loginTest() {
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Login Response:', data);
+                
+                if (data.data && data.data.accessToken) {
+                    localStorage.setItem('token', data.data.accessToken);
+                    localStorage.setItem('auth', JSON.stringify({
+                        token: data.data.accessToken,
+                        accessToken: data.data.accessToken,
+                        user: data.data
+                    }));
+                    alert('Login successful! Token saved.');
+                    showDebugInfo();
+                } else {
+                    alert(`Login failed: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                console.error('Login Error:', error);
+                alert(`Login Error: ${error.message}`);
+            }
+        }
+        
+        // Show debug info on load
+        showDebugInfo();
+    </script>
+</body>
+</html>

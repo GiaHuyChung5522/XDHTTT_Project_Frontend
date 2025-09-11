@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin API Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .loading { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Admin API Test Suite</h1>
+    <div id="status"></div>
+    
+    <div class="test-section">
+        <h3>🔐 Authentication</h3>
+        <button onclick="testLogin()">Test Admin Login</button>
+        <div id="auth-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Dashboard APIs</h3>
+        <button onclick="testDashboard()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>👥 User Management</h3>
+        <button onclick="testUsers()">Test User APIs</button>
+        <div id="users-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📦 Order Management</h3>
+        <button onclick="testOrders()">Test Order APIs</button>
+        <div id="orders-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🛍️ Product Management</h3>
+        <button onclick="testProducts()">Test Product APIs</button>
+        <div id="products-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>💳 Payment APIs</h3>
+        <button onclick="testPayments()">Test Payment APIs</button>
+        <div id="payments-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🚀 Run All Tests</h3>
+        <button onclick="runAllTests()">Run Complete Test Suite</button>
+        <div id="all-results"></div>
+    </div>
+
+    <script>
+        let adminToken = null;
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing admin login...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.data && data.data.accessToken) {
+                    adminToken = data.data.accessToken;
+                    localStorage.setItem('adminToken', adminToken);
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Login successful!</div>
+                        <div class="info">Role: ${data.data.role}</div>
+                        <div class="info">Token: ${adminToken.substring(0, 30)}...</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Login failed: ${JSON.stringify(data)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDashboard() {
+            const resultDiv = document.getElementById('dashboard-result');
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing dashboard APIs...</div>';
+            
+            const tests = [
+                { name: 'Revenue', url: '/api/dashboard/revenue' },
+                { name: 'Total Orders', url: '/api/dashboard/total-orders' },
+                { name: 'Total Users', url: '/api/dashboard/total-users' },
+                { name: 'Total Products', url: '/api/dashboard/total-products' }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(`http://localhost:3000${test.url}`, {
+                        headers: { 'Authorization': `Bearer ${adminToken}` }
+                    });
+                    const data = await response.json();
+                    results.push(`✅ ${test.name}: ${JSON.stringify(data)}`);
+                } catch (error) {
+                    results.push(`❌ ${test.name}: ${error.message}`);
+                }
+            }
+            
+            resultDiv.innerHTML = results.join('<br>');
+        }
+        
+        async function testUsers() {
+            const resultDiv = document.getElementById('users-result');
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing user management APIs...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/user', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Get All Users: Found ${data.length} users</div>
+                    <div class="info">First user: ${data[0]?.email} - Role: ${data[0]?.role}</div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testOrders() {
+            const resultDiv = document.getElementById('orders-result');
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing order management APIs...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/order', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Get All Orders: Found ${data.orders?.length || 0} orders</div>
+                    ${data.orders?.length > 0 ? `<div class="info">First order: ${data.orders[0].status} - Total: ${data.orders[0].totalAmount}</div>` : ''}
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testProducts() {
+            const resultDiv = document.getElementById('products-result');
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing product management APIs...</div>';
+            
+            const tests = [
+                { name: 'Categories', url: '/api/product/categories' },
+                { name: 'Brands', url: '/api/product/brands' },
+                { name: 'All Products', url: '/api/product' },
+                { name: 'Filtered Products', url: '/api/product/filter?category=CAT-001&limit=5' }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(`http://localhost:3000${test.url}`, {
+                        headers: { 'Authorization': `Bearer ${adminToken}` }
+                    });
+                    const data = await response.json();
+                    
+                    if (test.name === 'All Products' || test.name === 'Filtered Products') {
+                        results.push(`✅ ${test.name}: Found ${data.data?.length || data.length || 0} products`);
+                    } else {
+                        results.push(`✅ ${test.name}: ${JSON.stringify(data)}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${test.name}: ${error.message}`);
+                }
+            }
+            
+            resultDiv.innerHTML = results.join('<br>');
+        }
+        
+        async function testPayments() {
+            const resultDiv = document.getElementById('payments-result');
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">🔄 Testing payment APIs...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/payment/create_payment_url', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Payment URL generated successfully</div>
+                    <div class="info">URL: ${data.url?.substring(0, 100)}...</div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function runAllTests() {
+            const resultDiv = document.getElementById('all-results');
+            resultDiv.innerHTML = '<div class="loading">🔄 Running complete test suite...</div>';
+            
+            let allResults = [];
+            
+            // Test login first
+            await testLogin();
+            if (!adminToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Cannot proceed without admin token</div>';
+                return;
+            }
+            
+            // Run all tests
+            const testFunctions = [
+                { name: 'Dashboard', func: testDashboard },
+                { name: 'Users', func: testUsers },
+                { name: 'Orders', func: testOrders },
+                { name: 'Products', func: testProducts },
+                { name: 'Payments', func: testPayments }
+            ];
+            
+            for (const test of testFunctions) {
+                allResults.push(`<h4>${test.name} Tests:</h4>`);
+                await test.func();
+                // Get the result from the respective div
+                const testDiv = document.getElementById(`${test.name.toLowerCase()}-result`);
+                allResults.push(testDiv.innerHTML);
+            }
+            
+            resultDiv.innerHTML = allResults.join('<br>');
+        }
+        
+        // Auto-load token if available
+        window.onload = function() {
+            const savedToken = localStorage.getItem('adminToken');
+            if (savedToken) {
+                adminToken = savedToken;
+                document.getElementById('status').innerHTML = `
+                    <div class="success">✅ Admin token loaded from localStorage</div>
+                    <div class="info">Token: ${adminToken.substring(0, 30)}...</div>
+                `;
+            } else {
+                document.getElementById('status').innerHTML = '<div class="info">ℹ️ No saved token found. Please login first.</div>';
+            }
+        };
+    </script>
+</body>
+</html>

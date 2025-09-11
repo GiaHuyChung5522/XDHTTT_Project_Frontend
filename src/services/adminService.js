@@ -15,15 +15,30 @@ export const adminService = {
   // SECTION: Dashboard Stats - Lấy thống kê tổng quan
   async getDashboardStats() {
     try {
-      // ✅ TODO: Backend cần implement endpoint /admin/dashboard/stats
-      // Hiện tại sử dụng mock data
-      await delay(500);
+      // ✅ Tích hợp với API BE thật
+      const [revenueRes, pendingRes, totalOrdersRes, totalUsersRes, totalProductsRes] = await Promise.all([
+        api.get('/api/dashboard/revenue'),
+        api.get('/api/dashboard/pending-orders'), 
+        api.get('/api/dashboard/total-orders'),
+        api.get('/api/dashboard/total-users'),
+        api.get('/api/dashboard/total-products')
+      ]);
+
       return {
         success: true,
-        data: adminStats
+        data: {
+          totalRevenue: revenueRes.data.total || 0,
+          pendingOrders: pendingRes.data.length || 0,
+          totalOrders: totalOrdersRes.data.total || 0,
+          totalUsers: totalUsersRes.data.total || 0,
+          totalProducts: totalProductsRes.data.total || 0,
+          // Giữ lại các thống kê khác từ mock data
+          ...adminStats
+        }
       };
     } catch (error) {
       console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
+      await delay(500);
       return {
         success: true,
         data: adminStats
@@ -140,7 +155,7 @@ export const adminService = {
         if (brand) params.brand = brand;
         if (category) params.category = category;
         
-        const response = await api.get('/product/filter', params);
+        const response = await api.get('/api/product/filter', params);
         
         // ✅ Backend trả về: { data, total, page, limit, totalPages }
         return {
@@ -157,11 +172,11 @@ export const adminService = {
         };
       }
       
-      // ✅ Nếu không có filter, dùng endpoint /product (lấy tất cả)
-      const response = await api.get('/product');
+      // ✅ Nếu không có filter, dùng endpoint /api/product (lấy tất cả)
+      const response = await api.get('/api/product');
       
-      // ✅ Backend trả về mảng sản phẩm trực tiếp
-      const allProducts = Array.isArray(response) ? response : [];
+      // ✅ Backend trả về object với {data, total, page, limit, totalPages}
+      const allProducts = response.data || [];
       
       // ✅ Filter local nếu có search query
       let filteredProducts = allProducts;
@@ -256,7 +271,7 @@ export const adminService = {
   // SECTION: Product CRUD Operations
   async createProduct(productData) {
     try {
-      const response = await api.post('/product', productData);
+      const response = await api.post('/api/product', productData);
       return {
         success: true,
         data: response
@@ -270,25 +285,9 @@ export const adminService = {
     }
   },
 
-  async updateProduct(productId, productData) {
-    try {
-      const response = await api.patch(`/product/${productId}`, productData);
-      return {
-        success: true,
-        data: response
-      };
-    } catch (error) {
-      console.error('Error updating product:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
   async deleteProduct(productId) {
     try {
-      const response = await api.delete(`/product/${productId}`);
+      const response = await api.delete(`/api/product/${productId}`);
       return {
         success: true,
         data: response
@@ -302,9 +301,51 @@ export const adminService = {
     }
   },
 
+  // SECTION: Product with Image Upload
+  async createProductWithImage(formData) {
+    try {
+      console.log('📤 Creating product with image upload...');
+      // Let axios automatically set Content-Type with boundary
+      const response = await api.post('/api/product', formData);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('Error creating product with image:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async updateProductWithImage(productId, formData) {
+    try {
+      console.log('📤 Updating product with image upload...', productId);
+      console.log('📤 FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      // Let axios automatically set Content-Type with boundary
+      const response = await api.patch(`/api/product/${productId}`, formData);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('Error updating product with image:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
   async getProductById(productId) {
     try {
-      const response = await api.get(`/product/${productId}`);
+      const response = await api.get(`/api/product/${productId}`);
       return {
         success: true,
         data: response
@@ -320,7 +361,7 @@ export const adminService = {
 
   async getProductCategories() {
     try {
-      const response = await api.get('/product/categories');
+      const response = await api.get('/api/product/categories');
       return {
         success: true,
         data: response
@@ -336,7 +377,7 @@ export const adminService = {
 
   async getProductBrands() {
     try {
-      const response = await api.get('/product/brands');
+      const response = await api.get('/api/product/brands');
       return {
         success: true,
         data: response
@@ -359,7 +400,7 @@ export const adminService = {
     status = ''
   } = {}) {
     try {
-      const response = await api.get('/user');
+      const response = await api.get('/api/user');
       
       // Backend trả về mảng users trực tiếp
       const allUsers = Array.isArray(response) ? response : [];
@@ -488,7 +529,7 @@ export const adminService = {
   // SECTION: User CRUD Operations
   async createUser(userData) {
     try {
-      const response = await api.post('/user/create', userData);
+      const response = await api.post('/api/user/create', userData);
       return {
         success: true,
         data: response
@@ -504,7 +545,7 @@ export const adminService = {
 
   async updateUser(userId, userData) {
     try {
-      const response = await api.patch(`/user/update/${userId}`, userData);
+      const response = await api.patch(`/api/user/update/${userId}`, userData);
       return {
         success: true,
         data: response
@@ -520,7 +561,7 @@ export const adminService = {
 
   async deleteUser(userId) {
     try {
-      const response = await api.delete(`/user/delete/${userId}`);
+      const response = await api.delete(`/api/user/delete/${userId}`);
       return {
         success: true,
         data: response
@@ -536,7 +577,7 @@ export const adminService = {
 
   async getUserById(userId) {
     try {
-      const response = await api.get(`/user/profile/${userId}`);
+      const response = await api.get(`/api/user/profile/${userId}`);
       return {
         success: true,
         data: response
@@ -610,67 +651,11 @@ export const adminService = {
     };
   },
 
-  // SECTION: CRUD Operations - Thao tác tạo, sửa, xóa
-  async createUser(userData) {
-    try {
-      // ✅ TODO: Backend cần implement endpoint POST /user
-      // Hiện tại sử dụng mock
-      await delay(600);
-      return {
-        success: true,
-        message: "Người dùng đã được tạo thành công",
-        data: { id: Date.now(), ...userData }
-      };
-    } catch (error) {
-      console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
-      return {
-        success: true,
-        message: "Người dùng đã được tạo thành công",
-        data: { id: Date.now(), ...userData }
-      };
-    }
-  },
-
-  async updateUser(id, userData) {
-    try {
-      // ✅ TODO: Backend cần implement endpoint PATCH /user/:id
-      await delay(500);
-      return {
-        success: true,
-        message: "Người dùng đã được cập nhật thành công",
-        data: { id, ...userData }
-      };
-    } catch (error) {
-      console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
-      return {
-        success: true,
-        message: "Người dùng đã được cập nhật thành công",
-        data: { id, ...userData }
-      };
-    }
-  },
-
-  async deleteUser(id) {
-    try {
-      // ✅ TODO: Backend cần implement endpoint DELETE /user/:id
-      await delay(400);
-      return {
-        success: true,
-        message: "Người dùng đã được xóa thành công"
-      };
-    } catch (error) {
-      console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
-      return {
-        success: true,
-        message: "Người dùng đã được xóa thành công"
-      };
-    }
-  },
 
   async createProduct(productData) {
     try {
       // ✅ Sử dụng Backend API: POST /product
-      const response = await api.post('/product', productData);
+      const response = await api.post('/api/product', productData);
       return {
         success: true,
         message: "Sản phẩm đã được tạo thành công",
@@ -690,7 +675,7 @@ export const adminService = {
   async updateProduct(id, productData) {
     try {
       // ✅ Sử dụng Backend API: PATCH /product/:id
-      const response = await api.patch(`/product/${id}`, productData);
+      const response = await api.patch(`/api/product/${id}`, productData);
       return {
         success: true,
         message: "Sản phẩm đã được cập nhật thành công",
@@ -710,7 +695,7 @@ export const adminService = {
   async deleteProduct(id) {
     try {
       // ✅ Sử dụng Backend API: DELETE /product/:id
-      const response = await api.delete(`/product/${id}`);
+      const response = await api.delete(`/api/product/${id}`);
       return {
         success: true,
         message: "Sản phẩm đã được xóa thành công",

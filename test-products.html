@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Login & Test Products</title>
+</head>
+<body>
+    <h1>Auto Login & Test Products</h1>
+    <div id="status"></div>
+    <button onclick="autoLoginAndTest()">Auto Login & Test</button>
+    <div id="results"></div>
+    
+    <script>
+        async function autoLoginAndTest() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '🔄 Đang đăng nhập...';
+                
+                // Login
+                const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginData.data && loginData.data.accessToken) {
+                    // Save token
+                    localStorage.setItem('token', loginData.data.accessToken);
+                    localStorage.setItem('auth', JSON.stringify({
+                        token: loginData.data.accessToken,
+                        accessToken: loginData.data.accessToken,
+                        user: loginData.data
+                    }));
+                    
+                    statusDiv.innerHTML = '✅ Đăng nhập thành công!';
+                    
+                    // Test products API
+                    statusDiv.innerHTML += '<br>🔄 Đang test API products...';
+                    
+                    const productsResponse = await fetch('http://localhost:3000/api/product/filter?category=CAT-001&page=1&limit=5', {
+                        headers: {
+                            'Authorization': `Bearer ${loginData.data.accessToken}`
+                        }
+                    });
+                    
+                    const productsData = await productsResponse.json();
+                    
+                    resultsDiv.innerHTML = `
+                        <h3>Kết quả API Products:</h3>
+                        <p><strong>Total:</strong> ${productsData.total}</p>
+                        <p><strong>Data length:</strong> ${productsData.data.length}</p>
+                        <p><strong>Page:</strong> ${productsData.page}</p>
+                        <p><strong>Limit:</strong> ${productsData.limit}</p>
+                        <h4>Sản phẩm đầu tiên:</h4>
+                        <pre>${JSON.stringify(productsData.data[0], null, 2)}</pre>
+                    `;
+                    
+                    statusDiv.innerHTML += '<br>✅ Test API thành công!';
+                    
+                } else {
+                    statusDiv.innerHTML = `❌ Đăng nhập thất bại: ${JSON.stringify(loginData)}`;
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Lỗi: ${error.message}`;
+                console.error('Error:', error);
+            }
+        }
+        
+        // Show current localStorage status
+        window.onload = function() {
+            const auth = localStorage.getItem('auth');
+            const token = localStorage.getItem('token');
+            
+            document.getElementById('status').innerHTML = `
+                <h3>Trạng thái hiện tại:</h3>
+                <p><strong>Auth:</strong> ${auth ? 'Có' : 'Không'}</p>
+                <p><strong>Token:</strong> ${token ? 'Có' : 'Không'}</p>
+            `;
+        };
+    </script>
+</body>
+</html>

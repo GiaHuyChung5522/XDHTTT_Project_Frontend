@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useCart } from "../context/CartContext"; // Import context giỏ hàng
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import "./ProductItem.css";
 
 const currency = (n) =>
@@ -12,6 +12,7 @@ const currency = (n) =>
 const ProductItem = ({ product }) => {
   const { addToCart } = useCart();
   const [hovered, setHovered] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
 
   if (!product) return null;
@@ -19,10 +20,24 @@ const ProductItem = ({ product }) => {
   const { id, name, price, image, badge } = product;
   const imgSrc = image || "/src/assets/img/sanpham1.jpg";
 
+  // Debounce function to prevent double clicks
+  const debounce = useCallback((func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
+  }, []);
+
   // Xử lý khi thêm vào giỏ
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(debounce(() => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
     addToCart(product); // Tăng số lượng
-  };
+    
+    setTimeout(() => setIsProcessing(false), 1000);
+  }, 500), [isProcessing, product, addToCart]);
 
   return (
     <div
@@ -45,10 +60,11 @@ const ProductItem = ({ product }) => {
         {hovered && (
           <div className="product-item__hover-buttons">
             <button
-              className="product-item__add-to-cart"
+              className={`product-item__add-to-cart ${isProcessing ? 'processing' : ''}`}
               onClick={handleAddToCart}
+              disabled={isProcessing}
             >
-              🛒 Thêm vào giỏ
+              🛒 {isProcessing ? 'Đang xử lý...' : 'Thêm vào giỏ'}
             </button>
             <button
               className="product-item__go-to-cart"

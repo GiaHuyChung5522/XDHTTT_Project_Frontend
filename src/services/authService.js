@@ -6,7 +6,7 @@ export async function login({ email, password }) {
   console.log("Attempting login with", { email, password });
   
   try {
-    const response = await api.post("/auth/login", { email, password });
+    const response = await api.post("/api/auth/login", { email, password });
     console.log("Login response:", response);
     
     // API chỉ trả về: { accessToken, refreshToken, role }
@@ -45,7 +45,7 @@ export async function register({ firstName, lastName, email, password, confirmPa
   console.log("Attempting register with", { firstName, lastName, email, password, confirmPassword, gender, birth, address, telephone });
   
   try {
-    const response = await api.post("/auth/register", { 
+    const response = await api.post("/api/auth/register", { 
       firstName, 
       lastName, 
       email, 
@@ -107,7 +107,7 @@ export async function refreshToken() {
     }
     
     // ✅ Gọi đúng endpoint Backend: /auth/refresh-token
-    const response = await api.post("/auth/refresh-token", { 
+    const response = await api.post("/api/auth/refresh-token", { 
       token: auth.user.refreshToken  // ✅ Backend expect field "token"
     });
     

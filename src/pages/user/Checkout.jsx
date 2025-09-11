@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { orderService } from '../../services/orderService';
+import PaymentIntegration from '../../components/PaymentIntegration';
 import { 
   UserOutlined, 
   PhoneOutlined, 
@@ -43,6 +44,8 @@ export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [orderData, setOrderData] = useState(null);
 
   // Tính toán tổng tiền
   const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -134,16 +137,23 @@ export default function Checkout() {
       };
 
       // ✅ Gọi API tạo đơn hàng thật
-      const createdOrder = await orderService.createOrder(orderData);
+      const result = await orderService.createOrder(orderData);
       
-      // Save to localStorage for backup
-      localStorage.setItem('lastOrder', JSON.stringify(createdOrder));
-      
-      // Clear cart after successful order
-      cartItems.forEach(item => removeFromCart(item.id));
-      
-      message.success('Đặt hàng thành công!');
-      navigate('/order-success', { state: { order: createdOrder } });
+      if (result.success) {
+        setOrderData(result.data);
+        
+        // Nếu là VNPay, mở payment modal
+        if (paymentMethod === 'vnpay' && result.paymentUrl) {
+          setShowPaymentModal(true);
+        } else {
+          // Các phương thức khác, xử lý thành công ngay
+          handleOrderSuccess(result.data);
+        }
+      } else {
+        // Fallback với local data
+        setOrderData(orderData);
+        handleOrderSuccess(orderData);
+      }
       
     } catch (error) {
       message.destroy();
@@ -155,6 +165,29 @@ export default function Checkout() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOrderSuccess = (order) => {
+    message.destroy();
+    message.success('Đặt hàng thành công!');
+    
+    // Save to localStorage for backup
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+    
+    // Clear cart after successful order
+    cartItems.forEach(item => removeFromCart(item.id));
+    
+    navigate('/order-success', { state: { order } });
+  };
+
+  const handlePaymentSuccess = (order) => {
+    setShowPaymentModal(false);
+    handleOrderSuccess(order);
+  };
+
+  const handlePaymentFailure = (error) => {
+    setShowPaymentModal(false);
+    message.error('Thanh toán thất bại: ' + error.message);
   };
 
   const renderShippingInfo = () => (
@@ -291,6 +324,18 @@ export default function Checkout() {
             </div>
           </Radio>
         </Card>
+
+        <Card className="payment-method-card">
+          <Radio value="vnpay">
+            <div className="payment-method-content">
+              <div className="payment-icon" style={{ fontSize: '24px', color: '#1ba8ff' }}>📱</div>
+              <div>
+                <h4>VNPay</h4>
+                <p>Thanh toán qua VNPay - An toàn và tiện lợi</p>
+              </div>
+            </div>
+          </Radio>
+        </Card>
       </Radio.Group>
 
       {paymentMethod === 'bank' && (
@@ -307,6 +352,23 @@ export default function Checkout() {
           type="info"
           showIcon
           className="bank-info"
+        />
+      )}
+
+      {paymentMethod === 'vnpay' && (
+        <Alert
+          message="Thanh toán VNPay"
+          description={
+            <div>
+              <p>• Thanh toán an toàn qua VNPay</p>
+              <p>• Hỗ trợ thẻ ATM, Internet Banking</p>
+              <p>• Xác nhận thanh toán ngay lập tức</p>
+              <p>• Miễn phí phí giao dịch</p>
+            </div>
+          }
+          type="info"
+          showIcon
+          className="vnpay-info"
         />
       )}
 
@@ -549,6 +611,15 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+      
+      {/* Payment Integration Modal */}
+      <PaymentIntegration
+        visible={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        orderData={orderData}
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentFailure={handlePaymentFailure}
+      />
     </div>
   );
 }

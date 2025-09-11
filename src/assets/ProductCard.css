@@ -114,6 +114,16 @@
   color: #ff4d00;
 }
 
+.wishlist-btn.processing {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wishlist-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .heart-icon {
   font-size: 14px;
   color: inherit;
@@ -199,12 +209,24 @@
   border: 2px solid #ffed4e;
 }
 
-.add-to-cart-btn:hover {
+.add-to-cart-btn:hover:not(:disabled) {
   background: #ffed4e;
   color: #333;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.6);
   border-color: #ffd700;
+}
+
+.add-to-cart-btn.processing {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.add-to-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .compare-btn {

@@ -43,8 +43,8 @@ const Home = () => {
       <div className="home__product-showcase">
         <ProductShowcase 
           title="Máy tính xách tay"
-          rows={1} // Chỉ hiển thị 1 hàng
-          viewAllHref="/products"
+          category="Laptop văn phòng"
+          viewAllHref="/products?category=laptop-van-phong"
         />
       </div>
 
@@ -52,8 +52,8 @@ const Home = () => {
       <div className="home__product-showcase">
         <ProductShowcase 
           title="Laptop Gaming"
-          rows={2} // Hiển thị 2 hàng
-          viewAllHref="/gaming-laptops"
+          category="Laptop gaming"
+          viewAllHref="/products?category=laptop-gaming"
         />
       </div>
 

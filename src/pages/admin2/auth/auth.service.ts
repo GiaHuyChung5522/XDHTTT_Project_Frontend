@@ -20,38 +20,52 @@ class AuthService {
   private readonly TOKEN_KEY = 'adminToken';
   private readonly USER_KEY = 'adminUser';
 
-  // Mock admin credentials - trong thực tế sẽ call API
-  private readonly mockAdmin = {
-    email: 'admin@gmail.com',
-    password: 'admin123',
-    user: {
-      id: '1',
-      email: 'admin@gmail.com',
-      name: 'Admin Gr7 UTH',
-      role: 'admin' as const,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    }
-  };
-
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      console.log('🔐 Admin login attempt:', credentials.email);
+      
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-    // Mock authentication
-    if (credentials.email === this.mockAdmin.email && credentials.password === this.mockAdmin.password) {
-      const token = 'mock_jwt_token_' + Date.now();
-      const authResponse = {
-        user: this.mockAdmin.user,
-        token
-      };
+      const data = await response.json();
+      console.log('🔐 Admin login response:', data);
 
-      // Store in localStorage
-      localStorage.setItem(this.TOKEN_KEY, token);
-      localStorage.setItem(this.USER_KEY, JSON.stringify(this.mockAdmin.user));
+      if (response.ok && data.statusCode === 200) {
+        // Kiểm tra role admin
+        if (data.data.role !== 'admin') {
+          throw new Error('Tài khoản này không có quyền admin');
+        }
 
-      return authResponse;
-    } else {
-      throw new Error('Email hoặc mật khẩu không đúng');
+        const user: User = {
+          id: data.data.sub || Date.now().toString(),
+          email: credentials.email,
+          name: credentials.email.split('@')[0],
+          role: 'admin',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+        };
+
+        const authResponse: AuthResponse = {
+          user,
+          token: data.data.accessToken
+        };
+
+        // Store in localStorage
+        localStorage.setItem(this.TOKEN_KEY, data.data.accessToken);
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+
+        console.log('✅ Admin login successful');
+        return authResponse;
+      } else {
+        throw new Error(data.message || 'Đăng nhập thất bại');
+      }
+    } catch (error) {
+      console.error('❌ Admin login error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.');
     }
   }
 

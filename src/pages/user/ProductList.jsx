@@ -14,6 +14,7 @@ const ProductList = ({
   title = "Laptop văn phòng",
   tabs = [],
   fixedQ = "",
+  category = "",             // Filter theo category
   itemRenderer = null,       // (product)=>JSX — nếu muốn override card
   viewAllHref = "/products",
   totalOverride = null,      // optional: nếu muốn hiển thị tổng tùy chính
@@ -44,6 +45,7 @@ const ProductList = ({
           page: 1,
           limit,
           q,
+          category,
           sort: "id",
           order: "desc",
         });
@@ -55,8 +57,9 @@ const ProductList = ({
         }
       } catch (e) {
         if (!alive) return;
-        console.error(e);
-        setErr("Không tải được danh sách sản phẩm.");
+        console.error('Lỗi tải sản phẩm:', e);
+        setErr(e.message || "Không thể tải danh sách sản phẩm. Vui lòng kiểm tra kết nối mạng hoặc đăng nhập lại.");
+        message.error(e.message || "Không thể tải sản phẩm. Vui lòng thử lại sau.");
       } finally {
         if (alive) {
           setLoading(false);
@@ -74,7 +77,6 @@ const ProductList = ({
 
   const handleAddToCart = (product) => {
     addToCart(product);
-    message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
   };
 
   const handleLike = (product) => {
@@ -166,7 +168,27 @@ const ProductList = ({
           ))}
         </div>
       ) : err ? (
-        <div className="product-list__error" role="alert">{err}</div>
+        <div className="product-list__error" role="alert">
+          <div className="error-container">
+            <div className="error-icon">⚠️</div>
+            <h3>Không thể tải sản phẩm</h3>
+            <p>{err}</p>
+            <div className="error-actions">
+              <button 
+                className="btn-retry" 
+                onClick={() => window.location.reload()}
+              >
+                🔄 Thử lại
+              </button>
+              <button 
+                className="btn-login" 
+                onClick={() => window.location.href = '/login'}
+              >
+                🔑 Đăng nhập
+              </button>
+            </div>
+          </div>
+        </div>
       ) : items.length === 0 ? (
         <div className="product-list__empty">Không có sản phẩm.</div>
       ) : (

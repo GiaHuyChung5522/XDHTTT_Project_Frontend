@@ -48,6 +48,14 @@ export const API_URLS = {
     CREATE: '/api/order',
     UPDATE: '/api/order/:id',
     DELETE: '/api/order/:id',
+    GET_USER_ORDERS: '/api/order/user/:userId',
+    UPDATE_STATUS: '/api/order/:id/status',
+  },
+
+  // Payment APIs
+  PAYMENT: {
+    CREATE_PAYMENT_URL: '/api/payment/create_payment_url',
+    VNPAY_RETURN: '/api/payment/vnpay_return',
   },
 };
 

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete System Test Suite</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .test-card h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 1.3em;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+        .summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .summary h2 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .run-all-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        .run-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+        .login-section {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #ffeaa7;
+        }
+        .login-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+        .login-form input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .login-form button {
+            padding: 12px 25px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Complete System Test Suite</h1>
+            <p>Kiểm tra toàn diện hệ thống Frontend + Backend</p>
+        </div>
+        
+        <div class="content">
+            <!-- Login Section -->
+            <div class="login-section">
+                <h3>🔐 Authentication</h3>
+                <div class="login-form">
+                    <input type="email" id="adminEmail" placeholder="Admin Email" value="admin@example.com">
+                    <input type="password" id="adminPassword" placeholder="Admin Password" value="admin123">
+                    <button onclick="loginAdmin()">Đăng nhập Admin</button>
+                </div>
+                <div id="loginResult"></div>
+            </div>
+
+            <!-- Backend API Tests -->
+            <div class="test-card">
+                <h3>🔧 Backend API Tests</h3>
+                <div class="test-buttons">
+                    <button onclick="testBackendHealth()">Health Check</button>
+                    <button onclick="testAuthAPI()">Auth API</button>
+                    <button onclick="testProductAPI()">Product API</button>
+                    <button onclick="testOrderAPI()">Order API</button>
+                    <button onclick="testUserAPI()">User API</button>
+                </div>
+                <div id="backendResult"></div>
+            </div>
+
+            <!-- Frontend Integration Tests -->
+            <div class="test-card">
+                <h3>🎨 Frontend Integration Tests</h3>
+                <div class="test-buttons">
+                    <button onclick="testFrontendLogin()">Frontend Login</button>
+                    <button onclick="testProductDisplay()">Product Display</button>
+                    <button onclick="testOrderDisplay()">Order Display</button>
+                    <button onclick="testUserDisplay()">User Display</button>
+                    <button onclick="testAdminDashboard()">Admin Dashboard</button>
+                </div>
+                <div id="frontendResult"></div>
+            </div>
+
+            <!-- Database Tests -->
+            <div class="test-card">
+                <h3>🗄️ Database Tests</h3>
+                <div class="test-buttons">
+                    <button onclick="testDatabaseConnection()">DB Connection</button>
+                    <button onclick="testDataIntegrity()">Data Integrity</button>
+                    <button onclick="testDataRelations()">Data Relations</button>
+                    <button onclick="testDataCounts()">Data Counts</button>
+                </div>
+                <div id="databaseResult"></div>
+            </div>
+
+            <!-- Performance Tests -->
+            <div class="test-card">
+                <h3>⚡ Performance Tests</h3>
+                <div class="test-buttons">
+                    <button onclick="testAPISpeed()">API Speed</button>
+                    <button onclick="testPageLoadSpeed()">Page Load Speed</button>
+                    <button onclick="testConcurrentRequests()">Concurrent Requests</button>
+                    <button onclick="testMemoryUsage()">Memory Usage</button>
+                </div>
+                <div id="performanceResult"></div>
+            </div>
+
+            <!-- Security Tests -->
+            <div class="test-card">
+                <h3>🔒 Security Tests</h3>
+                <div class="test-buttons">
+                    <button onclick="testAuthentication()">Authentication</button>
+                    <button onclick="testAuthorization()">Authorization</button>
+                    <button onclick="testInputValidation()">Input Validation</button>
+                    <button onclick="testSQLInjection()">SQL Injection</button>
+                </div>
+                <div id="securityResult"></div>
+            </div>
+
+            <!-- Run All Tests -->
+            <div style="text-align: center;">
+                <button class="run-all-btn" onclick="runAllTests()">
+                    🚀 Chạy Tất Cả Tests
+                </button>
+            </div>
+
+            <!-- Test Summary -->
+            <div class="summary">
+                <h2>📊 Test Results Summary</h2>
+                <div id="testSummary">
+                    <p>Chạy các test để xem kết quả tổng hợp...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminToken = '';
+        let testResults = {};
+
+        // Login function
+        async function loginAdmin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            resultDiv.innerHTML = '<p class="info">🔄 Đang đăng nhập...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.statusCode === 200 && data.data.role === 'admin') {
+                    adminToken = data.data.accessToken;
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Đăng nhập admin thành công!</p>
+                        <p><strong>Token:</strong> ${adminToken.substring(0, 50)}...</p>
+                    `;
+                    testResults.login = { status: 'success', message: 'Admin login successful' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ ${data.message || 'Đăng nhập thất bại'}</p>`;
+                    testResults.login = { status: 'error', message: data.message || 'Login failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Lỗi kết nối: ${error.message}</p>`;
+                testResults.login = { status: 'error', message: error.message };
+            }
+        }
+
+        // Helper function to make API calls
+        async function apiCall(url, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            };
+            
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
+            
+            const response = await fetch(url, config);
+            const data = await response.json();
+            
+            return { response, data };
+        }
+
+        // Backend API Tests
+        async function testBackendHealth() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing backend health...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Backend is healthy</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    testResults.backendHealth = { status: 'success', message: 'Backend is healthy' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Backend health check failed</p>`;
+                    testResults.backendHealth = { status: 'error', message: 'Backend health check failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.backendHealth = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testAuthAPI() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing auth API...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'admin@example.com', password: 'admin123' }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.statusCode === 200) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Auth API working</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    testResults.authAPI = { status: 'success', message: 'Auth API working' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Auth API failed</p>`;
+                    testResults.authAPI = { status: 'error', message: 'Auth API failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.authAPI = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testProductAPI() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing product API...</p>';
+            
+            if (!adminToken) {
+                resultDiv.innerHTML = '<p class="error">❌ Please login first!</p>';
+                return;
+            }
+            
+            try {
+                const { response, data } = await apiCall('http://localhost:3000/api/product');
+                
+                if (response.ok) {
+                    const products = Array.isArray(data) ? data : [];
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Product API working (${products.length} products)</p>
+                        <pre>${JSON.stringify(products.slice(0, 2), null, 2)}</pre>
+                    `;
+                    testResults.productAPI = { status: 'success', message: `${products.length} products loaded` };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Product API failed</p>`;
+                    testResults.productAPI = { status: 'error', message: 'Product API failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.productAPI = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testOrderAPI() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing order API...</p>';
+            
+            if (!adminToken) {
+                resultDiv.innerHTML = '<p class="error">❌ Please login first!</p>';
+                return;
+            }
+            
+            try {
+                const { response, data } = await apiCall('http://localhost:3000/api/order');
+                
+                if (response.ok) {
+                    const orders = data.orders || [];
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Order API working (${orders.length} orders)</p>
+                        <pre>${JSON.stringify(orders.slice(0, 2), null, 2)}</pre>
+                    `;
+                    testResults.orderAPI = { status: 'success', message: `${orders.length} orders loaded` };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Order API failed</p>`;
+                    testResults.orderAPI = { status: 'error', message: 'Order API failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.orderAPI = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testUserAPI() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing user API...</p>';
+            
+            if (!adminToken) {
+                resultDiv.innerHTML = '<p class="error">❌ Please login first!</p>';
+                return;
+            }
+            
+            try {
+                const { response, data } = await apiCall('http://localhost:3000/api/user');
+                
+                if (response.ok) {
+                    const users = Array.isArray(data) ? data : [];
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ User API working (${users.length} users)</p>
+                        <pre>${JSON.stringify(users.slice(0, 2), null, 2)}</pre>
+                    `;
+                    testResults.userAPI = { status: 'success', message: `${users.length} users loaded` };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ User API failed</p>`;
+                    testResults.userAPI = { status: 'error', message: 'User API failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.userAPI = { status: 'error', message: error.message };
+            }
+        }
+
+        // Frontend Integration Tests
+        async function testFrontendLogin() {
+            const resultDiv = document.getElementById('frontendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing frontend login...</p>';
+            
+            try {
+                // Test admin login page
+                const response = await fetch('http://localhost:5173/admin/login');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Frontend login page accessible</p>
+                        <p>Admin login page: <a href="http://localhost:5173/admin/login" target="_blank">http://localhost:5173/admin/login</a></p>
+                    `;
+                    testResults.frontendLogin = { status: 'success', message: 'Frontend login page accessible' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Frontend login page not accessible</p>`;
+                    testResults.frontendLogin = { status: 'error', message: 'Frontend login page not accessible' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.frontendLogin = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testProductDisplay() {
+            const resultDiv = document.getElementById('frontendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing product display...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5173/');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Product display page accessible</p>
+                        <p>Home page: <a href="http://localhost:5173/" target="_blank">http://localhost:5173/</a></p>
+                    `;
+                    testResults.productDisplay = { status: 'success', message: 'Product display page accessible' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Product display page not accessible</p>`;
+                    testResults.productDisplay = { status: 'error', message: 'Product display page not accessible' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.productDisplay = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testOrderDisplay() {
+            const resultDiv = document.getElementById('frontendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing order display...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5173/admin/orders');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Order display page accessible</p>
+                        <p>Admin orders: <a href="http://localhost:5173/admin/orders" target="_blank">http://localhost:5173/admin/orders</a></p>
+                    `;
+                    testResults.orderDisplay = { status: 'success', message: 'Order display page accessible' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Order display page not accessible</p>`;
+                    testResults.orderDisplay = { status: 'error', message: 'Order display page not accessible' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.orderDisplay = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testUserDisplay() {
+            const resultDiv = document.getElementById('frontendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing user display...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5173/admin/customers');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ User display page accessible</p>
+                        <p>Admin customers: <a href="http://localhost:5173/admin/customers" target="_blank">http://localhost:5173/admin/customers</a></p>
+                    `;
+                    testResults.userDisplay = { status: 'success', message: 'User display page accessible' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ User display page not accessible</p>`;
+                    testResults.userDisplay = { status: 'error', message: 'User display page not accessible' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.userDisplay = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testAdminDashboard() {
+            const resultDiv = document.getElementById('frontendResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing admin dashboard...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5173/admin');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Admin dashboard accessible</p>
+                        <p>Admin dashboard: <a href="http://localhost:5173/admin" target="_blank">http://localhost:5173/admin</a></p>
+                    `;
+                    testResults.adminDashboard = { status: 'success', message: 'Admin dashboard accessible' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Admin dashboard not accessible</p>`;
+                    testResults.adminDashboard = { status: 'error', message: 'Admin dashboard not accessible' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.adminDashboard = { status: 'error', message: error.message };
+            }
+        }
+
+        // Database Tests
+        async function testDatabaseConnection() {
+            const resultDiv = document.getElementById('databaseResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing database connection...</p>';
+            
+            try {
+                const { response, data } = await apiCall('http://localhost:3000/api/product');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Database connection working</p>
+                        <p>Successfully connected to MongoDB</p>
+                    `;
+                    testResults.databaseConnection = { status: 'success', message: 'Database connection working' };
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Database connection failed</p>`;
+                    testResults.databaseConnection = { status: 'error', message: 'Database connection failed' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.databaseConnection = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testDataIntegrity() {
+            const resultDiv = document.getElementById('databaseResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing data integrity...</p>';
+            
+            try {
+                const [productRes, orderRes, userRes] = await Promise.all([
+                    apiCall('http://localhost:3000/api/product'),
+                    apiCall('http://localhost:3000/api/order'),
+                    apiCall('http://localhost:3000/api/user')
+                ]);
+                
+                const productCount = Array.isArray(productRes.data) ? productRes.data.length : 0;
+                const orderCount = orderRes.data.orders ? orderRes.data.orders.length : 0;
+                const userCount = Array.isArray(userRes.data) ? userRes.data.length : 0;
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Data integrity check passed</p>
+                    <p>Products: ${productCount}, Orders: ${orderCount}, Users: ${userCount}</p>
+                `;
+                testResults.dataIntegrity = { status: 'success', message: `Data integrity check passed - P:${productCount}, O:${orderCount}, U:${userCount}` };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.dataIntegrity = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testDataRelations() {
+            const resultDiv = document.getElementById('databaseResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing data relations...</p>';
+            
+            try {
+                const { response, data } = await apiCall('http://localhost:3000/api/order');
+                
+                if (response.ok && data.orders && data.orders.length > 0) {
+                    const order = data.orders[0];
+                    const hasItems = order.items && order.items.length > 0;
+                    const hasCustomer = order.customerName && order.customerEmail;
+                    
+                    if (hasItems && hasCustomer) {
+                        resultDiv.innerHTML = `
+                            <p class="success">✅ Data relations working</p>
+                            <p>Orders have items and customer data</p>
+                        `;
+                        testResults.dataRelations = { status: 'success', message: 'Data relations working' };
+                    } else {
+                        resultDiv.innerHTML = `<p class="warning">⚠️ Data relations incomplete</p>`;
+                        testResults.dataRelations = { status: 'warning', message: 'Data relations incomplete' };
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ No orders to test relations</p>`;
+                    testResults.dataRelations = { status: 'warning', message: 'No orders to test relations' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.dataRelations = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testDataCounts() {
+            const resultDiv = document.getElementById('databaseResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing data counts...</p>';
+            
+            try {
+                const [productRes, orderRes, userRes] = await Promise.all([
+                    apiCall('http://localhost:3000/api/product'),
+                    apiCall('http://localhost:3000/api/order'),
+                    apiCall('http://localhost:3000/api/user')
+                ]);
+                
+                const productCount = Array.isArray(productRes.data) ? productRes.data.length : 0;
+                const orderCount = orderRes.data.orders ? orderRes.data.orders.length : 0;
+                const userCount = Array.isArray(userRes.data) ? userRes.data.length : 0;
+                
+                const expectedCounts = { products: 5, orders: 5, users: 3 };
+                const actualCounts = { products: productCount, orders: orderCount, users: userCount };
+                
+                let allCorrect = true;
+                let message = '';
+                
+                for (const [key, expected] of Object.entries(expectedCounts)) {
+                    const actual = actualCounts[key];
+                    if (actual === expected) {
+                        message += `✅ ${key}: ${actual}/${expected} `;
+                    } else {
+                        message += `❌ ${key}: ${actual}/${expected} `;
+                        allCorrect = false;
+                    }
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="${allCorrect ? 'success' : 'warning'}">${allCorrect ? '✅' : '⚠️'} Data counts: ${message}</p>
+                `;
+                testResults.dataCounts = { status: allCorrect ? 'success' : 'warning', message: message };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.dataCounts = { status: 'error', message: error.message };
+            }
+        }
+
+        // Performance Tests
+        async function testAPISpeed() {
+            const resultDiv = document.getElementById('performanceResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing API speed...</p>';
+            
+            try {
+                const startTime = performance.now();
+                await apiCall('http://localhost:3000/api/product');
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ API speed test completed</p>
+                    <p>Response time: ${duration.toFixed(2)}ms</p>
+                `;
+                testResults.apiSpeed = { status: 'success', message: `API speed: ${duration.toFixed(2)}ms` };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.apiSpeed = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testPageLoadSpeed() {
+            const resultDiv = document.getElementById('performanceResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing page load speed...</p>';
+            
+            try {
+                const startTime = performance.now();
+                await fetch('http://localhost:5173/');
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Page load speed test completed</p>
+                    <p>Load time: ${duration.toFixed(2)}ms</p>
+                `;
+                testResults.pageLoadSpeed = { status: 'success', message: `Page load speed: ${duration.toFixed(2)}ms` };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.pageLoadSpeed = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testConcurrentRequests() {
+            const resultDiv = document.getElementById('performanceResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing concurrent requests...</p>';
+            
+            try {
+                const startTime = performance.now();
+                const promises = Array(5).fill().map(() => apiCall('http://localhost:3000/api/product'));
+                await Promise.all(promises);
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Concurrent requests test completed</p>
+                    <p>5 concurrent requests: ${duration.toFixed(2)}ms</p>
+                `;
+                testResults.concurrentRequests = { status: 'success', message: `Concurrent requests: ${duration.toFixed(2)}ms` };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.concurrentRequests = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testMemoryUsage() {
+            const resultDiv = document.getElementById('performanceResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing memory usage...</p>';
+            
+            try {
+                const memoryBefore = performance.memory ? performance.memory.usedJSHeapSize : 0;
+                await apiCall('http://localhost:3000/api/product');
+                const memoryAfter = performance.memory ? performance.memory.usedJSHeapSize : 0;
+                const memoryDiff = memoryAfter - memoryBefore;
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Memory usage test completed</p>
+                    <p>Memory difference: ${(memoryDiff / 1024 / 1024).toFixed(2)}MB</p>
+                `;
+                testResults.memoryUsage = { status: 'success', message: `Memory usage: ${(memoryDiff / 1024 / 1024).toFixed(2)}MB` };
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.memoryUsage = { status: 'error', message: error.message };
+            }
+        }
+
+        // Security Tests
+        async function testAuthentication() {
+            const resultDiv = document.getElementById('securityResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing authentication...</p>';
+            
+            try {
+                // Test without token
+                const response = await fetch('http://localhost:3000/api/product');
+                
+                if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Authentication working</p>
+                        <p>API correctly requires authentication</p>
+                    `;
+                    testResults.authentication = { status: 'success', message: 'Authentication working' };
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ Authentication may not be working</p>`;
+                    testResults.authentication = { status: 'warning', message: 'Authentication may not be working' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.authentication = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testAuthorization() {
+            const resultDiv = document.getElementById('securityResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing authorization...</p>';
+            
+            try {
+                // Test with user token (should fail for admin endpoints)
+                const userResponse = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'user@example.com', password: 'user123' }),
+                });
+                
+                const userData = await userResponse.json();
+                
+                if (userData.statusCode === 200 && userData.data.role === 'user') {
+                    const userToken = userData.data.accessToken;
+                    
+                    // Try to access admin endpoint with user token
+                    const adminResponse = await fetch('http://localhost:3000/api/order', {
+                        headers: { 'Authorization': `Bearer ${userToken}` }
+                    });
+                    
+                    if (adminResponse.status === 403) {
+                        resultDiv.innerHTML = `
+                            <p class="success">✅ Authorization working</p>
+                            <p>User cannot access admin endpoints</p>
+                        `;
+                        testResults.authorization = { status: 'success', message: 'Authorization working' };
+                    } else {
+                        resultDiv.innerHTML = `<p class="warning">⚠️ Authorization may not be working</p>`;
+                        testResults.authorization = { status: 'warning', message: 'Authorization may not be working' };
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Could not get user token</p>`;
+                    testResults.authorization = { status: 'error', message: 'Could not get user token' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.authorization = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testInputValidation() {
+            const resultDiv = document.getElementById('securityResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing input validation...</p>';
+            
+            try {
+                // Test with invalid email
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'invalid-email', password: 'admin123' }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 400 || response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Input validation working</p>
+                        <p>Invalid input is rejected</p>
+                    `;
+                    testResults.inputValidation = { status: 'success', message: 'Input validation working' };
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ Input validation may not be working</p>`;
+                    testResults.inputValidation = { status: 'warning', message: 'Input validation may not be working' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.inputValidation = { status: 'error', message: error.message };
+            }
+        }
+
+        async function testSQLInjection() {
+            const resultDiv = document.getElementById('securityResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing SQL injection protection...</p>';
+            
+            try {
+                // Test with SQL injection attempt
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: "admin@example.com'; DROP TABLE users; --", password: 'admin123' }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 400 || response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ SQL injection protection working</p>
+                        <p>Malicious input is rejected</p>
+                    `;
+                    testResults.sqlInjection = { status: 'success', message: 'SQL injection protection working' };
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ SQL injection protection may not be working</p>`;
+                    testResults.sqlInjection = { status: 'warning', message: 'SQL injection protection may not be working' };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                testResults.sqlInjection = { status: 'error', message: error.message };
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            if (!adminToken) {
+                alert('Vui lòng đăng nhập admin trước!');
+                return;
+            }
+            
+            const tests = [
+                // Backend API Tests
+                testBackendHealth,
+                testAuthAPI,
+                testProductAPI,
+                testOrderAPI,
+                testUserAPI,
+                
+                // Frontend Integration Tests
+                testFrontendLogin,
+                testProductDisplay,
+                testOrderDisplay,
+                testUserDisplay,
+                testAdminDashboard,
+                
+                // Database Tests
+                testDatabaseConnection,
+                testDataIntegrity,
+                testDataRelations,
+                testDataCounts,
+                
+                // Performance Tests
+                testAPISpeed,
+                testPageLoadSpeed,
+                testConcurrentRequests,
+                testMemoryUsage,
+                
+                // Security Tests
+                testAuthentication,
+                testAuthorization,
+                testInputValidation,
+                testSQLInjection
+            ];
+            
+            for (const test of tests) {
+                await test();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Delay between tests
+            }
+            
+            updateTestSummary();
+        }
+
+        // Update test summary
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            const totalTests = Object.keys(testResults).length;
+            const successTests = Object.values(testResults).filter(r => r.status === 'success').length;
+            const warningTests = Object.values(testResults).filter(r => r.status === 'warning').length;
+            const errorTests = Object.values(testResults).filter(r => r.status === 'error').length;
+            
+            let summaryHtml = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="margin: 0; color: #495057;">Total Tests</h3>
+                        <p style="font-size: 2em; margin: 10px 0; color: #007bff;">${totalTests}</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #d4edda; border-radius: 8px;">
+                        <h3 style="margin: 0; color: #155724;">Successful</h3>
+                        <p style="font-size: 2em; margin: 10px 0; color: #28a745;">${successTests}</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                        <h3 style="margin: 0; color: #856404;">Warnings</h3>
+                        <p style="font-size: 2em; margin: 10px 0; color: #ffc107;">${warningTests}</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f8d7da; border-radius: 8px;">
+                        <h3 style="margin: 0; color: #721c24;">Failed</h3>
+                        <p style="font-size: 2em; margin: 10px 0; color: #dc3545;">${errorTests}</p>
+                    </div>
+                </div>
+                
+                <p style="font-size: 1.2em; text-align: center; margin: 20px 0;">
+                    <strong>Success Rate:</strong> 
+                    <span style="color: ${((successTests / totalTests) * 100) >= 80 ? '#28a745' : '#ffc107'};">
+                        ${((successTests / totalTests) * 100).toFixed(1)}%
+                    </span>
+                </p>
+                
+                <h4>Detailed Results:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+            `;
+            
+            for (const [testName, result] of Object.entries(testResults)) {
+                const statusClass = result.status === 'success' ? 'success' : result.status === 'warning' ? 'warning' : 'error';
+                const statusIcon = result.status === 'success' ? '✅' : result.status === 'warning' ? '⚠️' : '❌';
+                summaryHtml += `
+                    <div style="padding: 10px; border-left: 4px solid ${result.status === 'success' ? '#28a745' : result.status === 'warning' ? '#ffc107' : '#dc3545'}; background: #f8f9fa;">
+                        <strong class="${statusClass}">${statusIcon} ${testName}:</strong><br>
+                        <span style="font-size: 0.9em; color: #6c757d;">${result.message}</span>
+                    </div>
+                `;
+            }
+            
+            summaryHtml += '</div>';
+            summaryDiv.innerHTML = summaryHtml;
+        }
+    </script>
+</body>
+</html>

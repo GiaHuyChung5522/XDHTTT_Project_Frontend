@@ -1,5 +1,5 @@
 // src/lib/api.js
-const baseURL = 'http://localhost:3000/api';
+const baseURL = 'http://localhost:3000';
 
 // Lấy Bearer token từ localStorage (nếu có)
 function getAuthHeader() {
@@ -14,7 +14,17 @@ function getAuthHeader() {
     
     // Fallback: lấy từ localStorage.token
     const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+    
+    // Admin token fallback
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+      return { Authorization: `Bearer ${adminToken}` };
+    }
+    
+    return {};
   } catch {
     return {};
   }

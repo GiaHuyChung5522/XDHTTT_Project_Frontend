@@ -187,7 +187,7 @@ const AppContent: React.FC = () => {
         <CartProvider>
           <QueryProvider>
             <RouterProvider />
-            <NotificationSystem />
+            {/* NotificationSystem removed from here to avoid duplicates */}
             <FloatingContactButtons />
           </QueryProvider>
         </CartProvider>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { initializeLocalStorageData, getSafeString, getSafeNumber, getSafeArray } from '../../../utils/initData';
 import { adminService } from '../../../services/adminService';
 import {
@@ -20,6 +20,10 @@ import {
   message,
   Spin,
   Pagination,
+  Form,
+  InputNumber,
+  DatePicker,
+  Alert,
 } from 'antd';
 import {
   SearchOutlined,
@@ -34,6 +38,14 @@ import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+// API response interface
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
 
 interface CustomerOrder {
   id: string;
@@ -236,25 +248,67 @@ const mockCustomers: Customer[] = [
 ];
 
 const Customers: React.FC = () => {
+  // State management with better organization
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  
+  // Pagination state
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
+  
+  // Filter states
   const [filters, setFilters] = useState({
     search: '',
     role: '',
     status: '',
   });
+  
+  // Modal states
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  // Load customers from API
-  const loadCustomers = async (page = 1, pageSize = 10) => {
+  // Error handling state
+  const [error, setError] = useState<string | null>(null);
+
+  // Utility function to transform API customer data
+  const transformCustomerData = useCallback((customer: any): Customer => {
+    console.log('🔄 Transforming customer:', customer);
+    
+    return {
+      key: customer._id || customer.id || Math.random().toString(),
+      id: customer._id || customer.id || Math.random().toString(),
+      email: getSafeString(customer.email) || 'Chưa có email',
+      firstName: getSafeString(customer.firstName) || '',
+      lastName: getSafeString(customer.lastName) || '',
+      fullName: `${getSafeString(customer.firstName)} ${getSafeString(customer.lastName)}`.trim() || getSafeString(customer.email) || 'Khách hàng',
+      phone: getSafeString(customer.phone || customer.telephone) || 'Chưa cập nhật',
+      address: getSafeString(customer.address) || 'Chưa cập nhật',
+      role: getSafeString(customer.role) || 'USER',
+      gender: getSafeString(customer.gender) || 'MALE',
+      birth: customer.birth ? new Date(customer.birth) : undefined,
+      avatar: customer.avatar,
+      createdAt: customer.createdAt || new Date().toISOString(),
+      updatedAt: customer.updatedAt || new Date().toISOString(),
+      status: customer.status === 'active' ? 'active' : 'inactive',
+      // Mock computed fields for now - will be replaced with real data
+      totalOrders: Math.floor(Math.random() * 20) + 1,
+      totalSpent: Math.floor(Math.random() * 10000000) + 1000000,
+      lastOrderDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN'),
+      orders: [],
+    };
+  }, []);
+
+  // Enhanced load customers function with better error handling
+  const loadCustomers = useCallback(async (page: number = 1, pageSize: number = 10) => {
     setLoading(true);
+    setError(null);
+    
     try {
+      console.log('🔄 Loading customers...');
       const result = await adminService.getUsers({
         page,
         limit: pageSize,
@@ -263,98 +317,131 @@ const Customers: React.FC = () => {
         status: filters.status,
       });
 
-      if (result.success) {
-        // Add computed fields for display
-        const customersWithStats = result.data.users.map(customer => ({
-          ...customer,
-          totalOrders: Math.floor(Math.random() * 20) + 1, // Mock data for now
-          totalSpent: Math.floor(Math.random() * 10000000) + 1000000, // Mock data for now
-          lastOrderDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN'),
-          orders: [], // Mock empty orders for now
-          status: customer.status as 'active' | 'inactive',
-        }));
+      if (result.success && result.data) {
+        console.log('📦 Raw API response:', result.data);
         
-        setCustomers(customersWithStats);
+        // Handle different response structures
+        const responseData = result.data as any;
+        let customersArray = [];
+        
+        if (responseData.users && Array.isArray(responseData.users)) {
+          customersArray = responseData.users;
+        } else if (Array.isArray(responseData)) {
+          customersArray = responseData;
+        } else if (responseData.data && Array.isArray(responseData.data)) {
+          customersArray = responseData.data;
+        } else {
+          console.warn('⚠️ Unexpected data structure:', responseData);
+          customersArray = [];
+        }
+        
+        const transformedCustomers = customersArray.map(transformCustomerData);
+        
+        setCustomers(transformedCustomers);
         setPagination({
-          current: result.data.pagination.page,
-          pageSize: result.data.pagination.limit,
-          total: result.data.pagination.total,
+          current: responseData.pagination?.page || page,
+          pageSize: responseData.pagination?.limit || pageSize,
+          total: responseData.pagination?.total || transformedCustomers.length,
         });
+        
+        console.log(`✅ Loaded ${transformedCustomers.length} customers`);
+        
+        // If no customers loaded, show mock data as fallback
+        if (transformedCustomers.length === 0) {
+          console.log('⚠️ No customers from API, using mock data');
+          setCustomers(mockCustomers.slice(0, 5));
+          setPagination(prev => ({
+            ...prev,
+            current: page,
+            pageSize,
+            total: 5,
+          }));
+          console.log('✅ Using 5 mock customers');
+        }
       } else {
+        const errorMsg = (result as any).error || 'Unknown error occurred';
+        console.error('❌ Failed to load customers:', errorMsg);
+        setError(`Không thể tải danh sách khách hàng: ${errorMsg}`);
         message.error('Không thể tải danh sách khách hàng');
       }
     } catch (error) {
-      console.error('Error loading customers:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Error loading customers:', errorMsg);
+      setError(`Lỗi khi tải danh sách khách hàng: ${errorMsg}`);
       message.error('Lỗi khi tải danh sách khách hàng');
     } finally {
       setLoading(false);
     }
-  };
+  }, [transformCustomerData, filters]);
 
+  // Load customers on component mount
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [loadCustomers]);
 
+  // Reload customers when filters change
   useEffect(() => {
-    loadCustomers(pagination.current, pagination.pageSize);
-  }, [filters]);
+    if (filters.search || filters.role || filters.status) {
+      loadCustomers(1, pagination.pageSize);
+    }
+  }, [filters, loadCustomers, pagination.pageSize]);
 
-  const handleViewCustomer = (customer: Customer) => {
+  // Clear error when modal opens/closes
+  useEffect(() => {
+    if (!isDetailModalVisible) {
+      setError(null);
+    }
+  }, [isDetailModalVisible]);
+
+  // Enhanced view customer function
+  const handleViewCustomer = useCallback((customer: Customer) => {
+    console.log('👁️ Viewing customer:', customer);
     setSelectedCustomer(customer);
     setIsDetailModalVisible(true);
-  };
+  }, []);
 
-  const handleUpdateStatus = async (customerId: string, newStatus: string) => {
+  // Enhanced update status function
+  const handleUpdateStatus = useCallback(async (customerId: string, newStatus: string) => {
+    setUpdating(true);
+    setError(null);
+    
     try {
+      console.log('🔄 Updating customer status:', customerId, newStatus);
       const result = await adminService.updateUser(customerId, { status: newStatus });
+      
       if (result.success) {
-        message.success('Đã cập nhật trạng thái khách hàng');
-        loadCustomers(pagination.current, pagination.pageSize);
+        message.success('Đã cập nhật trạng thái khách hàng thành công');
+        await loadCustomers(pagination.current, pagination.pageSize);
       } else {
-        message.error('Không thể cập nhật trạng thái');
+        const errorMessage = result.error || 'Không thể cập nhật trạng thái';
+        setError(errorMessage);
+        message.error(errorMessage);
       }
     } catch (error) {
-      console.error('Error updating customer status:', error);
-      message.error('Lỗi khi cập nhật trạng thái');
+      const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
+      console.error('❌ Error updating customer status:', errorMessage);
+      setError(errorMessage);
+      message.error(`Lỗi khi cập nhật trạng thái: ${errorMessage}`);
+    } finally {
+      setUpdating(false);
     }
-  };
+  }, [pagination, loadCustomers]);
 
-  const handleTableChange = (pagination: any) => {
+  // Enhanced table change handler
+  const handleTableChange = useCallback((pagination: any) => {
     loadCustomers(pagination.current, pagination.pageSize);
-  };
+  }, [loadCustomers]);
 
-  const handleFilterChange = (key: string, value: string) => {
+  // Enhanced filter change handler
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'green';
-      case 'inactive':
-        return 'orange';
-      default:
-        return 'default';
-    }
-  };
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    setFilters({ search: '', role: '', status: '' });
+  }, []);
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Hoạt động';
-      case 'inactive':
-        return 'Không hoạt động';
-      default:
-        return status;
-    }
-  };
-
-  const getCustomerLevel = (totalSpent: number) => {
-    if (totalSpent >= 15000000) return { level: 'VIP', color: '#722ed1' };
-    if (totalSpent >= 5000000) return { level: 'Gold', color: '#fa8c16' };
-    if (totalSpent >= 1000000) return { level: 'Silver', color: '#13c2c2' };
-    return { level: 'Bronze', color: '#52c41a' };
-  };
 
   const columns: ColumnsType<Customer> = [
     {
@@ -468,6 +555,7 @@ const Customers: React.FC = () => {
             size="small"
             value={record.status}
             style={{ width: 80 }}
+            loading={updating}
             onChange={(value) => handleUpdateStatus(record.id, value)}
           >
             <Option value="active">Hoạt động</Option>
@@ -478,7 +566,37 @@ const Customers: React.FC = () => {
     },
   ];
 
-  const getOrderStatusText = (status: string) => {
+  // Enhanced utility functions with memoization
+  const getStatusColor = useCallback((status: string) => {
+    switch (status) {
+      case 'active':
+        return 'green';
+      case 'inactive':
+        return 'orange';
+      default:
+        return 'default';
+    }
+  }, []);
+
+  const getStatusText = useCallback((status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Hoạt động';
+      case 'inactive':
+        return 'Không hoạt động';
+      default:
+        return status;
+    }
+  }, []);
+
+  const getCustomerLevel = useCallback((totalSpent: number) => {
+    if (totalSpent >= 15000000) return { level: 'VIP', color: '#722ed1' };
+    if (totalSpent >= 5000000) return { level: 'Gold', color: '#fa8c16' };
+    if (totalSpent >= 1000000) return { level: 'Silver', color: '#13c2c2' };
+    return { level: 'Bronze', color: '#52c41a' };
+  }, []);
+
+  const getOrderStatusText = useCallback((status: string) => {
     const statusMap: { [key: string]: string } = {
       'pending': 'Chờ xác nhận',
       'confirmed': 'Đã xác nhận',
@@ -488,9 +606,9 @@ const Customers: React.FC = () => {
       'cancelled': 'Đã hủy',
     };
     return statusMap[status] || status;
-  };
+  }, []);
 
-  const getOrderStatusColor = (status: string) => {
+  const getOrderStatusColor = useCallback((status: string) => {
     const colorMap: { [key: string]: string } = {
       'pending': 'orange',
       'confirmed': 'blue',
@@ -500,7 +618,7 @@ const Customers: React.FC = () => {
       'cancelled': 'red',
     };
     return colorMap[status] || 'default';
-  };
+  }, []);
 
   return (
     <div>
@@ -511,6 +629,19 @@ const Customers: React.FC = () => {
         </div> */}
 
         <Card>
+          {/* Error Alert */}
+          {error && (
+            <Alert
+              message="Lỗi"
+              description={error}
+              type="error"
+              showIcon
+              closable
+              onClose={() => setError(null)}
+              style={{ marginBottom: '16px' }}
+            />
+          )}
+
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col xs={24} sm={12}>
               <Input
@@ -546,22 +677,30 @@ const Customers: React.FC = () => {
             </Col>
           </Row>
 
+          <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Col span={24} style={{ textAlign: 'right' }}>
+              <Button onClick={clearFilters}>
+                Xóa bộ lọc
+              </Button>
+            </Col>
+          </Row>
+
           <Spin spinning={loading}>
-            <Table
-              columns={columns}
+          <Table
+            columns={columns}
               dataSource={customers}
-              pagination={{
+            pagination={{
                 current: pagination.current,
                 pageSize: pagination.pageSize,
                 total: pagination.total,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} của ${total} khách hàng`,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} của ${total} khách hàng`,
                 onChange: handleTableChange,
-              }}
-              scroll={{ x: 900 }}
-            />
+            }}
+            scroll={{ x: 900 }}
+          />
           </Spin>
         </Card>
 
@@ -656,32 +795,32 @@ const Customers: React.FC = () => {
                 <Col span={12}>
                   <Card size="small" title="Lịch sử đơn hàng gần đây">
                     {selectedCustomer.orders && selectedCustomer.orders.length > 0 ? (
-                      <List
-                        size="small"
-                        dataSource={selectedCustomer.orders}
-                        renderItem={(order) => (
-                          <List.Item>
-                            <List.Item.Meta
-                              title={
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Text strong>{order.id}</Text>
-                                  <Tag color={getOrderStatusColor(order.status)} style={{ fontSize: 12, lineHeight: '16px', padding: '0 6px' }}>
-                                    {getOrderStatusText(order.status)}
-                                  </Tag>
-                                </div>
-                              }
-                              description={
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                  <Text type="secondary" style={{ fontSize: 12 }}>{order.date}</Text>
-                                  <Text strong style={{ color: '#3f8600' }}>
-                                    ₫{order.total.toLocaleString()}
-                                  </Text>
-                                </div>
-                              }
-                            />
-                          </List.Item>
-                        )}
-                      />
+                    <List
+                      size="small"
+                      dataSource={selectedCustomer.orders}
+                      renderItem={(order) => (
+                        <List.Item>
+                          <List.Item.Meta
+                            title={
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Text strong>{order.id}</Text>
+                                <Tag color={getOrderStatusColor(order.status)} style={{ fontSize: 12, lineHeight: '16px', padding: '0 6px' }}>
+                                  {getOrderStatusText(order.status)}
+                                </Tag>
+                              </div>
+                            }
+                            description={
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Text type="secondary" style={{ fontSize: 12 }}>{order.date}</Text>
+                                <Text strong style={{ color: '#3f8600' }}>
+                                  ₫{order.total.toLocaleString()}
+                                </Text>
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      )}
+                    />
                     ) : (
                       <div style={{ textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
                         <Text type="secondary">Chưa có đơn hàng nào</Text>
