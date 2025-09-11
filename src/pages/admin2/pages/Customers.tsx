@@ -77,56 +77,6 @@ interface Customer {
   orders?: CustomerOrder[];
 }
 
-// Function to get real customers from localStorage
-const getRealCustomers = (): Customer[] => {
-  try {
-    const users = localStorage.getItem('users');
-    const userData = users ? JSON.parse(users) : [];
-    
-    const orders = localStorage.getItem('orders');
-    const orderData = orders ? JSON.parse(orders) : [];
-    
-    return userData.map((user: any, index: number) => {
-      const userOrders = orderData.filter((order: any) => 
-        order.customerInfo?.email === user.email || order.customerInfo?.phone === user.telephone
-      );
-      
-      const totalSpent = userOrders
-        .filter((order: any) => order.status === 'delivered')
-        .reduce((sum: number, order: any) => sum + order.total, 0);
-      
-      const lastOrder = userOrders.length > 0 
-        ? userOrders.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-        : null;
-      
-      return {
-        key: getSafeString(user.id) || index.toString(),
-        id: getSafeString(user.id) || index.toString(),
-        name: `${getSafeString(user.firstName)} ${getSafeString(user.lastName)}`.trim() || getSafeString(user.email) || 'Khách hàng',
-        email: getSafeString(user.email) || 'Chưa có email',
-        phone: getSafeString(user.telephone) || 'Chưa cập nhật',
-        address: getSafeString(user.address) || 'Chưa cập nhật',
-        totalOrders: userOrders.length,
-        totalSpent: totalSpent,
-        lastOrderDate: lastOrder ? new Date(lastOrder.createdAt).toLocaleDateString('vi-VN') : 'Chưa có đơn hàng',
-        status: userOrders.length > 0 ? 'active' : 'inactive',
-        joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN'),
-        orders: userOrders.map((order: any) => ({
-          id: getSafeString(order.orderId) || 'N/A',
-          date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
-          total: getSafeNumber(order.total),
-          status: order.status === 'pending' ? 'Chờ xác nhận' :
-                  order.status === 'confirmed' ? 'Đã xác nhận' :
-                  order.status === 'shipped' ? 'Đang giao hàng' :
-                  order.status === 'delivered' ? 'Đã giao hàng' : 'Đã hủy',
-        })),
-      };
-    });
-  } catch (error) {
-    return [];
-  }
-};
-
 // Mock data (fallback)
 const mockCustomers: Customer[] = [
   {
@@ -346,17 +296,16 @@ const Customers: React.FC = () => {
         
         console.log(`✅ Loaded ${transformedCustomers.length} customers`);
         
-        // If no customers loaded, show mock data as fallback
+        // If no customers loaded, show empty state
         if (transformedCustomers.length === 0) {
-          console.log('⚠️ No customers from API, using mock data');
-          setCustomers(mockCustomers.slice(0, 5));
+          console.log('⚠️ No customers from API');
+          setCustomers([]);
           setPagination(prev => ({
             ...prev,
             current: page,
             pageSize,
-            total: 5,
+            total: 0,
           }));
-          console.log('✅ Using 5 mock customers');
         }
       } else {
         const errorMsg = (result as any).error || 'Unknown error occurred';

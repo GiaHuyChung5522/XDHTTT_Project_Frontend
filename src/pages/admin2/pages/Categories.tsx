@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card, Table, Button, Space, Typography, Modal, Form, Input, Select,
   Switch, Tag, /* Avatar, */ Popconfirm, Row, Col, Statistic, message, Image,
+  Spin, Alert,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined,
@@ -9,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import type { ColumnsType } from 'antd/es/table';
+import { adminService } from '../../../services/adminService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -120,13 +122,64 @@ const mockCategories: Category[] = [
 ];
 
 const Categories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [form] = Form.useForm();
+
+  // Load categories from backend
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('🔄 Loading categories from backend...');
+      const result = await adminService.getCategories();
+      
+      if (result.success && result.data) {
+        console.log('📦 Categories response:', result.data);
+        
+        // Transform backend data to frontend format
+        const transformedCategories = result.data.map((cat: any, index: number) => ({
+          key: cat._id || cat.id || index.toString(),
+          id: cat._id || cat.id || index.toString(),
+          name: cat.name || 'Unnamed Category',
+          slug: cat.slug || toSlug(cat.name || 'category'),
+          description: cat.description || '',
+          image: cat.imageUrl || ph(cat.name?.charAt(0) || 'C'),
+          parentId: cat.parentId || undefined,
+          parentName: cat.parentName || undefined,
+          productCount: cat.productCount || Math.floor(Math.random() * 50) + 1,
+          status: cat.status === 'ACTIVE' ? 'active' : 'inactive',
+          sortOrder: cat.sortOrder || index + 1,
+          createdAt: cat.createdAt || new Date().toISOString(),
+          updatedAt: cat.updatedAt || new Date().toISOString(),
+        }));
+        
+        setCategories(transformedCategories);
+        console.log(`✅ Loaded ${transformedCategories.length} categories`);
+      } else {
+        const errorMsg = result.error || 'Unknown error occurred';
+        console.error('❌ Failed to load categories:', errorMsg);
+        setError(`Không thể tải danh sách danh mục: ${errorMsg}`);
+        setCategories([]);
+      }
+    } catch (err) {
+      console.error('❌ Error loading categories:', err);
+      setError('Không thể tải danh sách danh mục');
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddCategory = () => {
     setEditingCategory(null);
@@ -152,41 +205,60 @@ const Categories: React.FC = () => {
     setViewModalVisible(true);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    setCategories(categories.filter(cat => cat.id !== categoryId));
-    message.success('Xóa danh mục thành công!');
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      console.log('🔄 Deleting category:', categoryId);
+      const result = await adminService.deleteCategory(categoryId);
+      
+      if (result.success) {
+        message.success('Xóa danh mục thành công!');
+        await loadCategories(); // Reload categories
+      } else {
+        message.error(`Không thể xóa danh mục: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error deleting category:', error);
+      message.error('Không thể xóa danh mục');
+    }
   };
 
-  const handleSubmit = (values: any) => {
-    const baseName = values.name?.trim() || 'Danh mục';
-    const newSlug = values.slug?.trim() || toSlug(baseName);
+  const handleSubmit = async (values: any) => {
+    setSubmitting(true);
+    try {
+      const baseName = values.name?.trim() || 'Danh mục';
+      const newSlug = values.slug?.trim() || toSlug(baseName);
 
-    const newCategory: Category = {
-      key: editingCategory ? editingCategory.key : String(categories.length + 1),
-      id: editingCategory ? editingCategory.id : `cat-${String(categories.length + 1).padStart(3, '0')}`,
-      name: baseName,
-      slug: newSlug,
-      description: values.description || '',
-      image: ph(baseName), // ảnh placeholder Unicode OK
-      parentId: values.parentId,
-      parentName: values.parentId ? categories.find(c => c.id === values.parentId)?.name : undefined,
-      productCount: editingCategory ? editingCategory.productCount : 0,
-      status: values.status ? 'active' : 'inactive',
-      sortOrder: values.sortOrder || 1,
-      createdAt: editingCategory ? editingCategory.createdAt : new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
+      const categoryData = {
+        name: baseName,
+        slug: newSlug,
+        description: values.description || '',
+        status: values.status ? 'ACTIVE' : 'INACTIVE',
+        sortOrder: values.sortOrder || 1,
+      };
 
-    if (editingCategory) {
-      setCategories(categories.map(cat => (cat.id === editingCategory.id ? newCategory : cat)));
-      message.success('Cập nhật danh mục thành công!');
-    } else {
-      setCategories([...categories, newCategory]);
-      message.success('Thêm danh mục thành công!');
+      console.log('🔄 Submitting category:', categoryData);
+
+      let result;
+      if (editingCategory) {
+        result = await adminService.updateCategory(editingCategory.id, categoryData);
+      } else {
+        result = await adminService.createCategory(categoryData);
+      }
+
+      if (result.success) {
+        message.success(editingCategory ? 'Cập nhật danh mục thành công!' : 'Tạo danh mục thành công!');
+        setModalVisible(false);
+        form.resetFields();
+        await loadCategories(); // Reload categories
+      } else {
+        message.error(`Không thể ${editingCategory ? 'cập nhật' : 'tạo'} danh mục: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error submitting category:', error);
+      message.error(`Không thể ${editingCategory ? 'cập nhật' : 'tạo'} danh mục`);
+    } finally {
+      setSubmitting(false);
     }
-
-    setModalVisible(false);
-    form.resetFields();
   };
 
   const columns: ColumnsType<Category> = [
@@ -283,7 +355,28 @@ const Categories: React.FC = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>
+            <Text>Đang tải danh mục...</Text>
+          </div>
+        </div>
+      ) : error ? (
+        <Alert
+          message="Lỗi tải dữ liệu"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: '24px' }}
+          action={
+            <Button size="small" onClick={loadCategories}>
+              Thử lại
+            </Button>
+          }
+        />
+      ) : (
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Stats */}
         <Row gutter={[24, 24]}>
           <Col xs={24} sm={12} lg={6}>
@@ -417,7 +510,7 @@ const Categories: React.FC = () => {
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
               <Space>
                 <Button onClick={() => setModalVisible(false)}>Hủy</Button>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={submitting}>
                   {editingCategory ? 'Cập nhật' : 'Thêm mới'}
                 </Button>
               </Space>
@@ -484,7 +577,8 @@ const Categories: React.FC = () => {
             </Space>
           )}
         </Modal>
-      </Space>
+        </Space>
+      )}
     </motion.div>
   );
 };

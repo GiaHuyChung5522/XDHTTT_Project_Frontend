@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -16,6 +16,8 @@ import {
   Col,
   Statistic,
   message,
+  Spin,
+  Alert,
 } from 'antd';
 import {
   PlusOutlined,
@@ -28,6 +30,7 @@ import {
 } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import type { ColumnsType } from 'antd/es/table';
+import { adminService } from '../../../services/adminService';
 
 const { Title, Text } = Typography;
 
@@ -127,32 +130,73 @@ const mockBrands: Brand[] = [
 ];
 
 const Brands: React.FC = () => {
-  const [brands, setBrands] = useState<Brand[]>(mockBrands);
-  const [loading, setLoading] = useState(false);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [form] = Form.useForm();
 
+  // Load brands from backend
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  const loadBrands = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('🔄 Loading brands from backend...');
+      
+      // Get brands from products API
+      const result = await adminService.getProductBrands();
+      
+      if (result.success && result.data) {
+        console.log('📦 Brands response:', result.data);
+        
+        // Transform backend data to frontend format
+        const brandNames = Array.isArray(result.data) ? result.data : [];
+        const transformedBrands = brandNames.map((brandName: string, index: number) => ({
+          key: brandName.toLowerCase().replace(/\s+/g, '-'),
+          id: brandName.toLowerCase().replace(/\s+/g, '-'),
+          name: brandName,
+          slug: brandName.toLowerCase().replace(/\s+/g, '-'),
+          description: `Thương hiệu ${brandName} - Chuyên sản xuất laptop chất lượng cao`,
+          logo: `https://via.placeholder.com/60x60?text=${brandName.slice(0, 2).toUpperCase()}`,
+          website: `https://www.${brandName.toLowerCase().replace(/\s+/g, '')}.com`,
+          country: 'Việt Nam',
+          productCount: Math.floor(Math.random() * 50) + 1, // Mock data
+          status: 'active' as const,
+          featured: index < 3, // First 3 brands are featured
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+        
+        setBrands(transformedBrands);
+        console.log(`✅ Loaded ${transformedBrands.length} brands`);
+      } else {
+        const errorMsg = result.error || 'Unknown error occurred';
+        console.error('❌ Failed to load brands:', errorMsg);
+        setError(`Không thể tải danh sách thương hiệu: ${errorMsg}`);
+        setBrands([]);
+      }
+    } catch (err) {
+      console.error('❌ Error loading brands:', err);
+      setError('Không thể tải danh sách thương hiệu');
+      setBrands([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddBrand = () => {
-    setEditingBrand(null);
-    setModalVisible(true);
-    form.resetFields();
+    message.info('Chức năng thêm thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
   };
 
   const handleEditBrand = (brand: Brand) => {
-    setEditingBrand(brand);
-    setModalVisible(true);
-    form.setFieldsValue({
-      name: brand.name,
-      slug: brand.slug,
-      description: brand.description,
-      website: brand.website,
-      country: brand.country,
-      status: brand.status === 'active',
-      featured: brand.featured,
-    });
+    message.info('Chức năng chỉnh sửa thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
   };
 
   const handleViewBrand = (brand: Brand) => {
@@ -161,35 +205,11 @@ const Brands: React.FC = () => {
   };
 
   const handleDeleteBrand = (brandId: string) => {
-    setBrands(brands.filter(brand => brand.id !== brandId));
-    message.success('Xóa thương hiệu thành công!');
+    message.info('Chức năng xóa thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
   };
 
   const handleSubmit = (values: any) => {
-    const newBrand: Brand = {
-      key: editingBrand ? editingBrand.key : String(brands.length + 1),
-      id: editingBrand ? editingBrand.id : `brand-${String(brands.length + 1).padStart(3, '0')}`,
-      name: values.name,
-      slug: values.slug || (values.name || '').toLowerCase().replace(/\s+/g, '-'),
-      description: values.description || '',
-      logo: 'https://via.placeholder.com/60x60?text=' + values.name.slice(0, 2).toUpperCase(),
-      website: values.website,
-      country: values.country || '',
-      productCount: editingBrand ? editingBrand.productCount : 0,
-      status: values.status ? 'active' : 'inactive',
-      featured: values.featured || false,
-      createdAt: editingBrand ? editingBrand.createdAt : new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-
-    if (editingBrand) {
-      setBrands(brands.map(brand => brand.id === editingBrand.id ? newBrand : brand));
-      message.success('Cập nhật thương hiệu thành công!');
-    } else {
-      setBrands([...brands, newBrand]);
-      message.success('Thêm thương hiệu thành công!');
-    }
-    
+    message.info('Chức năng tạo/cập nhật thương hiệu chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.');
     setModalVisible(false);
     form.resetFields();
   };
@@ -329,7 +349,28 @@ const Brands: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>
+            <Text>Đang tải thương hiệu...</Text>
+          </div>
+        </div>
+      ) : error ? (
+        <Alert
+          message="Lỗi tải dữ liệu"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: '24px' }}
+          action={
+            <Button size="small" onClick={loadBrands}>
+              Thử lại
+            </Button>
+          }
+        />
+      ) : (
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Stats */}
         <Row gutter={[24, 24]}>
           <Col xs={24} sm={12} lg={6}>
@@ -586,7 +627,8 @@ const Brands: React.FC = () => {
             </Space>
           )}
         </Modal>
-      </Space>
+        </Space>
+      )}
     </motion.div>
   );
 };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar, Progress, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Statistic, Typography, Space, Table, List, Avatar, Progress, Button, Spin, Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Column, Line, Pie } from '@ant-design/charts';
 import { motion, type Variants } from 'framer-motion';
@@ -24,31 +24,49 @@ import {
   TeamOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
+import { adminService } from '../../../services/adminService';
 
 const { Title, Text } = Typography;
 
-// Function to get real stats from localStorage
-const getRealStats = () => {
+// Function to get real stats from backend API
+const getRealStats = async () => {
   try {
-    const orders = localStorage.getItem('orders');
-    const orderData = orders ? JSON.parse(orders) : [];
+    console.log('🔄 Loading dashboard stats from backend...');
     
-    const cart = localStorage.getItem('cart');
-    const cartData = cart ? JSON.parse(cart) : [];
+    // Get dashboard stats from backend
+    const dashboardStats = await adminService.getDashboardStats();
     
-    const users = localStorage.getItem('users');
-    const userData = users ? JSON.parse(users) : [];
+    // Get recent orders
+    const ordersResponse = await adminService.getRecentOrders(50);
+    const orderData = ordersResponse.data || [];
     
-    const totalRevenue = orderData
-      .filter((order: any) => order.status === 'delivered')
-      .reduce((sum: number, order: any) => sum + order.total, 0);
+    // Get users data
+    const usersResponse = await adminService.getUsers();
+    const userData = usersResponse.data?.users || [];
     
-    const pendingOrders = orderData.filter((order: any) => order.status === 'pending').length;
-    const totalOrders = orderData.length;
-    const uniqueCustomers = new Set(orderData.map((order: any) => order.customerInfo?.phone)).size;
+    console.log('📊 Dashboard stats loaded:', {
+      dashboardStats,
+      ordersCount: orderData.length,
+      usersCount: userData.length
+    });
     
-    // Calculate total products in cart (active users)
-    const totalProductsInCart = cartData.reduce((sum: number, item: any) => sum + item.quantity, 0);
+    // Calculate metrics from real data
+    const totalRevenue = dashboardStats.data?.totalRevenue || 0;
+    const totalOrders = dashboardStats.data?.totalOrders || orderData.length;
+    const totalUsers = dashboardStats.data?.totalUsers || userData.length;
+    
+    // Calculate pending orders
+    const pendingOrders = orderData.filter((order: any) => 
+      order.status === 'pending' || order.status === 'Chờ xác nhận'
+    ).length;
+    
+    // Calculate unique customers from orders
+    const uniqueCustomers = new Set(
+      orderData.map((order: any) => order.customerPhone || order.customerName)
+    ).size;
+    
+    // Mock data for products in cart (active users)
+    const totalProductsInCart = Math.floor(totalUsers * 0.3); // 30% of users have items in cart
     
     return {
       totalRevenue,
@@ -56,9 +74,10 @@ const getRealStats = () => {
       totalOrders,
       uniqueCustomers,
       totalProductsInCart,
-      totalUsers: userData.length
+      totalUsers
     };
   } catch (error) {
+    console.error('❌ Error loading dashboard stats:', error);
     return {
       totalRevenue: 0,
       pendingOrders: 0,
@@ -70,173 +89,167 @@ const getRealStats = () => {
   }
 };
 
-const realStats = getRealStats();
-
-// Real stats with actual data
-const realStatsData = [
-  {
-    title: 'Tổng doanh thu',
-    value: realStats.totalRevenue,
-    prefix: '₫',
-    suffix: '',
-    precision: 0,
-    trend: 'up',
-    trendValue: 12.5,
-    icon: <DollarOutlined />,
-    color: '#6366f1', // Indigo
-    bgColor: '#eef2ff',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  },
-  {
-    title: 'Đơn hàng chờ xử lý',
-    value: realStats.pendingOrders,
-    prefix: '',
-    suffix: '',
-    precision: 0,
-    trend: 'up',
-    trendValue: 8.3,
-    icon: <ClockCircleOutlined />,
-    color: '#f59e0b', // Amber
-    bgColor: '#fffbeb',
-    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-  },
-  {
-    title: 'Tổng đơn hàng',
-    value: realStats.totalOrders,
-    prefix: '',
-    suffix: '',
-    precision: 0,
-    trend: 'up',
-    trendValue: 15.7,
-    icon: <ShoppingCartOutlined />,
-    color: '#10b981', // Emerald
-    bgColor: '#ecfdf5',
-    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-  },
-  {
-    title: 'Tổng người dùng',
-    value: realStats.totalUsers,
-    prefix: '',
-    suffix: '',
-    precision: 0,
-    trend: 'up',
-    trendValue: 15.7,
-    icon: <UserOutlined />,
-    color: '#8b5cf6', // Violet
-    bgColor: '#f5f3ff',
-    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-  },
-];
-
-// Function to get real orders from localStorage
-const getRealOrders = () => {
+// Function to get real orders from backend API
+const getRealOrders = async () => {
   try {
-    const orders = localStorage.getItem('orders');
-    const orderData = orders ? JSON.parse(orders) : [];
+    const ordersResponse = await adminService.getRecentOrders(5);
+    const orderData = ordersResponse.data || [];
     
-    return orderData.slice(0, 5).map((order: any, index: number) => ({
+    return orderData.map((order: any, index: number) => ({
       key: index + 1,
-      orderNumber: order.orderId,
-      customer: order.customerInfo?.name || 'Khách hàng',
-      amount: order.total,
+      orderNumber: order.id || order._id || `ORD-${index + 1}`,
+      customer: order.customerName || order.name || 'Khách hàng',
+      amount: order.total || order.price || order.totalAmount || 0,
       status: order.status === 'pending' ? 'Chờ xác nhận' :
               order.status === 'confirmed' ? 'Đã xác nhận' :
               order.status === 'shipped' ? 'Đang giao hàng' :
-              order.status === 'delivered' ? 'Đã giao hàng' : 'Đã hủy',
+              order.status === 'delivered' ? 'Đã giao hàng' : 
+              order.status === 'Chờ xác nhận' ? 'Chờ xác nhận' :
+              order.status === 'Đã giao' ? 'Đã giao hàng' : 'Đã hủy',
       paymentStatus: order.paymentStatus === 'paid' ? 'Đã thanh toán' :
                     order.paymentStatus === 'pending' ? 'Chờ thanh toán' :
                     order.paymentStatus === 'failed' ? 'Thanh toán thất bại' : 'Chờ thanh toán',
       paymentMethod: order.paymentMethod === 'cash' ? 'Tiền mặt' :
                     order.paymentMethod === 'bank' ? 'Chuyển khoản' :
-                    order.paymentMethod === 'card' ? 'Thẻ tín dụng' : 'Tiền mặt',
+                    order.paymentMethod === 'card' ? 'Thẻ tín dụng' : 
+                    order.paymentMethod === 'Tiền mặt' ? 'Tiền mặt' : 'Tiền mặt',
       date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
-      statusColor: order.status === 'pending' ? '#f59e0b' :
+      statusColor: order.status === 'pending' || order.status === 'Chờ xác nhận' ? '#f59e0b' :
                    order.status === 'confirmed' ? '#3b82f6' :
                    order.status === 'shipped' ? '#8b5cf6' :
-                   order.status === 'delivered' ? '#10b981' : '#ef4444',
-      statusBg: order.status === 'pending' ? '#fffbeb' :
+                   order.status === 'delivered' || order.status === 'Đã giao' ? '#10b981' : '#ef4444',
+      statusBg: order.status === 'pending' || order.status === 'Chờ xác nhận' ? '#fffbeb' :
                 order.status === 'confirmed' ? '#eff6ff' :
                 order.status === 'shipped' ? '#f5f3ff' :
-                order.status === 'delivered' ? '#ecfdf5' : '#fef2f2',
+                order.status === 'delivered' || order.status === 'Đã giao' ? '#ecfdf5' : '#fef2f2',
       paymentStatusColor: order.paymentStatus === 'paid' ? '#10b981' :
                          order.paymentStatus === 'pending' ? '#f59e0b' :
                          order.paymentStatus === 'failed' ? '#ef4444' : '#f59e0b',
     }));
   } catch (error) {
+    console.error('❌ Error loading orders:', error);
     return [];
   }
 };
 
-const mockOrders = getRealOrders();
-
-const mockTopProducts = [
-  {
-    name: 'Áo sơ mi nam trắng',
-    sales: 156,
-    revenue: 15600000,
-    image: 'https://via.placeholder.com/40x40?text=Áo',
-    growth: 12,
-    color: '#6366f1',
-  },
-  {
-    name: 'Quần jeans nữ',
-    sales: 134,
-    revenue: 13400000,
-    image: 'https://via.placeholder.com/40x40?text=Quần',
-    growth: 8,
-    color: '#10b981',
-  },
-  {
-    name: 'Váy dạ hội',
-    sales: 89,
-    revenue: 22250000,
-    image: 'https://via.placeholder.com/40x40?text=Váy',
-    growth: -3,
-    color: '#8b5cf6',
-  },
-  {
-    name: 'Áo khoác nam',
-    sales: 76,
-    revenue: 19000000,
-    image: 'https://via.placeholder.com/40x40?text=Áo',
-    growth: 15,
-    color: '#f59e0b',
-  },
-];
-
-// Chart data
-const revenueData = [
-  { month: 'T1', revenue: 45000000 },
-  { month: 'T2', revenue: 52000000 },
-  { month: 'T3', revenue: 48000000 },
-  { month: 'T4', revenue: 61000000 },
-  { month: 'T5', revenue: 55000000 },
-  { month: 'T6', revenue: 67000000 },
-  { month: 'T7', revenue: 72000000 },
-  { month: 'T8', revenue: 68000000 },
-  { month: 'T9', revenue: 74000000 },
-  { month: 'T10', revenue: 78000000 },
-  { month: 'T11', revenue: 82000000 },
-  { month: 'T12', revenue: 89000000 },
-];
-
-const categoryData = [
-  { category: 'Áo sơ mi', sales: 4500000, type: 'sales' },
-  { category: 'Quần jeans', sales: 3800000, type: 'sales' },
-  { category: 'Váy', sales: 5200000, type: 'sales' },
-  { category: 'Áo khoác', sales: 2900000, type: 'sales' },
-  { category: 'Phụ kiện', sales: 1600000, type: 'sales' },
-];
-
-const orderStatusData = [
-  { type: 'Hoàn thành', value: 68, color: '#10b981' },
-  { type: 'Đang xử lý', value: 18, color: '#f59e0b' },
-  { type: 'Đang giao', value: 10, color: '#3b82f6' },
-  { type: 'Đã hủy', value: 4, color: '#ef4444' },
-];
-
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    pendingOrders: 0,
+    totalOrders: 0,
+    uniqueCustomers: 0,
+    totalProductsInCart: 0,
+    totalUsers: 0
+  });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [statsData, ordersData] = await Promise.all([
+          getRealStats(),
+          getRealOrders()
+        ]);
+        setStats(statsData);
+        setOrders(ordersData);
+      } catch (err) {
+        setError('Không thể tải dữ liệu dashboard');
+        console.error('Dashboard error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  // Real stats with actual data
+  const realStatsData = [
+    {
+      title: 'Tổng doanh thu',
+      value: stats.totalRevenue,
+      prefix: '₫',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 12.5,
+      icon: <DollarOutlined />,
+      color: '#6366f1', // Indigo
+      bgColor: '#eef2ff',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    },
+    {
+      title: 'Đơn hàng chờ xử lý',
+      value: stats.pendingOrders,
+      prefix: '',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 8.3,
+      icon: <ClockCircleOutlined />,
+      color: '#f59e0b', // Amber
+      bgColor: '#fffbeb',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    },
+    {
+      title: 'Tổng đơn hàng',
+      value: stats.totalOrders,
+      prefix: '',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 15.7,
+      icon: <ShoppingCartOutlined />,
+      color: '#10b981', // Emerald
+      bgColor: '#ecfdf5',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    },
+    {
+      title: 'Khách hàng',
+      value: stats.uniqueCustomers,
+      prefix: '',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 20.1,
+      icon: <UserOutlined />,
+      color: '#8b5cf6', // Violet
+      bgColor: '#f5f3ff',
+      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    },
+    {
+      title: 'Sản phẩm trong giỏ',
+      value: stats.totalProductsInCart,
+      prefix: '',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 5.2,
+      icon: <TagOutlined />,
+      color: '#ef4444', // Red
+      bgColor: '#fef2f2',
+      gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    },
+    {
+      title: 'Tổng người dùng',
+      value: stats.totalUsers,
+      prefix: '',
+      suffix: '',
+      precision: 0,
+      trend: 'up',
+      trendValue: 18.9,
+      icon: <TeamOutlined />,
+      color: '#06b6d4', // Cyan
+      bgColor: '#ecfeff',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+    },
+  ];
+
   const orderColumns = [
     {
       title: 'Mã đơn hàng',
@@ -282,108 +295,67 @@ const Dashboard: React.FC = () => {
       ),
     },
     {
-      title: 'Thanh toán',
-      dataIndex: 'paymentStatus',
-      key: 'paymentStatus',
-      render: (paymentStatus: string, record: any) => (
-        <div>
-          <span style={{
-            padding: '2px 8px',
-            borderRadius: '12px',
-            fontSize: '11px',
-            fontWeight: '500',
-            backgroundColor: record.paymentStatusColor + '20',
-            color: record.paymentStatusColor,
-            display: 'inline-block',
-            marginBottom: '2px',
-          }}>
-            {paymentStatus}
-          </span>
-          <br />
-          <Text type="secondary" style={{ fontSize: '10px' }}>
-            {record.paymentMethod}
-          </Text>
-        </div>
-      ),
-    },
-    {
-      title: 'Ngày',
+      title: 'Ngày tạo',
       dataIndex: 'date',
       key: 'date',
-      render: (date: string) => (
-        <Text type="secondary" style={{ fontSize: '13px' }}>{date}</Text>
+      render: (text: string) => (
+        <Text style={{ fontSize: '14px', color: '#6b7280' }}>{text}</Text>
       ),
     },
   ];
 
-  // Chart configs with modern colors
-  const revenueChartConfig = {
-    data: revenueData,
-    xField: 'month',
-    yField: 'revenue',
-    smooth: true,
-    color: '#6366f1',
-    point: {
-      size: 5,
-      shape: 'circle',
-      style: {
-        fill: '#6366f1',
-        stroke: '#ffffff',
-        lineWidth: 2,
-      },
+  // Mock data for charts (can be replaced with real data later)
+  const mockTopProducts = [
+    {
+      name: 'Laptop Acer Aspire',
+      sales: 156,
+      revenue: 15600000,
+      image: 'https://via.placeholder.com/40x40?text=Laptop',
+      growth: 12,
+      color: '#6366f1',
     },
-    areaStyle: {
-      fill: 'linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)',
+    {
+      name: 'Laptop Dell Inspiron',
+      sales: 134,
+      revenue: 13400000,
+      image: 'https://via.placeholder.com/40x40?text=Laptop',
+      growth: 8,
+      color: '#10b981',
     },
-    lineStyle: {
-      lineWidth: 3,
+    {
+      name: 'Laptop HP Pavilion',
+      sales: 89,
+      revenue: 22250000,
+      image: 'https://via.placeholder.com/40x40?text=Laptop',
+      growth: -3,
+      color: '#8b5cf6',
     },
-    yAxis: {
-      label: {
-        formatter: (value: string) => `${(parseInt(value) / 1000000).toFixed(0)}M`,
-      },
+    {
+      name: 'Laptop Lenovo ThinkPad',
+      sales: 76,
+      revenue: 19000000,
+      image: 'https://via.placeholder.com/40x40?text=Laptop',
+      growth: 15,
+      color: '#f59e0b',
     },
-  };
+  ];
 
-  const categoryChartConfig = {
-    data: categoryData,
-    xField: 'sales',
-    yField: 'category',
-    color: '#10b981',
-    label: {
-      position: 'right' as const,
-      style: {
-        fill: '#374151',
-        opacity: 0.9,
-        fontWeight: '600',
-        fontSize: 12,
-      },
-    },
-    barStyle: {
-      borderRadius: [0, 4, 4, 0],
-    },
-  };
+  // Chart data (mock data for now)
+  const revenueData = [
+    { month: 'T1', revenue: stats.totalRevenue * 0.8 },
+    { month: 'T2', revenue: stats.totalRevenue * 0.9 },
+    { month: 'T3', revenue: stats.totalRevenue * 1.1 },
+    { month: 'T4', revenue: stats.totalRevenue * 0.95 },
+    { month: 'T5', revenue: stats.totalRevenue * 1.2 },
+    { month: 'T6', revenue: stats.totalRevenue },
+  ];
 
-  const pieChartConfig = {
-    data: orderStatusData,
-    angleField: 'value',
-    colorField: 'type',
-    radius: 0.8,
-    color: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
-    label: {
-      type: 'outer',
-      content: '{name}: {percentage}',
-      style: {
-        fontSize: 12,
-        fontWeight: '500',
-      },
-    },
-    interactions: [
-      {
-        type: 'element-active',
-      },
-    ],
-  };
+  const orderStatusData = [
+    { type: 'Hoàn thành', value: Math.floor(stats.totalOrders * 0.7), color: '#10b981' },
+    { type: 'Đang xử lý', value: stats.pendingOrders, color: '#f59e0b' },
+    { type: 'Đang giao', value: Math.floor(stats.totalOrders * 0.1), color: '#3b82f6' },
+    { type: 'Đã hủy', value: Math.floor(stats.totalOrders * 0.05), color: '#ef4444' },
+  ];
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -408,6 +380,57 @@ const Dashboard: React.FC = () => {
     },
   };
 
+  const chartConfig = {
+    data: revenueData,
+    xField: 'month',
+    yField: 'revenue',
+    smooth: true,
+    color: '#6366f1',
+    areaStyle: {
+      fill: 'linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)',
+    },
+    yAxis: {
+      label: {
+        formatter: (value: string) => `${(parseInt(value) / 1000000).toFixed(0)}M`,
+      },
+    },
+  };
+
+  const pieConfig = {
+    data: orderStatusData,
+    angleField: 'value',
+    colorField: 'type',
+    radius: 0.8,
+    color: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
+    label: {
+      type: 'outer',
+      content: '{name}: {percentage}',
+    },
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: '16px' }}>
+          <Text>Đang tải dữ liệu dashboard...</Text>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert
+        message="Lỗi tải dữ liệu"
+        description={error}
+        type="error"
+        showIcon
+        style={{ margin: '24px' }}
+      />
+    );
+  }
+
   return (
     <motion.div
       variants={containerVariants}
@@ -425,7 +448,7 @@ const Dashboard: React.FC = () => {
                   Dashboard
                 </Title>
                 <Text type="secondary" style={{ fontSize: '16px' }}>
-                  Chào mừng trở lại! Đây là tổng quan về hoạt động kinh doanh của bạn.
+                  Tổng quan về hoạt động kinh doanh
                 </Text>
               </div>
               <Space>
@@ -446,113 +469,15 @@ const Dashboard: React.FC = () => {
                 </Button>
               </Space>
             </div>
-            
-            {/* Quick Actions */}
-            <Card 
-              style={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none',
-                borderRadius: '12px',
-                color: 'white'
-              }}
-              bodyStyle={{ padding: '20px' }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={6}>
-                  <Button 
-                    type="text" 
-                    icon={<TeamOutlined />}
-                    onClick={() => navigate('/admin/customers')}
-                    style={{ 
-                      color: 'white', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      borderRadius: '8px',
-                      width: '100%',
-                      height: '60px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý khách hàng</div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xem và quản lý người dùng</div>
-                  </Button>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <Button 
-                    type="text" 
-                    icon={<ShoppingCartOutlined />}
-                    onClick={() => navigate('/admin/orders')}
-                    style={{ 
-                      color: 'white', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      borderRadius: '8px',
-                      width: '100%',
-                      height: '60px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý đơn hàng</div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xử lý và theo dõi đơn hàng</div>
-                  </Button>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <Button 
-                    type="text" 
-                    icon={<TagOutlined />}
-                    onClick={() => navigate('/admin/products')}
-                    style={{ 
-                      color: 'white', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      borderRadius: '8px',
-                      width: '100%',
-                      height: '60px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Quản lý sản phẩm</div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Thêm, sửa, xóa sản phẩm</div>
-                  </Button>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <Button 
-                    type="text" 
-                    icon={<FileTextOutlined />}
-                    onClick={() => navigate('/admin/analytics')}
-                    style={{ 
-                      color: 'white', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      borderRadius: '8px',
-                      width: '100%',
-                      height: '60px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <div style={{ fontSize: '16px', fontWeight: '600' }}>Báo cáo & Phân tích</div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>Xem báo cáo chi tiết</div>
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
           </div>
         </motion.div>
 
         {/* Stats Cards */}
         <Row gutter={[24, 24]}>
           {realStatsData.map((stat, index) => (
-            <Col xs={24} sm={12} lg={6} key={index}>
+            <Col xs={24} sm={12} lg={8} xl={4} key={index}>
               <motion.div variants={itemVariants}>
-                <Card 
+                <Card
                   style={{
                     background: '#ffffff',
                     border: 'none',
@@ -588,9 +513,6 @@ const Dashboard: React.FC = () => {
                             fontSize: '28px', 
                             fontWeight: '800',
                             lineHeight: 1,
-                            background: stat.gradient,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
                           }}>
                             {stat.prefix}
                             <CountUp 
@@ -598,11 +520,10 @@ const Dashboard: React.FC = () => {
                               duration={2}
                               separator=","
                             />
-                            {stat.suffix}
                           </Text>
                         </div>
                       </div>
-                      <div style={{
+                      <div style={{ 
                         width: '48px',
                         height: '48px',
                         borderRadius: '12px',
@@ -644,7 +565,7 @@ const Dashboard: React.FC = () => {
                         fontSize: '13px',
                         marginLeft: '6px',
                       }}>
-                        so với tháng trước
+                        so với kỳ trước
                       </Text>
                     </div>
                   </div>
@@ -654,9 +575,8 @@ const Dashboard: React.FC = () => {
           ))}
         </Row>
 
-        {/* Charts Row */}
+        {/* Charts and Tables */}
         <Row gutter={[24, 24]}>
-          {/* Revenue Chart */}
           <Col xs={24} lg={16}>
             <motion.div variants={itemVariants}>
               <Card
@@ -666,7 +586,7 @@ const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Doanh thu theo tháng</span>
                   </div>
                 }
-                style={{
+                style={{ 
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
@@ -674,12 +594,10 @@ const Dashboard: React.FC = () => {
                 }}
                 bodyStyle={{ padding: '24px' }}
               >
-                <Line {...revenueChartConfig} height={300} />
+                <Column {...chartConfig} height={300} />
               </Card>
             </motion.div>
           </Col>
-
-          {/* Order Status */}
           <Col xs={24} lg={8}>
             <motion.div variants={itemVariants}>
               <Card
@@ -689,7 +607,7 @@ const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Trạng thái đơn hàng</span>
                   </div>
                 }
-                style={{
+                style={{ 
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
@@ -697,25 +615,33 @@ const Dashboard: React.FC = () => {
                 }}
                 bodyStyle={{ padding: '24px' }}
               >
-                <Pie {...pieChartConfig} height={300} />
+                <Pie {...pieConfig} height={300} />
               </Card>
             </motion.div>
           </Col>
         </Row>
 
-        {/* Bottom Row */}
+        {/* Recent Orders */}
         <Row gutter={[24, 24]}>
-          {/* Recent Orders */}
           <Col xs={24} lg={16}>
             <motion.div variants={itemVariants}>
               <Card
                 title={
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <ClockCircleOutlined style={{ marginRight: 8, color: '#f59e0b' }} />
-                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Đơn hàng gần đây</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <FileTextOutlined style={{ marginRight: 8, color: '#8b5cf6' }} />
+                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Đơn hàng gần đây</span>
+                    </div>
+                    <Button 
+                      type="link" 
+                      onClick={() => navigate('/admin/orders')}
+                      style={{ padding: 0 }}
+                    >
+                      Xem tất cả
+                    </Button>
                   </div>
                 }
-                style={{
+                style={{ 
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
@@ -725,25 +651,24 @@ const Dashboard: React.FC = () => {
               >
                 <Table
                   columns={orderColumns}
-                  dataSource={mockOrders}
+                  dataSource={orders}
                   pagination={false}
-                  size="middle"
+                  size="small"
+                  showHeader={false}
                 />
               </Card>
             </motion.div>
           </Col>
-
-          {/* Top Products */}
           <Col xs={24} lg={8}>
             <motion.div variants={itemVariants}>
               <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <TagOutlined style={{ marginRight: 8, color: '#8b5cf6' }} />
+                    <TagOutlined style={{ marginRight: 8, color: '#f59e0b' }} />
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Sản phẩm bán chạy</span>
                   </div>
                 }
-                style={{
+                style={{ 
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
@@ -754,40 +679,26 @@ const Dashboard: React.FC = () => {
                 <List
                   dataSource={mockTopProducts}
                   renderItem={(item, index) => (
-                    <List.Item style={{ padding: '12px 0', borderBottom: index === mockTopProducts.length - 1 ? 'none' : '1px solid #f3f4f6' }}>
+                    <List.Item key={index} style={{ padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
                       <List.Item.Meta
-                        avatar={
-                          <Avatar 
-                            size={40} 
-                            style={{ 
-                              background: item.color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            {item.name.charAt(0)}
-                          </Avatar>
-                        }
+                        avatar={<Avatar src={item.image} size={40} />}
                         title={
                           <Text strong style={{ fontSize: '14px', color: '#1f2937' }}>
                             {item.name}
                           </Text>
                         }
                         description={
-                          <div>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>
-                              {item.sales} đã bán • ₫{item.revenue.toLocaleString()}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={{ fontSize: '12px', color: '#6b7280' }}>
+                              {item.sales} bán • ₫{item.revenue.toLocaleString()}
                             </Text>
-                            <div style={{ marginTop: '4px' }}>
-                              <Text style={{ 
-                                color: item.growth >= 0 ? '#10b981' : '#ef4444',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                              }}>
-                                {item.growth >= 0 ? '+' : ''}{item.growth}%
-                              </Text>
-                            </div>
+                            <Text style={{ 
+                              fontSize: '12px', 
+                              color: item.growth > 0 ? '#10b981' : '#ef4444',
+                              fontWeight: '600'
+                            }}>
+                              {item.growth > 0 ? '+' : ''}{item.growth}%
+                            </Text>
                           </div>
                         }
                       />
@@ -803,4 +714,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

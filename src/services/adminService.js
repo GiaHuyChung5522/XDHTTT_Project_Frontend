@@ -15,44 +15,78 @@ export const adminService = {
   // SECTION: Dashboard Stats - Lấy thống kê tổng quan
   async getDashboardStats() {
     try {
-      // ✅ Tích hợp với API BE thật
-      const [revenueRes, pendingRes, totalOrdersRes, totalUsersRes, totalProductsRes] = await Promise.all([
-        api.get('/api/dashboard/revenue'),
-        api.get('/api/dashboard/pending-orders'), 
-        api.get('/api/dashboard/total-orders'),
-        api.get('/api/dashboard/total-users'),
-        api.get('/api/dashboard/total-products')
-      ]);
-
+      console.log('🔄 Loading dashboard stats from backend...');
+      
+      // ✅ Gọi API dashboard tổng hợp mới
+      const response = await api.get('/api/dashboard/stats');
+      
+      console.log('📊 Dashboard stats response:', response);
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error loading dashboard stats:', error);
+      console.warn('Backend API không khả dụng, sử dụng mock data');
+      
+      // Fallback to mock data
       return {
         success: true,
         data: {
-          totalRevenue: revenueRes.data.total || 0,
-          pendingOrders: pendingRes.data.length || 0,
-          totalOrders: totalOrdersRes.data.total || 0,
-          totalUsers: totalUsersRes.data.total || 0,
-          totalProducts: totalProductsRes.data.total || 0,
-          // Giữ lại các thống kê khác từ mock data
-          ...adminStats
+          totalRevenue: 0,
+          pendingOrders: 0,
+          totalOrders: 0,
+          completedOrders: 0,
+          totalUsers: 0,
+          totalProducts: 0,
+          uniqueCustomers: 0
         }
-      };
-    } catch (error) {
-      console.warn('Backend API không khả dụng, sử dụng mock data:', error.message);
-      await delay(500);
-      return {
-        success: true,
-        data: adminStats
       };
     }
   },
 
   // Recent Orders
   async getRecentOrders(limit = 10) {
-    await delay(300);
-    return {
-      success: true,
-      data: recentOrders.slice(0, limit)
-    };
+    try {
+      console.log('🔄 Loading recent orders from backend...');
+      const response = await api.get(`/api/order?limit=${limit}`);
+      
+      console.log('📦 Recent orders response:', response);
+      
+      // Transform backend data to frontend format
+      const ordersData = response?.orders || response || [];
+      const transformedOrders = ordersData.map((order, index) => ({
+        key: order._id || order.id || index.toString(),
+        id: order._id || order.id || index.toString(),
+        customerName: order.userId?.firstName + ' ' + order.userId?.lastName || 'Khách hàng',
+        customerPhone: order.userId?.phone || 'N/A',
+        items: order.items?.map(item => ({
+          name: item.productId?.name || 'Sản phẩm',
+          quantity: item.quantity || 1,
+          price: item.price || 0
+        })) || [],
+        total: order.total || 0,
+        status: order.status || 'PENDING',
+        paymentMethod: order.paymentMethod || 'CASH',
+        createdAt: order.createdAt || new Date().toISOString(),
+        updatedAt: order.updatedAt || new Date().toISOString(),
+      }));
+      
+      console.log(`✅ Loaded ${transformedOrders.length} recent orders`);
+      
+      return {
+        success: true,
+        data: transformedOrders
+      };
+    } catch (error) {
+      console.error('❌ Error loading recent orders:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: []
+      };
+    }
   },
 
   // Top Products
@@ -391,7 +425,151 @@ export const adminService = {
     }
   },
 
-  // SECTION: User Management - Quản lý người dùng
+  // SECTION: Category Management - Quản lý danh mục
+  async getCategories() {
+    try {
+      console.log('🔄 Loading categories from backend...');
+      const response = await api.get('/api/category');
+      console.log('📦 Categories response:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error getting categories:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async createCategory(categoryData) {
+    try {
+      console.log('🔄 Creating category:', categoryData);
+      const response = await api.post('/api/category', categoryData);
+      console.log('✅ Category created:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error creating category:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async updateCategory(id, categoryData) {
+    try {
+      console.log('🔄 Updating category:', id, categoryData);
+      const response = await api.patch(`/api/category/${id}`, categoryData);
+      console.log('✅ Category updated:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error updating category:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async deleteCategory(id) {
+    try {
+      console.log('🔄 Deleting category:', id);
+      const response = await api.delete(`/api/category/${id}`);
+      console.log('✅ Category deleted:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error deleting category:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // SECTION: Brand Management - Quản lý thương hiệu
+  async getBrands() {
+    try {
+      console.log('🔄 Loading brands from backend...');
+      const response = await api.get('/api/brand');
+      console.log('📦 Brands response:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error getting brands:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async createBrand(brandData) {
+    try {
+      console.log('🔄 Creating brand:', brandData);
+      const response = await api.post('/api/brand', brandData);
+      console.log('✅ Brand created:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error creating brand:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async updateBrand(id, brandData) {
+    try {
+      console.log('🔄 Updating brand:', id, brandData);
+      const response = await api.patch(`/api/brand/${id}`, brandData);
+      console.log('✅ Brand updated:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error updating brand:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async deleteBrand(id) {
+    try {
+      console.log('🔄 Deleting brand:', id);
+      const response = await api.delete(`/api/brand/${id}`);
+      console.log('✅ Brand deleted:', response);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('❌ Error deleting brand:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
   async getUsers({
     page = 1, 
     limit = 10, 
