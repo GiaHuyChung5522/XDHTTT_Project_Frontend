@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Frontend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Admin Frontend Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Steps:</h3>
+        <ol>
+            <li>Click "Auto Login Admin" to authenticate</li>
+            <li>Click "Test Admin APIs" to verify API calls</li>
+            <li>Click "Open Admin Dashboard" to test Frontend</li>
+            <li>Check console for any errors</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔐 Authentication Test</h3>
+        <button onclick="testLogin()">Auto Login Admin</button>
+        <button onclick="checkAuthStatus()">Check Auth Status</button>
+        <div id="auth-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🌐 API Test</h3>
+        <button onclick="testAPIs()">Test Admin APIs</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🎯 Frontend Test</h3>
+        <button onclick="openAdminDashboard()">Open Admin Dashboard</button>
+        <button onclick="testFrontendComponents()">Test Frontend Components</button>
+        <div id="frontend-results"></div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+        
+        async function testLogin() {
+            const resultsDiv = document.getElementById('auth-results');
+            resultsDiv.innerHTML = '<p>🔄 Logging in...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.data?.accessToken) {
+                    authToken = data.data.accessToken;
+                    
+                    // Store token in localStorage
+                    localStorage.setItem('adminToken', authToken);
+                    localStorage.setItem('auth', JSON.stringify({
+                        token: authToken,
+                        accessToken: authToken,
+                        user: { role: 'admin' }
+                    }));
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Login successful!</p>
+                            <p>Token: ${authToken.substring(0, 20)}...</p>
+                            <p>Role: ${data.data.role}</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Login failed: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function checkAuthStatus() {
+            const resultsDiv = document.getElementById('auth-results');
+            const authRaw = localStorage.getItem('auth');
+            const token = localStorage.getItem('adminToken');
+            
+            resultsDiv.innerHTML = `
+                <div class="info">
+                    <p><strong>Auth Status:</strong></p>
+                    <p>localStorage.auth: ${authRaw ? '✅ Found' : '❌ Not found'}</p>
+                    <p>localStorage.adminToken: ${token ? '✅ Found' : '❌ Not found'}</p>
+                    <p>Current token: ${authToken ? '✅ Set' : '❌ Not set'}</p>
+                </div>
+            `;
+        }
+        
+        async function testAPIs() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>🔄 Testing APIs...</p>';
+            
+            if (!authToken) {
+                resultsDiv.innerHTML = '<div class="error"><p>❌ Please login first!</p></div>';
+                return;
+            }
+            
+            const tests = [
+                { name: 'Users', url: '/user?page=1&limit=2' },
+                { name: 'Products', url: '/product/filter?page=1&limit=2' },
+                { name: 'Orders', url: '/order?page=1&limit=2' },
+                { name: 'Categories', url: '/category' },
+                { name: 'Dashboard', url: '/dashboard/stats' }
+            ];
+            
+            let results = '<div class="info"><h4>API Test Results:</h4>';
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(`${API_BASE}${test.url}`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const count = data.data?.length || data.length || 0;
+                        results += `<p>✅ ${test.name}: ${response.status} (${count} items)</p>`;
+                    } else {
+                        results += `<p>❌ ${test.name}: ${response.status} ${response.statusText}</p>`;
+                    }
+                } catch (error) {
+                    results += `<p>❌ ${test.name}: ${error.message}</p>`;
+                }
+            }
+            
+            results += '</div>';
+            resultsDiv.innerHTML = results;
+        }
+        
+        function openAdminDashboard() {
+            window.open('http://localhost:5174/admin', '_blank');
+        }
+        
+        function testFrontendComponents() {
+            const resultsDiv = document.getElementById('frontend-results');
+            
+            // Test if we can access admin routes
+            fetch('http://localhost:5174/admin')
+                .then(response => {
+                    if (response.ok) {
+                        resultsDiv.innerHTML = `
+                            <div class="success">
+                                <p>✅ Admin dashboard accessible</p>
+                                <p>Status: ${response.status}</p>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="error">
+                                <p>❌ Admin dashboard not accessible</p>
+                                <p>Status: ${response.status}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Error accessing admin dashboard: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Auto-run auth check on page load
+        window.onload = function() {
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>

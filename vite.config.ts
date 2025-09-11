@@ -27,6 +27,12 @@ export default defineConfig({
         secure: false,
         ws: true
       },
+      '/products': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
       '/auth': {
         target: 'http://localhost:3000/api',
         changeOrigin: true,

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin API Test</title>
+</head>
+<body>
+    <h1>Admin API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        async function testAPIs() {
+            const resultsDiv = document.getElementById('results');
+            
+            // Check authentication
+            const authRaw = localStorage.getItem('auth');
+            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('adminToken');
+            
+            resultsDiv.innerHTML += '<h3>Authentication Status:</h3>';
+            resultsDiv.innerHTML += `<p>auth: ${authRaw ? 'Found' : 'Not found'}</p>`;
+            resultsDiv.innerHTML += `<p>token: ${token ? 'Found' : 'Not found'}</p>`;
+            resultsDiv.innerHTML += `<p>adminToken: ${adminToken ? 'Found' : 'Not found'}</p>`;
+            
+            if (authRaw) {
+                try {
+                    const auth = JSON.parse(authRaw);
+                    resultsDiv.innerHTML += `<p>auth.token: ${auth.token ? 'Found' : 'Not found'}</p>`;
+                    resultsDiv.innerHTML += `<p>auth.accessToken: ${auth.accessToken ? 'Found' : 'Not found'}</p>`;
+                } catch (e) {
+                    resultsDiv.innerHTML += `<p>auth parse error: ${e.message}</p>`;
+                }
+            }
+            
+            // Test API calls
+            resultsDiv.innerHTML += '<h3>API Tests:</h3>';
+            
+            try {
+                // Test products API
+                const response = await fetch(`${API_BASE}/product/filter?page=1&limit=2`, {
+                    headers: {
+                        'Authorization': `Bearer ${token || adminToken || ''}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `<p>✅ Products API: ${data.data?.length || data.length || 0} products</p>`;
+                } else {
+                    resultsDiv.innerHTML += `<p>❌ Products API: ${response.status} ${response.statusText}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<p>❌ Products API Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run tests when page loads
+        testAPIs();
+    </script>
+</body>
+</html>

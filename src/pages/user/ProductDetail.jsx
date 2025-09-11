@@ -96,19 +96,22 @@ export default function ProductDetail() {
     // Gọi API thật thay vì dùng mock data
     (async () => {
       try {
-        if (!id || id === 'undefined') {
+        if (!id || id === 'undefined' || id === 'null') {
           throw new Error('ID sản phẩm không hợp lệ');
         }
         
         console.log("🔍 Calling API for product ID:", id);
-        const productData = await getProductById(id);
-        console.log("🔍 ProductDetail - Dữ liệu từ API:", productData);
+        const result = await getProductById(id);
+        console.log("🔍 ProductDetail - Dữ liệu từ API:", result);
         
         if (!alive) return;
         
+        // Handle the response structure properly
+        const productData = result.data || result;
+        
         // Kiểm tra nếu productData có dữ liệu hợp lệ
         if (!productData || (!productData.name && !productData.id)) {
-          throw new Error('Sản phẩm không tồn tại hoặc dữ liệu không hợp lệ');
+          throw new Error(`Sản phẩm với ID "${id}" không tồn tại hoặc đã bị xóa`);
         }
         
         setProduct(productData);

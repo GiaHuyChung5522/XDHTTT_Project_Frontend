@@ -28,6 +28,18 @@ import { adminService } from '../../../services/adminService';
 
 const { Title, Text } = Typography;
 
+// Load low stock alerts
+const loadLowStockAlerts = async () => {
+  try {
+    console.log('🔄 Loading low stock alerts (mocked)...');
+    // Mock low stock products for demo
+    return [];
+  } catch (error) {
+    console.error('❌ Error loading low stock alerts:', error);
+    return [];
+  }
+};
+
 // Function to get real stats from backend API
 const getRealStats = async () => {
   try {
@@ -168,60 +180,60 @@ const Dashboard: React.FC = () => {
     loadDashboardData();
   }, []);
 
-  // Real stats with actual data
-  const realStatsData = [
-    {
-      title: 'Tổng doanh thu',
+// Real stats with actual data
+const realStatsData = [
+  {
+    title: 'Tổng doanh thu',
       value: stats.totalRevenue,
-      prefix: '₫',
-      suffix: '',
-      precision: 0,
-      trend: 'up',
-      trendValue: 12.5,
-      icon: <DollarOutlined />,
-      color: '#6366f1', // Indigo
-      bgColor: '#eef2ff',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    },
-    {
-      title: 'Đơn hàng chờ xử lý',
+    prefix: '₫',
+    suffix: '',
+    precision: 0,
+    trend: 'up',
+    trendValue: 12.5,
+    icon: <DollarOutlined />,
+    color: '#6366f1', // Indigo
+    bgColor: '#eef2ff',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  },
+  {
+    title: 'Đơn hàng chờ xử lý',
       value: stats.pendingOrders,
-      prefix: '',
-      suffix: '',
-      precision: 0,
-      trend: 'up',
-      trendValue: 8.3,
-      icon: <ClockCircleOutlined />,
-      color: '#f59e0b', // Amber
-      bgColor: '#fffbeb',
-      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-    },
-    {
-      title: 'Tổng đơn hàng',
+    prefix: '',
+    suffix: '',
+    precision: 0,
+    trend: 'up',
+    trendValue: 8.3,
+    icon: <ClockCircleOutlined />,
+    color: '#f59e0b', // Amber
+    bgColor: '#fffbeb',
+    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+  },
+  {
+    title: 'Tổng đơn hàng',
       value: stats.totalOrders,
-      prefix: '',
-      suffix: '',
-      precision: 0,
-      trend: 'up',
-      trendValue: 15.7,
-      icon: <ShoppingCartOutlined />,
-      color: '#10b981', // Emerald
-      bgColor: '#ecfdf5',
-      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    },
-    {
+    prefix: '',
+    suffix: '',
+    precision: 0,
+    trend: 'up',
+    trendValue: 15.7,
+    icon: <ShoppingCartOutlined />,
+    color: '#10b981', // Emerald
+    bgColor: '#ecfdf5',
+    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+  },
+  {
       title: 'Khách hàng',
       value: stats.uniqueCustomers,
-      prefix: '',
-      suffix: '',
-      precision: 0,
-      trend: 'up',
+    prefix: '',
+    suffix: '',
+    precision: 0,
+    trend: 'up',
       trendValue: 20.1,
-      icon: <UserOutlined />,
-      color: '#8b5cf6', // Violet
-      bgColor: '#f5f3ff',
-      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    },
+    icon: <UserOutlined />,
+    color: '#8b5cf6', // Violet
+    bgColor: '#f5f3ff',
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+  },
     {
       title: 'Sản phẩm trong giỏ',
       value: stats.totalProductsInCart,
@@ -312,7 +324,7 @@ const Dashboard: React.FC = () => {
       revenue: 15600000,
       image: 'https://via.placeholder.com/40x40?text=Laptop',
       growth: 12,
-      color: '#6366f1',
+    color: '#6366f1',
     },
     {
       name: 'Laptop Dell Inspiron',
@@ -387,7 +399,7 @@ const Dashboard: React.FC = () => {
     smooth: true,
     color: '#6366f1',
     areaStyle: {
-      fill: 'linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)',
+      fill: 'rgba(99, 102, 241, 0.2)',
     },
     yAxis: {
       label: {
@@ -403,8 +415,8 @@ const Dashboard: React.FC = () => {
     radius: 0.8,
     color: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
     label: {
-      type: 'outer',
-      content: '{name}: {percentage}',
+      type: 'spider',
+      content: (item: any) => `${item.name}: ${item.percentage}%`,
     },
   };
 
@@ -477,7 +489,7 @@ const Dashboard: React.FC = () => {
           {realStatsData.map((stat, index) => (
             <Col xs={24} sm={12} lg={8} xl={4} key={index}>
               <motion.div variants={itemVariants}>
-                <Card
+                <Card 
                   style={{
                     background: '#ffffff',
                     border: 'none',
@@ -486,7 +498,7 @@ const Dashboard: React.FC = () => {
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     overflow: 'hidden',
                   }}
-                  bodyStyle={{ padding: '24px', height: '100%' }}
+                  styles={{ body: { padding: '24px', height: '100%' } }}
                 >
                   <div style={{ 
                     height: '100%', 
@@ -523,7 +535,7 @@ const Dashboard: React.FC = () => {
                           </Text>
                         </div>
                       </div>
-                      <div style={{ 
+                      <div style={{
                         width: '48px',
                         height: '48px',
                         borderRadius: '12px',
@@ -586,13 +598,13 @@ const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Doanh thu theo tháng</span>
                   </div>
                 }
-                style={{ 
+                style={{
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
               >
                 <Column {...chartConfig} height={300} />
               </Card>
@@ -607,13 +619,13 @@ const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Trạng thái đơn hàng</span>
                   </div>
                 }
-                style={{ 
+                style={{
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
               >
                 <Pie {...pieConfig} height={300} />
               </Card>
@@ -628,9 +640,9 @@ const Dashboard: React.FC = () => {
               <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                       <FileTextOutlined style={{ marginRight: 8, color: '#8b5cf6' }} />
-                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Đơn hàng gần đây</span>
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Đơn hàng gần đây</span>
                     </div>
                     <Button 
                       type="link" 
@@ -641,13 +653,13 @@ const Dashboard: React.FC = () => {
                     </Button>
                   </div>
                 }
-                style={{ 
+                style={{
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
               >
                 <Table
                   columns={orderColumns}
@@ -668,13 +680,13 @@ const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: '600', color: '#1f2937' }}>Sản phẩm bán chạy</span>
                   </div>
                 }
-                style={{ 
+                style={{
                   background: '#ffffff',
                   border: 'none',
                   borderRadius: '16px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
               >
                 <List
                   dataSource={mockTopProducts}
@@ -692,12 +704,85 @@ const Dashboard: React.FC = () => {
                             <Text style={{ fontSize: '12px', color: '#6b7280' }}>
                               {item.sales} bán • ₫{item.revenue.toLocaleString()}
                             </Text>
-                            <Text style={{ 
-                              fontSize: '12px', 
+                              <Text style={{ 
+                                fontSize: '12px',
                               color: item.growth > 0 ? '#10b981' : '#ef4444',
                               fontWeight: '600'
-                            }}>
+                              }}>
                               {item.growth > 0 ? '+' : ''}{item.growth}%
+                              </Text>
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              </Card>
+            </motion.div>
+          </Col>
+        </Row>
+
+        {/* Low Stock Alerts */}
+        <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+          <Col xs={24}>
+            <motion.div variants={itemVariants}>
+              <Card
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <ExclamationCircleOutlined style={{ marginRight: 8, color: '#ef4444' }} />
+                    <span style={{ fontWeight: '600', color: '#1f2937' }}>Cảnh báo tồn kho thấp</span>
+                  </div>
+                }
+                style={{
+                  background: '#ffffff',
+                  border: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                }}
+                styles={{ body: { padding: '24px' } }}
+              >
+                <Alert
+                  message="Sản phẩm có tồn kho thấp"
+                  description="Các sản phẩm dưới đây cần được bổ sung tồn kho để đảm bảo hoạt động kinh doanh."
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: '16px' }}
+                />
+                <List
+                  dataSource={[] as any[]} // Will be populated with real data
+                  renderItem={(item: any) => (
+                    <List.Item
+                      actions={[
+                        <Button 
+                          type="primary" 
+                          size="small"
+                          onClick={() => navigate('/admin/products')}
+                        >
+                          Cập nhật tồn kho
+                        </Button>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar 
+                            src={item.imageUrl || '/laptop-fallback.png'}
+                            size={40}
+                            style={{ borderRadius: '8px' }}
+                          />
+                        }
+                        title={
+                          <Text strong style={{ color: '#1f2937' }}>
+                            {item.name || 'Sản phẩm'}
+                          </Text>
+                        }
+                        description={
+                          <div>
+                            <Text style={{ color: '#6b7280' }}>
+                              Tồn kho hiện tại: <Text strong style={{ color: '#ef4444' }}>{item.stock || 0}</Text>
+                            </Text>
+                            <br />
+                            <Text style={{ color: '#6b7280' }}>
+                              Ngưỡng cảnh báo: <Text strong>{item.threshold || 10}</Text>
                             </Text>
                           </div>
                         }
@@ -714,4 +799,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default Dashboard; 

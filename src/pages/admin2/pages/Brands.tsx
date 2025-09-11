@@ -150,8 +150,8 @@ const Brands: React.FC = () => {
     try {
       console.log('🔄 Loading brands from backend...');
       
-      // Get brands from products API
-      const result = await adminService.getProductBrands();
+      // Get brands from backend API
+      const result = await adminService.getBrands();
       
       if (result.success && result.data) {
         console.log('📦 Brands response:', result.data);
@@ -177,9 +177,8 @@ const Brands: React.FC = () => {
         setBrands(transformedBrands);
         console.log(`✅ Loaded ${transformedBrands.length} brands`);
       } else {
-        const errorMsg = result.error || 'Unknown error occurred';
-        console.error('❌ Failed to load brands:', errorMsg);
-        setError(`Không thể tải danh sách thương hiệu: ${errorMsg}`);
+        console.error('❌ Failed to load brands: No data received');
+        setError('Không thể tải danh sách thương hiệu');
         setBrands([]);
       }
     } catch (err) {

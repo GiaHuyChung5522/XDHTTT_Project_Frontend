@@ -41,7 +41,7 @@ const ProductList = ({
 
     (async () => {
       try {
-        const { items: data, total } = await getProducts({
+        const result = await getProducts({
           page: 1,
           limit,
           q,
@@ -50,7 +50,15 @@ const ProductList = ({
           order: "desc",
         });
         if (!alive) return;
-        setItems(data || []);
+        
+        console.log('🔄 ProductList result:', result);
+        
+        if (result.success && result.data) {
+          setItems(result.data || []);
+        } else {
+          setItems([]);
+          setErr('Không có sản phẩm nào');
+        }
         // Lưu tổng nếu cần hiển thị (dùng totalOverride nếu có)
         if (typeof totalOverride === "undefined") {
           // không cần set state riêng; hiển thị trực tiếp từ API trong header

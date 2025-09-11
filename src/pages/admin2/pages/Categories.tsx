@@ -48,79 +48,6 @@ const ph = (text: string) => `https://placehold.co/60x60?text=${encodeURICompone
 // (tuỳ chọn) ảnh fallback đặt trong public/
 const FALLBACK_IMG = '/laptop-fallback.png';
 
-// Mock data: DANH MỤC LAPTOP
-const mockCategories: Category[] = [
-  {
-    key: '1',
-    id: 'cat-001',
-    name: 'Laptop',
-    slug: 'laptop',
-    description: 'Tất cả các dòng laptop',
-    image: ph('Laptop'),
-    productCount: 420,
-    status: 'active',
-    sortOrder: 1,
-    createdAt: '2024-01-15',
-    updatedAt: '2025-08-20',
-  },
-  {
-    key: '2',
-    id: 'cat-002',
-    name: 'Laptop Gaming',
-    slug: 'laptop-gaming',
-    description: 'Laptop chơi game hiệu năng cao (RTX, màn 144/240Hz)',
-    image: ph('Gaming'),
-    parentId: 'cat-001',
-    parentName: 'Laptop',
-    productCount: 155,
-    status: 'active',
-    sortOrder: 2,
-    createdAt: '2024-01-20',
-    updatedAt: '2025-08-19',
-  },
-  {
-    key: '3',
-    id: 'cat-003',
-    name: 'Ultrabook',
-    slug: 'ultrabook',
-    description: 'Mỏng nhẹ, pin trâu, làm việc văn phòng',
-    image: ph('Ultra'),
-    parentId: 'cat-001',
-    parentName: 'Laptop',
-    productCount: 180,
-    status: 'active',
-    sortOrder: 3,
-    createdAt: '2024-01-25',
-    updatedAt: '2025-08-18',
-  },
-  {
-    key: '4',
-    id: 'cat-004',
-    name: 'Màn hình',
-    slug: 'man-hinh',
-    description: 'Màn hình rời cho làm việc và gaming',
-    image: ph('Monitor'),
-    productCount: 96,
-    status: 'active',
-    sortOrder: 4,
-    createdAt: '2024-02-01',
-    updatedAt: '2025-08-17',
-  },
-  {
-    key: '5',
-    id: 'cat-005',
-    name: 'Phụ kiện',
-    slug: 'phu-kien',
-    description: 'Chuột, bàn phím, tai nghe, balo, đế tản nhiệt,…',
-    image: ph('Accessory'),
-    productCount: 210,
-    status: 'inactive',
-    sortOrder: 5,
-    createdAt: '2024-02-05',
-    updatedAt: '2025-08-16',
-  },
-];
-
 const Categories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,9 +94,8 @@ const Categories: React.FC = () => {
         setCategories(transformedCategories);
         console.log(`✅ Loaded ${transformedCategories.length} categories`);
       } else {
-        const errorMsg = result.error || 'Unknown error occurred';
-        console.error('❌ Failed to load categories:', errorMsg);
-        setError(`Không thể tải danh sách danh mục: ${errorMsg}`);
+        console.error('❌ Failed to load categories: No data received');
+        setError('Không thể tải danh sách danh mục');
         setCategories([]);
       }
     } catch (err) {
@@ -214,7 +140,7 @@ const Categories: React.FC = () => {
         message.success('Xóa danh mục thành công!');
         await loadCategories(); // Reload categories
       } else {
-        message.error(`Không thể xóa danh mục: ${result.error}`);
+        message.error(`Không thể xóa danh mục: ${result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error deleting category:', error);
@@ -251,7 +177,7 @@ const Categories: React.FC = () => {
         form.resetFields();
         await loadCategories(); // Reload categories
       } else {
-        message.error(`Không thể ${editingCategory ? 'cập nhật' : 'tạo'} danh mục: ${result.error}`);
+        message.error(`Không thể ${editingCategory ? 'cập nhật' : 'tạo'} danh mục: ${result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error submitting category:', error);

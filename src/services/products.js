@@ -1,296 +1,412 @@
-
-
 // services/products.js
 import { api } from '../lib/api';
 
-// Mock data fallback khi API không hoạt động
+// Category mapping để chuyển đổi tên category sang categoryId
+const categoryMap = {
+  'Laptop văn phòng': 'CAT-001',
+  'Laptop gaming': 'CAT-002', 
+  'Laptop đồ họa': 'CAT-003',
+  'Laptop sinh viên': 'CAT-004'
+};
+
+// Helper function to handle API response
+const handleApiResponse = (response) => {
+  if (!response) {
+    throw new Error('No response received');
+  }
+  
+  // Handle different response structures
+  if (Array.isArray(response)) {
+    return response;
+  }
+  
+  if (response.data) {
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    if (response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+    return [response.data];
+  }
+  
+  return [response];
+};
+
+// Helper function to transform product data
+const transformProduct = (product, index = 0) => ({
+  id: product._id || product.id || index.toString(),
+  name: product.name || 'Unnamed Product',
+  price: product.price || 0,
+  image: product.imageUrl || product.image || '/laptop-fallback.png',
+  description: product.description || '',
+  brand: product.brand || '',
+  model: product.model || '',
+  stock: product.stock || 0,
+  category: product.categoryId || 'Unknown',
+  isActive: product.isActive !== false,
+  isOnPromotion: product.isOnPromotion || false,
+  discountPercentage: product.discountPercentage || 0,
+  specifications: product.specifications || {},
+  sub_images: product.sub_images || [],
+  configurations: product.configurations || [],
+  combos: product.combos || [],
+  createdAt: product.createdAt || new Date().toISOString(),
+  updatedAt: product.updatedAt || new Date().toISOString(),
+});
+
+// Mock data fallback khi backend không chạy
 const mockProducts = [
   {
-    id: 1,
-    name: "Lenovo IdeaPad 5 Pro 14 GT",
-    price: 26190000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "Ryzen AI 9 365 RAM 32GB SSD 1TB 14"
+    _id: 'mock-1',
+    name: 'Laptop Gaming ASUS ROG Strix G15',
+    price: 25990000,
+    originalPrice: 28990000,
+    discount: 10,
+    category: 'Laptop gaming',
+    brand: 'ASUS',
+    imageUrl: 'https://via.placeholder.com/300x200?text=Laptop+Gaming',
+    stock: 15,
+    rating: 4.8,
+    reviews: 156,
+    specifications: {
+      cpu: 'Intel Core i7-12700H',
+      ram: '16GB DDR4',
+      storage: '512GB SSD',
+      gpu: 'RTX 3060 6GB',
+      display: '15.6" FHD 144Hz'
+    },
+    sub_images: [
+      'https://via.placeholder.com/300x200?text=Image+1',
+      'https://via.placeholder.com/300x200?text=Image+2'
+    ],
+    configurations: [
+      { name: 'RAM 16GB', price: 0 },
+      { name: 'RAM 32GB', price: 2000000 }
+    ],
+    combos: [
+      { name: 'Combo Gaming', price: 500000, items: ['Chuột gaming', 'Bàn phím cơ'] }
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
-    id: 2,
-    name: "Gigabyte Gaming A16",
+    _id: 'mock-2',
+    name: 'Laptop Văn phòng Dell Inspiron 15',
+    price: 18990000,
+    originalPrice: 20990000,
+    discount: 9,
+    category: 'Laptop văn phòng',
+    brand: 'Dell',
+    imageUrl: 'https://via.placeholder.com/300x200?text=Laptop+Office',
+    stock: 8,
+    rating: 4.5,
+    reviews: 89,
+    specifications: {
+      cpu: 'Intel Core i5-1235U',
+      ram: '8GB DDR4',
+      storage: '256GB SSD',
+      gpu: 'Intel Iris Xe',
+      display: '15.6" FHD'
+    },
+    sub_images: [
+      'https://via.placeholder.com/300x200?text=Image+1',
+      'https://via.placeholder.com/300x200?text=Image+2'
+    ],
+    configurations: [
+      { name: 'RAM 8GB', price: 0 },
+      { name: 'RAM 16GB', price: 1500000 }
+    ],
+    combos: [
+      { name: 'Combo Văn phòng', price: 300000, items: ['Chuột không dây', 'Túi đựng laptop'] }
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-3',
+    name: 'Laptop Gaming MSI Katana GF66',
     price: 22990000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "GA6H CMH2VN893SH i5-13420H RAM 16GB"
-  },
-  {
-    id: 3,
-    name: "Lenovo Legion R7000",
-    price: 22990000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "2024 Ryzen 7 8745H RAM 16GB SSD 512GB"
-  },
-  {
-    id: 4,
-    name: "Lenovo IdeaPad 5 Pro 16 GT",
-    price: 23900000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "2025 Ultra 5 225H RAM 32GB SSD 1TB"
-  },
-  {
-    id: 5,
-    name: "Lenovo IdeaPad 5 Pro 16 GT",
-    price: 23900000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "2025 Ultra 5 225H RAM 32GB SSD 1TB"
-  },
-  {
-    id: 6,
-    name: "Lenovo IdeaPad 5 Pro 16 GT",
-    price: 23900000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "2025 Ultra 5 225H RAM 32GB SSD 1TB"
-  },
-  {
-    id: 7,
-    name: "Lenovo Legion Slim 5",
-    price: 26890000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "R7000P 2024 Ryzen 7 8845H RAM 16GB"
-  },
-  {
-    id: 8,
-    name: "ASUS ROG Strix G16",
-    price: 28990000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "Gaming Laptop Intel Core i7-13650HX"
-  },
-  {
-    id: 9,
-    name: "MSI Katana 15",
-    price: 24990000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "Gaming Laptop Intel Core i5-13420H"
-  },
-  {
-    id: 10,
-    name: "Dell Inspiron 15",
-    price: 19990000,
-    image: "https://tanphat.com.vn/media/product/3115_acer_aspire_a514_56p_gray_a8.jpg",
-    description: "Intel Core i5-1235U RAM 8GB SSD 512GB"
+    originalPrice: 25990000,
+    discount: 11,
+    category: 'Laptop gaming',
+    brand: 'MSI',
+    imageUrl: 'https://via.placeholder.com/300x200?text=Laptop+MSI',
+    stock: 12,
+    rating: 4.7,
+    reviews: 203,
+    specifications: {
+      cpu: 'Intel Core i7-11800H',
+      ram: '16GB DDR4',
+      storage: '1TB SSD',
+      gpu: 'RTX 3050 Ti 4GB',
+      display: '15.6" FHD 144Hz'
+    },
+    sub_images: [
+      'https://via.placeholder.com/300x200?text=Image+1',
+      'https://via.placeholder.com/300x200?text=Image+2'
+    ],
+    configurations: [
+      { name: 'RAM 16GB', price: 0 },
+      { name: 'RAM 32GB', price: 2500000 }
+    ],
+    combos: [
+      { name: 'Combo Gaming Pro', price: 800000, items: ['Chuột gaming', 'Bàn phím cơ', 'Tai nghe gaming'] }
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
-// Mock function để filter và paginate data
-function filterAndPaginateProducts(products, { page = 1, limit = 20, q = '', sort = 'id', order = 'asc' }) {
-  let filtered = [...products];
-  
-  // Filter by search query
-  if (q) {
-    const searchTerm = q.toLowerCase();
-    filtered = filtered.filter(product => 
-      product.name.toLowerCase().includes(searchTerm) ||
-      product.description.toLowerCase().includes(searchTerm)
-    );
-  }
-  
-  // Sort
-  filtered.sort((a, b) => {
-    let aVal = a[sort];
-    let bVal = b[sort];
-    
-    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
-    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
-    
-    if (order === 'desc') {
-      return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
-    }
-    return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-  });
-  
-  // Paginate
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const items = filtered.slice(startIndex, endIndex);
-  
-  return {
-    items,
-    total: filtered.length,
-    page,
-    limit
-  };
-}
-
-// SECTION: Get Products - Lấy danh sách sản phẩm từ Backend
-/**
- * ✅ Tích hợp với Backend API:
- * - GET /product - Lấy tất cả sản phẩm
- * - GET /product/filter - Lọc theo brand, category, pagination
- * - GET /product/categories - Lấy danh mục
- * - GET /product/brands - Lấy thương hiệu
- */
-export async function getProducts({
-  page = 1,
-  limit = 20,
-  q = '',
-  sort = 'id',
-  order = 'asc',
-  brand = '',
-  category = ''
-} = {}) {
+export const getProducts = async (params = {}) => {
   try {
-    // ✅ Nếu có filter (brand/category), dùng endpoint /product/filter
-    if (brand || category) {
-      const params = { page, limit };
-      if (brand) params.brand = brand;
-      if (category) {
-        // Map category name to category ID
-        const categoryMap = {
-          'Laptop văn phòng': 'CAT-001',
-          'Laptop gaming': 'CAT-002',
-          'Laptop đồ họa': 'CAT-003'
-        };
-        params.category = categoryMap[category] || category;
+    console.log('🔄 Loading products from backend...', params);
+    
+    // Chuyển đổi category name sang categoryId nếu có
+    const apiParams = { ...params };
+    if (params.category && categoryMap[params.category]) {
+      apiParams.categoryId = categoryMap[params.category];
+      delete apiParams.category;
+    }
+    
+    const response = await api.get('/api/public/product/filter', { params: apiParams });
+    console.log('📦 Products response:', response);
+    
+    const productsData = handleApiResponse(response);
+    console.log('📦 Products data structure:', productsData);
+    
+    // Transform backend data to frontend format
+    const transformedProducts = productsData.map(transformProduct);
+
+    return {
+      success: true,
+      data: transformedProducts,
+      pagination: {
+        page: params.page || 1,
+        limit: params.limit || 10,
+        total: transformedProducts.length,
+        totalPages: Math.ceil(transformedProducts.length / (params.limit || 10))
       }
-      
-      const response = await api.get('/api/product/filter', params);
-      
-      // ✅ Backend trả về: { data, total, page, limit, totalPages }
-      return {
-        items: response.data || [],
-        total: response.total || 0,
-        page: response.page || page,
-        limit: response.limit || limit,
-        totalPages: response.totalPages || 0
-      };
+    };
+  } catch (error) {
+    console.error('❌ Error loading products:', error);
+    
+    // Fallback to mock data when backend is not available
+    console.log('🔄 Using mock data as fallback...');
+    
+    let filteredProducts = [...mockProducts];
+    
+    // Apply filters to mock data
+    if (params.category) {
+      filteredProducts = filteredProducts.filter(p => p.category === params.category);
     }
     
-    // ✅ Nếu không có filter, dùng endpoint /product (lấy tất cả)
-    const response = await api.get('/api/product');
-    
-    // ✅ Backend trả về mảng sản phẩm trực tiếp
-    const items = Array.isArray(response) ? response : [];
-    
-    // ✅ Nếu không có sản phẩm từ Backend, dùng mock data
-    if (items.length === 0) {
-      console.log("🔄 Backend trả về array rỗng, sử dụng mock data");
-      return filterAndPaginateProducts(mockProducts, { page, limit, q, sort, order });
+    if (params.brand) {
+      filteredProducts = filteredProducts.filter(p => p.brand === params.brand);
     }
     
-    console.log("✅ Sử dụng dữ liệu thật từ Backend:", items.length, "sản phẩm");
-    console.log("🔍 Cấu trúc sản phẩm đầu tiên:", items[0]);
-    
-    // ✅ Filter local nếu có search query
-    let filteredItems = items;
-    if (q) {
-      const searchTerm = q.toLowerCase();
-      filteredItems = items.filter(product => 
-        (product.name || '').toLowerCase().includes(searchTerm) ||
-        (product.description || '').toLowerCase().includes(searchTerm)
+    if (params.q) {
+      const searchTerm = params.q.toLowerCase();
+      filteredProducts = filteredProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.brand.toLowerCase().includes(searchTerm) ||
+        p.category.toLowerCase().includes(searchTerm)
       );
     }
     
-    // ✅ Pagination local
+    // Apply pagination
+    const page = params.page || 1;
+    const limit = params.limit || 10;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
     
     return {
-      items: paginatedItems,
-      total: filteredItems.length,
-      page,
-      limit,
-      totalPages: Math.ceil(filteredItems.length / limit)
+      success: true,
+      data: paginatedProducts,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: filteredProducts.length,
+        totalPages: Math.ceil(filteredProducts.length / limit)
+      }
+    };
+  }
+};
+
+export const getProductById = async (id) => {
+  try {
+    console.log('🔄 Loading product by ID:', id);
+    
+    // Validate ID format
+    if (!id || id === 'undefined' || id === 'null') {
+      throw new Error('Invalid product ID');
+    }
+    
+    // Try direct API call first
+    try {
+      const response = await api.get(`/api/public/product/${id}`);
+      console.log('📦 Direct product response:', response);
+      
+      if (response && response.data) {
+        const transformedProduct = transformProduct(response.data);
+        console.log('📦 Transformed product:', transformedProduct);
+        
+        return {
+          success: true,
+          data: transformedProduct
+        };
+      }
+    } catch (directError) {
+      console.log('⚠️ Direct API failed, trying filter API...', directError.message);
+    }
+    
+    // Fallback: Use public filter API to get product by ID
+    const response = await api.get(`/api/public/product/filter?page=1&limit=1000`);
+    console.log('📦 Product response:', response);
+    
+    const productsData = handleApiResponse(response);
+    console.log('📦 Products data after handleApiResponse:', productsData);
+    
+    const product = productsData.find(p => p._id === id || p.id === id);
+    console.log('📦 Found product:', product);
+    
+    if (!product) {
+      throw new Error(`Product with ID "${id}" not found`);
+    }
+
+    const transformedProduct = transformProduct(product);
+    console.log('📦 Transformed product:', transformedProduct);
+
+    return {
+      success: true,
+      data: transformedProduct
     };
   } catch (error) {
-    console.warn('Backend API không khả dụng:', error.message);
+    console.error('❌ Error loading product:', error);
     
-    // Hiển thị thông báo lỗi thay vì sử dụng mock data
-    throw new Error(`Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc đăng nhập lại. Chi tiết: ${error.message}`);
-  }
-}
-
-export async function getProductById(id) {
-  try {
-    console.log('🔍 Fetching product with ID:', id);
-    const response = await api.get(`/api/product/${id}`);
-    console.log('✅ Product found:', response);
-    return response;
-  } catch (error) {
-    console.warn('API không khả dụng:', error.message);
+    // Fallback to mock data when backend is not available
+    console.log('🔄 Using mock data as fallback for product ID:', id);
     
-    // Hiển thị thông báo lỗi thay vì sử dụng mock data
-    throw new Error(`Không thể tải thông tin sản phẩm. Vui lòng kiểm tra kết nối mạng hoặc đăng nhập lại. Chi tiết: ${error.message}`);
+    const mockProduct = mockProducts.find(p => p._id === id);
+    if (mockProduct) {
+      return {
+        success: true,
+        data: mockProduct
+      };
+    }
+    
+    // Return a more helpful error message
+    throw new Error(`Sản phẩm với ID "${id}" không tồn tại hoặc đã bị xóa. Vui lòng kiểm tra lại đường dẫn.`);
   }
-}
+};
 
-// CRUD cho Admin (api.* trả body trực tiếp, KHÔNG có .data)
-export async function createProduct(payload) {
+export const searchProducts = async (query, params = {}) => {
   try {
-    return await api.post('/api/product', payload);
-  } catch (error) {
-    console.warn('API không khả dụng:', error.message);
-    // Mock response
-    return { id: Date.now(), ...payload };
-  }
-}
+    console.log('🔄 Searching products:', query, params);
+    
+    const searchParams = {
+      ...params,
+      q: query
+    };
+    
+    const response = await api.get('/api/product/filter', { params: searchParams });
+    console.log('📦 Search response:', response);
+    
+    const productsData = handleApiResponse(response);
+    
+    // Transform backend data to frontend format
+    const transformedProducts = productsData.map(transformProduct);
 
-export async function updateProduct(id, payload) {
-  try {
-    return await api.put(`/api/product/${id}`, payload);
+    return {
+      success: true,
+      data: transformedProducts,
+      pagination: {
+        page: params.page || 1,
+        limit: params.limit || 10,
+        total: transformedProducts.length,
+        totalPages: Math.ceil(transformedProducts.length / (params.limit || 10))
+      }
+    };
   } catch (error) {
-    console.warn('API không khả dụng:', error.message);
-    // Mock response
-    return { id, ...payload };
+    console.error('❌ Error searching products:', error);
+    throw new Error(`Không thể tìm kiếm sản phẩm: ${error.message}`);
   }
-}
+};
 
-export async function patchProduct(id, payload) {
+export const getProductsByCategory = async (category, params = {}) => {
   try {
-    return await api.patch(`/api/product/${id}`, payload);
-  } catch (error) {
-    console.warn('API không khả dụng:', error.message);
-    // Mock response
-    return { id, ...payload };
-  }
-}
+    console.log('🔄 Loading products by category:', category, params);
+    
+    const categoryParams = {
+      ...params,
+      categoryId: categoryMap[category] || category
+    };
+    
+    const response = await api.get('/api/product/filter', { params: categoryParams });
+    console.log('📦 Category products response:', response);
+    
+    const productsData = handleApiResponse(response);
+    
+    // Transform backend data to frontend format
+    const transformedProducts = productsData.map(transformProduct);
 
-export async function deleteProduct(id) {
-  try {
-    return await api.delete(`/api/product/${id}`);
+    return {
+      success: true,
+      data: transformedProducts,
+      pagination: {
+        page: params.page || 1,
+        limit: params.limit || 10,
+        total: transformedProducts.length,
+        totalPages: Math.ceil(transformedProducts.length / (params.limit || 10))
+      }
+    };
   } catch (error) {
-    console.warn('API không khả dụng:', error.message);
-    // Mock response
-    return { success: true };
+    console.error('❌ Error loading products by category:', error);
+    throw new Error(`Không thể tải sản phẩm theo danh mục: ${error.message}`);
   }
-}
+};
 
-// SECTION: Categories & Brands - Lấy danh mục và thương hiệu từ Backend
-/**
- * ✅ Lấy danh sách categories từ Backend
- * GET /product/categories
- */
-export async function getCategories() {
+export const getFeaturedProducts = async (limit = 8) => {
   try {
-    const response = await api.get('/api/product/categories');
-    // ✅ Backend trả về mảng categories trực tiếp
-    return Array.isArray(response) ? response : [];
-  } catch (error) {
-    console.warn('Backend API không khả dụng, sử dụng mock categories:', error.message);
-    // Mock categories fallback
-    return ['Laptop', 'Desktop', 'Accessories', 'Gaming'];
-  }
-}
+    console.log('🔄 Loading featured products...');
+    
+    const response = await api.get(`/api/product?limit=${limit}&featured=true`);
+    console.log('📦 Featured products response:', response);
+    
+    const productsData = handleApiResponse(response);
+    
+    // Transform backend data to frontend format
+    const transformedProducts = productsData.map(transformProduct);
 
-/**
- * ✅ Lấy danh sách brands từ Backend
- * GET /product/brands
- */
-export async function getBrands(category = '') {
-  try {
-    const params = category ? { category } : {};
-    const response = await api.get('/api/product/brands', params);
-    // ✅ Backend trả về mảng brands trực tiếp
-    return Array.isArray(response) ? response : [];
+    return {
+      success: true,
+      data: transformedProducts
+    };
   } catch (error) {
-    console.warn('Backend API không khả dụng, sử dụng mock brands:', error.message);
-    // Mock brands fallback
-    return ['Lenovo', 'ASUS', 'MSI', 'Dell', 'HP', 'Acer'];
+    console.error('❌ Error loading featured products:', error);
+    throw new Error(`Không thể tải sản phẩm nổi bật: ${error.message}`);
   }
-}
+};
+
+export const getPromotionProducts = async (limit = 8) => {
+  try {
+    console.log('🔄 Loading promotion products...');
+    
+    const response = await api.get(`/api/product?limit=${limit}&promotion=true`);
+    console.log('📦 Promotion products response:', response);
+    
+    const productsData = handleApiResponse(response);
+    
+    // Transform backend data to frontend format
+    const transformedProducts = productsData.map(transformProduct);
+
+    return {
+      success: true,
+      data: transformedProducts
+    };
+  } catch (error) {
+    console.error('❌ Error loading promotion products:', error);
+    throw new Error(`Không thể tải sản phẩm khuyến mãi: ${error.message}`);
+  }
+};

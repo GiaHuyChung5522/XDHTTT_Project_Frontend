@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Admin Token</title>
+</head>
+<body>
+    <h1>Setting Admin Token...</h1>
+    <div id="status">Loading...</div>
+    
+    <script>
+        // Token từ test-auth-flow.js
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGMyOTMyNGY4ZTBkYTY0ZGFkMThlZGUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTc2MDEwNTYsImV4cCI6MTc1NzY4NzQ1Nn0.a3yB3EwFcY2qEYHXzpQMbupxqN4ee6LlStCiZPxJ08w';
+        
+        try {
+            // Set multiple token formats
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('token', token);
+            localStorage.setItem('auth', JSON.stringify({
+                token: token,
+                accessToken: token,
+                role: 'admin',
+                user: { role: 'admin' }
+            }));
+            
+            document.getElementById('status').innerHTML = '✅ Token saved successfully!';
+            document.getElementById('status').style.color = 'green';
+            
+            console.log('✅ Admin token saved to localStorage');
+            console.log('Token:', token.substring(0, 50) + '...');
+            
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'http://localhost:5174/admin';
+            }, 2000);
+            
+        } catch (error) {
+            document.getElementById('status').innerHTML = '❌ Error: ' + error.message;
+            document.getElementById('status').style.color = 'red';
+            console.error('❌ Error saving token:', error);
+        }
+    </script>
+</body>
+</html>

@@ -259,13 +259,7 @@ const Customers: React.FC = () => {
     
     try {
       console.log('🔄 Loading customers...');
-      const result = await adminService.getUsers({
-        page,
-        limit: pageSize,
-        search: filters.search,
-        role: filters.role,
-        status: filters.status,
-      });
+      const result = await adminService.getUsers(page, pageSize);
 
       if (result.success && result.data) {
         console.log('📦 Raw API response:', result.data);
@@ -362,7 +356,7 @@ const Customers: React.FC = () => {
         message.success('Đã cập nhật trạng thái khách hàng thành công');
         await loadCustomers(pagination.current, pagination.pageSize);
       } else {
-        const errorMessage = result.error || 'Không thể cập nhật trạng thái';
+        const errorMessage = (result as any).error || 'Không thể cập nhật trạng thái';
         setError(errorMessage);
         message.error(errorMessage);
       }

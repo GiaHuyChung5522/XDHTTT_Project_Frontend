@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login</title>
+</head>
+<body>
+    <h1>Admin Login Successful!</h1>
+    <p>Token saved to localStorage</p>
+    <script>
+        localStorage.setItem('adminToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGMyOTMyNGY4ZTBkYTY0ZGFkMThlZGUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTc2MDExNjksImV4cCI6MTc1NzY4NzU2OX0.UKg5HpfMOULV16qxfxVpdsJC806sq4YPSDljGgg_5l8');
+        localStorage.setItem('auth', JSON.stringify({
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGMyOTMyNGY4ZTBkYTY0ZGFkMThlZGUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTc2MDExNjksImV4cCI6MTc1NzY4NzU2OX0.UKg5HpfMOULV16qxfxVpdsJC806sq4YPSDljGgg_5l8',
+            accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGMyOTMyNGY4ZTBkYTY0ZGFkMThlZGUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTc2MDExNjksImV4cCI6MTc1NzY4NzU2OX0.UKg5HpfMOULV16qxfxVpdsJC806sq4YPSDljGgg_5l8',
+            role: 'admin'
+        }));
+        console.log('✅ Token saved to localStorage');
+        setTimeout(() => {
+            window.location.href = 'http://localhost:5174/admin';
+        }, 1000);
+    </script>
+</body>
+</html>
